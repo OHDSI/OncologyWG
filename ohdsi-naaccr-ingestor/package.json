@@ -1,0 +1,5 @@
+{
+  "name": "ohdsi-naaccr-ingestor",
+  "private": true,
+  "dependencies": {}
+}

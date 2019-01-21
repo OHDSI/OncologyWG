@@ -1,0 +1,2 @@
+class NaaccrImport < ApplicationRecord
+end

@@ -1,0 +1,331 @@
+schema_name,icdo_code
+Surgery:All Other Sites,C14.2
+Surgery:All Other Sites,C14.8
+Surgery:All Other Sites,C17.0
+Surgery:All Other Sites,C17.1
+Surgery:All Other Sites,C17.2
+Surgery:All Other Sites,C17.3
+Surgery:All Other Sites,C17.8
+Surgery:All Other Sites,C17.9
+Surgery:All Other Sites,C23.9
+Surgery:All Other Sites,C24.0
+Surgery:All Other Sites,C24.1
+Surgery:All Other Sites,C24.8
+Surgery:All Other Sites,C24.9
+Surgery:All Other Sites,C26.0
+Surgery:All Other Sites,C26.8
+Surgery:All Other Sites,C26.9
+Surgery:All Other Sites,C30.0
+Surgery:All Other Sites,C30.1
+Surgery:All Other Sites,C31.0
+Surgery:All Other Sites,C31.1
+Surgery:All Other Sites,C31.2
+Surgery:All Other Sites,C31.3
+Surgery:All Other Sites,C31.8
+Surgery:All Other Sites,C31.9
+Surgery:All Other Sites,C33.9
+Surgery:All Other Sites,C37.9
+Surgery:All Other Sites,C38.0
+Surgery:All Other Sites,C38.1
+Surgery:All Other Sites,C38.2
+Surgery:All Other Sites,C38.3
+Surgery:All Other Sites,C38.4
+Surgery:All Other Sites,C38.8
+Surgery:All Other Sites,C39.0
+Surgery:All Other Sites,C39.8
+Surgery:All Other Sites,C39.9
+Surgery:All Other Sites,C48.0
+Surgery:All Other Sites,C48.1
+Surgery:All Other Sites,C48.2
+Surgery:All Other Sites,C48.8
+Surgery:All Other Sites,C51.0
+Surgery:All Other Sites,C51.1
+Surgery:All Other Sites,C51.2
+Surgery:All Other Sites,C51.8
+Surgery:All Other Sites,C51.9
+Surgery:All Other Sites,C52.9
+Surgery:All Other Sites,C57.0
+Surgery:All Other Sites,C57.1
+Surgery:All Other Sites,C57.2
+Surgery:All Other Sites,C57.3
+Surgery:All Other Sites,C57.4
+Surgery:All Other Sites,C57.7
+Surgery:All Other Sites,C57.8
+Surgery:All Other Sites,C57.9
+Surgery:All Other Sites,C58.9
+Surgery:All Other Sites,C60.0
+Surgery:All Other Sites,C60.1
+Surgery:All Other Sites,C60.2
+Surgery:All Other Sites,C60.8
+Surgery:All Other Sites,C60.9
+Surgery:All Other Sites,C63.0
+Surgery:All Other Sites,C63.1
+Surgery:All Other Sites,C63.2
+Surgery:All Other Sites,C63.7
+Surgery:All Other Sites,C63.8
+Surgery:All Other Sites,C63.9
+Surgery:All Other Sites,C68.0
+Surgery:All Other Sites,C68.1
+Surgery:All Other Sites,C68.8
+Surgery:All Other Sites,C68.9
+Surgery:All Other Sites,C69.0
+Surgery:All Other Sites,C69.1
+Surgery:All Other Sites,C69.2
+Surgery:All Other Sites,C69.3
+Surgery:All Other Sites,C69.4
+Surgery:All Other Sites,C69.5
+Surgery:All Other Sites,C69.6
+Surgery:All Other Sites,C69.8
+Surgery:All Other Sites,C69.9
+Surgery:All Other Sites,C74.0
+Surgery:All Other Sites,C74.1
+Surgery:All Other Sites,C74.9
+Surgery:All Other Sites,C75.0
+Surgery:All Other Sites,C75.1
+Surgery:All Other Sites,C75.2
+Surgery:All Other Sites,C75.3
+Surgery:All Other Sites,C75.4
+Surgery:All Other Sites,C75.5
+Surgery:All Other Sites,C75.8
+Surgery:All Other Sites,C75.9
+Surgery:Anus,C21.0
+Surgery:Anus,C21.1
+Surgery:Anus,C21.2
+Surgery:Anus,C21.8
+Surgery:Bladder,C67.0
+Surgery:Bladder,C67.1
+Surgery:Bladder,C67.2
+Surgery:Bladder,C67.3
+Surgery:Bladder,C67.4
+Surgery:Bladder,C67.5
+Surgery:Bladder,C67.6
+Surgery:Bladder,C67.7
+Surgery:Bladder,C67.8
+Surgery:Bladder,C67.9
+"Surgery:Bones, Joints, and Soft Tissue",C40.0
+"Surgery:Bones, Joints, and Soft Tissue",C40.1
+"Surgery:Bones, Joints, and Soft Tissue",C40.2
+"Surgery:Bones, Joints, and Soft Tissue",C40.3
+"Surgery:Bones, Joints, and Soft Tissue",C40.8
+"Surgery:Bones, Joints, and Soft Tissue",C40.9
+"Surgery:Bones, Joints, and Soft Tissue",C41.0
+"Surgery:Bones, Joints, and Soft Tissue",C41.1
+"Surgery:Bones, Joints, and Soft Tissue",C41.2
+"Surgery:Bones, Joints, and Soft Tissue",C41.3
+"Surgery:Bones, Joints, and Soft Tissue",C41.4
+"Surgery:Bones, Joints, and Soft Tissue",C41.8
+"Surgery:Bones, Joints, and Soft Tissue",C41.9
+"Surgery:Bones, Joints, and Soft Tissue",C47.0
+"Surgery:Bones, Joints, and Soft Tissue",C47.1
+"Surgery:Bones, Joints, and Soft Tissue",C47.2
+"Surgery:Bones, Joints, and Soft Tissue",C47.3
+"Surgery:Bones, Joints, and Soft Tissue",C47.4
+"Surgery:Bones, Joints, and Soft Tissue",C47.5
+"Surgery:Bones, Joints, and Soft Tissue",C47.6
+"Surgery:Bones, Joints, and Soft Tissue",C47.8
+"Surgery:Bones, Joints, and Soft Tissue",C47.9
+"Surgery:Bones, Joints, and Soft Tissue",C49.0
+"Surgery:Bones, Joints, and Soft Tissue",C49.1
+"Surgery:Bones, Joints, and Soft Tissue",C49.2
+"Surgery:Bones, Joints, and Soft Tissue",C49.3
+"Surgery:Bones, Joints, and Soft Tissue",C49.4
+"Surgery:Bones, Joints, and Soft Tissue",C49.5
+"Surgery:Bones, Joints, and Soft Tissue",C49.6
+"Surgery:Bones, Joints, and Soft Tissue",C49.8
+"Surgery:Bones, Joints, and Soft Tissue",C49.9
+Surgery:Brain [and other parts of central nervous system],C70.0
+Surgery:Brain [and other parts of central nervous system],C70.1
+Surgery:Brain [and other parts of central nervous system],C70.9
+Surgery:Brain [and other parts of central nervous system],C71.0
+Surgery:Brain [and other parts of central nervous system],C71.1
+Surgery:Brain [and other parts of central nervous system],C71.2
+Surgery:Brain [and other parts of central nervous system],C71.3
+Surgery:Brain [and other parts of central nervous system],C71.4
+Surgery:Brain [and other parts of central nervous system],C71.5
+Surgery:Brain [and other parts of central nervous system],C71.6
+Surgery:Brain [and other parts of central nervous system],C71.7
+Surgery:Brain [and other parts of central nervous system],C71.8
+Surgery:Brain [and other parts of central nervous system],C71.9
+Surgery:Brain [and other parts of central nervous system],C72.0
+Surgery:Brain [and other parts of central nervous system],C72.1
+Surgery:Brain [and other parts of central nervous system],C72.2
+Surgery:Brain [and other parts of central nervous system],C72.3
+Surgery:Brain [and other parts of central nervous system],C72.4
+Surgery:Brain [and other parts of central nervous system],C72.5
+Surgery:Brain [and other parts of central nervous system],C72.8
+Surgery:Brain [and other parts of central nervous system],C72.9
+Surgery:Breast,C50.0
+Surgery:Breast,C50.1
+Surgery:Breast,C50.2
+Surgery:Breast,C50.3
+Surgery:Breast,C50.4
+Surgery:Breast,C50.5
+Surgery:Breast,C50.6
+Surgery:Breast,C50.8
+Surgery:Breast,C50.9
+Surgery:Cervix Uteri,C53.0
+Surgery:Cervix Uteri,C53.1
+Surgery:Cervix Uteri,C53.8
+Surgery:Cervix Uteri,C53.9
+Surgery:Colon,C18.0
+Surgery:Colon,C18.1
+Surgery:Colon,C18.2
+Surgery:Colon,C18.3
+Surgery:Colon,C18.4
+Surgery:Colon,C18.5
+Surgery:Colon,C18.6
+Surgery:Colon,C18.7
+Surgery:Colon,C18.8
+Surgery:Colon,C18.9
+Surgery:Corpus Uteri,C54.0
+Surgery:Corpus Uteri,C54.1
+Surgery:Corpus Uteri,C54.2
+Surgery:Corpus Uteri,C54.3
+Surgery:Corpus Uteri,C54.8
+Surgery:Corpus Uteri,C54.9
+Surgery:Corpus Uteri,C55.9
+Surgery:Esophagus,C15.0
+Surgery:Esophagus,C15.1
+Surgery:Esophagus,C15.2
+Surgery:Esophagus,C15.3
+Surgery:Esophagus,C15.4
+Surgery:Esophagus,C15.5
+Surgery:Esophagus,C15.8
+Surgery:Esophagus,C15.9
+Surgery:Hematopoietic/Reticuloendothelial/Immunoproliferative/Myeloproliferative Disease,C42.0
+Surgery:Hematopoietic/Reticuloendothelial/Immunoproliferative/Myeloproliferative Disease,C42.1
+Surgery:Hematopoietic/Reticuloendothelial/Immunoproliferative/Myeloproliferative Disease,C42.3
+Surgery:Hematopoietic/Reticuloendothelial/Immunoproliferative/Myeloproliferative Disease,C42.4
+"Surgery:Kidney, Renal Pelvis, and Ureter",C64.9
+"Surgery:Kidney, Renal Pelvis, and Ureter",C65.9
+"Surgery:Kidney, Renal Pelvis, and Ureter",C66.9
+Surgery:Larynx,C32.0
+Surgery:Larynx,C32.1
+Surgery:Larynx,C32.2
+Surgery:Larynx,C32.3
+Surgery:Larynx,C32.8
+Surgery:Larynx,C32.9
+Surgery:Liver and Intrahepatic Bile Ducts,C22.0
+Surgery:Liver and Intrahepatic Bile Ducts,C22.1
+Surgery:Lung,C34.0
+Surgery:Lung,C34.1
+Surgery:Lung,C34.2
+Surgery:Lung,C34.3
+Surgery:Lung,C34.8
+Surgery:Lung,C34.9
+Surgery:Lymph Nodes,C77.0
+Surgery:Lymph Nodes,C77.1
+Surgery:Lymph Nodes,C77.2
+Surgery:Lymph Nodes,C77.3
+Surgery:Lymph Nodes,C77.4
+Surgery:Lymph Nodes,C77.5
+Surgery:Lymph Nodes,C77.8
+Surgery:Lymph Nodes,C77.9
+Surgery:Oral Cavity,C00.0
+Surgery:Oral Cavity,C00.1
+Surgery:Oral Cavity,C00.2
+Surgery:Oral Cavity,C00.3
+Surgery:Oral Cavity,C00.4
+Surgery:Oral Cavity,C00.5
+Surgery:Oral Cavity,C00.6
+Surgery:Oral Cavity,C00.8
+Surgery:Oral Cavity,C00.9
+Surgery:Oral Cavity,C01.9
+Surgery:Oral Cavity,C02.0
+Surgery:Oral Cavity,C02.1
+Surgery:Oral Cavity,C02.2
+Surgery:Oral Cavity,C02.3
+Surgery:Oral Cavity,C02.4
+Surgery:Oral Cavity,C02.8
+Surgery:Oral Cavity,C02.9
+Surgery:Oral Cavity,C03.0
+Surgery:Oral Cavity,C03.1
+Surgery:Oral Cavity,C03.9
+Surgery:Oral Cavity,C04.0
+Surgery:Oral Cavity,C04.1
+Surgery:Oral Cavity,C04.8
+Surgery:Oral Cavity,C04.9
+Surgery:Oral Cavity,C05.0
+Surgery:Oral Cavity,C05.1
+Surgery:Oral Cavity,C05.2
+Surgery:Oral Cavity,C05.8
+Surgery:Oral Cavity,C05.9
+Surgery:Oral Cavity,C06.0
+Surgery:Oral Cavity,C06.1
+Surgery:Oral Cavity,C06.2
+Surgery:Oral Cavity,C06.8
+Surgery:Oral Cavity,C06.9
+Surgery:Ovary,C56.9
+Surgery:Pancreas,C25.0
+Surgery:Pancreas,C25.1
+Surgery:Pancreas,C25.2
+Surgery:Pancreas,C25.3
+Surgery:Pancreas,C25.4
+Surgery:Pancreas,C25.7
+Surgery:Pancreas,C25.8
+Surgery:Pancreas,C25.9
+Surgery:Parotid and Other Unspecified Glands,C07.9
+Surgery:Parotid and Other Unspecified Glands,C08.0
+Surgery:Parotid and Other Unspecified Glands,C08.1
+Surgery:Parotid and Other Unspecified Glands,C08.8
+Surgery:Parotid and Other Unspecified Glands,C08.9
+Surgery:Pharynx,C09.0
+Surgery:Pharynx,C09.1
+Surgery:Pharynx,C09.8
+Surgery:Pharynx,C09.9
+Surgery:Pharynx,C10.0
+Surgery:Pharynx,C10.1
+Surgery:Pharynx,C10.2
+Surgery:Pharynx,C10.3
+Surgery:Pharynx,C10.4
+Surgery:Pharynx,C10.8
+Surgery:Pharynx,C10.9
+Surgery:Pharynx,C11.0
+Surgery:Pharynx,C11.1
+Surgery:Pharynx,C11.2
+Surgery:Pharynx,C11.3
+Surgery:Pharynx,C11.8
+Surgery:Pharynx,C11.9
+Surgery:Pharynx,C12.9
+Surgery:Pharynx,C13.0
+Surgery:Pharynx,C13.1
+Surgery:Pharynx,C13.2
+Surgery:Pharynx,C13.8
+Surgery:Pharynx,C13.9
+Surgery:Pharynx,C14.0
+Surgery:Prostate,C61.9
+Surgery:Rectosigmoid,C19.9
+Surgery:Rectum,C20.9
+Surgery:Skin,C44.0
+Surgery:Skin,C44.1
+Surgery:Skin,C44.2
+Surgery:Skin,C44.3
+Surgery:Skin,C44.4
+Surgery:Skin,C44.5
+Surgery:Skin,C44.6
+Surgery:Skin,C44.7
+Surgery:Skin,C44.8
+Surgery:Skin,C44.9
+Surgery:Spleen,C42.2
+Surgery:Stomach,C16.0
+Surgery:Stomach,C16.1
+Surgery:Stomach,C16.2
+Surgery:Stomach,C16.3
+Surgery:Stomach,C16.4
+Surgery:Stomach,C16.5
+Surgery:Stomach,C16.6
+Surgery:Stomach,C16.8
+Surgery:Stomach,C16.9
+Surgery:Testis,C62.0
+Surgery:Testis,C62.1
+Surgery:Testis,C62.9
+Surgery:Thyroid Gland,C73.9
+Surgery:Unknown And Ill-Defined Primary Sites,C76.0
+Surgery:Unknown And Ill-Defined Primary Sites,C76.1
+Surgery:Unknown And Ill-Defined Primary Sites,C76.2
+Surgery:Unknown And Ill-Defined Primary Sites,C76.3
+Surgery:Unknown And Ill-Defined Primary Sites,C76.4
+Surgery:Unknown And Ill-Defined Primary Sites,C76.5
+Surgery:Unknown And Ill-Defined Primary Sites,C76.7
+Surgery:Unknown And Ill-Defined Primary Sites,C76.8
+Surgery:Unknown And Ill-Defined Primary Sites,C80.9

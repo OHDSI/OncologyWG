@@ -1,0 +1,6 @@
+development:
+  host: localhost
+  adapter: postgresql
+  database: ohdsi_naaccr_ingestor_development
+  username: ohdsi_naaccr_ingestor_development
+  password: ohdsi_naaccr_ingestor_development
