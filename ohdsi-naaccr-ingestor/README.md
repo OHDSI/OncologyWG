@@ -103,7 +103,6 @@ This repository contains a script to prepare and curate NAACCR data items/NAACCR
 * The script contains the following commands:
 
   * 'ingest:do': This command imports the baseline input file, calls the SEER API, inserts NAACCR items, NAACCR item codes and NAACCR schemas.
-  * "ingest:export_uncurated': This command exports the ingested NAACCR items and NAACCR item codes to [naaccr_uncurated.csv](../blob/master/ohdsi-naaccr-ingestor/lib/data_out/naaccr_uncurated.csv)
-  * "ingest:import_curated': This command imports curated data file  [naaccr_curated.csv](../blob/master/ohdsi-naaccr-ingestor/lib/data/naaccr_curated.csv) to update the local PostgreSQL database with the curated fields to be saved for persistence.
-  * "ingest:export_naaccr_schema_icdo_mappings': This command exports mappings from NAACCR schemas to ICDO3 codes to
-   [naaccr_schema_icdo_mappings.csv](../blob/master/ohdsi-naaccr-ingestor/lib/data/naaccr_schema_icdo_mappings.csv).
+  * "ingest:export_uncurated': This command exports the ingested NAACCR items and NAACCR item codes to [naaccr_uncurated.csv](https://github.com/OHDSI/OncologyWG/blob/master/ohdsi-naaccr-ingestor/lib/data/naaccr_uncurated.csv)
+  * "ingest:import_curated': This command imports curated data file  [naaccr_curated.csv](https://github.com/OHDSI/OncologyWG/blob/master/ohdsi-naaccr-ingestor/lib/data/naaccr_curated.csv) to update the local PostgreSQL database with the curated fields to be saved for persistence.
+  * "ingest:export_naaccr_schema_icdo_mappings': This command exports mappings from NAACCR schemas to ICDO3 codes to  [naaccr_schema_icdo_mappings.csv](https://github.com/OHDSI/OncologyWG/blob/master/ohdsi-naaccr-ingestor/lib/data/naaccr_schema_icdo_mappings.csv).
