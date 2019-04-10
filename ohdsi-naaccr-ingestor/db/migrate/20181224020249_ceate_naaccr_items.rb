@@ -1,6 +1,7 @@
 class CeateNaaccrItems < ActiveRecord::Migration[5.2]
   def change
     create_table :naaccr_items do |t|
+      t.integer :naaccr_version_id,             null: true
       t.string  :item_number,                   null: true
       t.string  :item_name,                     null: true
       t.string  :section,                       null: true
@@ -10,6 +11,10 @@ class CeateNaaccrItems < ActiveRecord::Migration[5.2]
       t.text    :item_curation_comments,        null: true
       t.string  :item_standard_concept,         null: true
       t.string  :site_specific_status,          null: true
+      t.string  :year_implemented,              null: true
+      t.string  :version_implemented,           null: true
+      t.string  :year_retired,                  null: true
+      t.string  :version_retired,               null: true
       t.timestamps
     end
   end

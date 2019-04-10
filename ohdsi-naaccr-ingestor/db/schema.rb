@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_18_104012) do
+ActiveRecord::Schema.define(version: 2019_03_26_140102) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_trgm"
@@ -332,9 +332,11 @@ ActiveRecord::Schema.define(version: 2019_01_18_104012) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "code_maps_to"
+    t.string "provenance"
   end
 
   create_table "naaccr_items", force: :cascade do |t|
+    t.integer "naaccr_version_id"
     t.string "item_number"
     t.string "item_name"
     t.string "section"
@@ -344,10 +346,17 @@ ActiveRecord::Schema.define(version: 2019_01_18_104012) do
     t.text "item_curation_comments"
     t.string "item_standard_concept"
     t.string "site_specific_status"
+    t.string "year_implemented"
+    t.string "version_implemented"
+    t.string "year_retired"
+    t.string "version_retired"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "treatment_type"
     t.string "item_maps_to"
+    t.string "etl_instructions"
+    t.index ["item_omop_domain_id"], name: "text5_idx"
+    t.index ["section"], name: "text4_idx"
   end
 
   create_table "naaccr_schema_icdo_codes", force: :cascade do |t|
@@ -355,12 +364,17 @@ ActiveRecord::Schema.define(version: 2019_01_18_104012) do
     t.string "icdo_code"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "processed", default: false
+    t.string "icdo_type", default: "f"
+    t.index ["icdo_type"], name: "naaccr_schema_icdo_codes_icdo_type_idx"
+    t.index ["naaccr_schema_id"], name: "test_idx"
   end
 
   create_table "naaccr_schema_maps", force: :cascade do |t|
     t.integer "naaccr_schema_id", null: false
     t.string "mappable_type", null: false
     t.integer "mappable_id", null: false
+    t.index ["mappable_type", "mappable_id"], name: "test2_idx"
   end
 
   create_table "naaccr_schemas", force: :cascade do |t|
@@ -368,6 +382,22 @@ ActiveRecord::Schema.define(version: 2019_01_18_104012) do
     t.string "schema_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "naaccr_staging_algorithm_id"
+    t.string "seer_id"
+    t.string "schema_selection_table"
+    t.boolean "processed", default: false
+    t.boolean "icdo_processed", default: false
+    t.index ["id"], name: "test3_idx"
+  end
+
+  create_table "naaccr_staging_algorithms", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "algorithm", null: false
+  end
+
+  create_table "naaccr_versions", force: :cascade do |t|
+    t.string "version"
+    t.index ["version"], name: "test6_idx"
   end
 
   create_table "note", primary_key: "note_id", id: :bigint, default: nil, force: :cascade do |t|

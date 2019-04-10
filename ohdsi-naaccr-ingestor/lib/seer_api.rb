@@ -17,6 +17,36 @@ class SeerApi
     end
   end
 
+  def naaccr_versions
+    api_url = Rails.application.credentials.seer[Rails.env.to_sym][:naaccr_versions_url]
+    puts api_url
+
+    api_response = seer_api_request_wrapper(api_url)
+
+    { response: api_response[:response], error: api_response[:error] }
+  end
+
+  def naaccr_items(version)
+    api_url = Rails.application.credentials.seer[Rails.env.to_sym][:naaccr_items_url]
+    puts api_url
+    api_url = api_url.gsub(':version', version)
+
+    api_response = seer_api_request_wrapper(api_url)
+
+    { response: api_response[:response], error: api_response[:error] }
+  end
+
+  def naaccr_item(version, item_number)
+    api_url = Rails.application.credentials.seer[Rails.env.to_sym][:naaccr_item_url]
+    puts api_url
+    api_url = api_url.gsub(':version', version)
+    api_url = api_url.gsub(':item_number', item_number.to_s)
+
+    api_response = seer_api_request_wrapper(api_url)
+
+    { response: api_response[:response], error: api_response[:error] }
+  end
+
   def surgery_titles
     api_url = Rails.application.credentials.seer[Rails.env.to_sym][:surgery_tables_url]
     puts api_url
@@ -26,12 +56,63 @@ class SeerApi
     { response: api_response[:response], error: api_response[:error] }
   end
 
-
   def surgery_title(title)
     api_url = Rails.application.credentials.seer[Rails.env.to_sym][:surgery_table_url]
     api_url = "#{api_url}?title=#{title}"
     puts api_url
 
+    api_response = seer_api_request_wrapper(api_url)
+
+    { response: api_response[:response], error: api_response[:error] }
+  end
+
+  def staging_algorithims
+    api_url = Rails.application.credentials.seer[Rails.env.to_sym][:staging_algorithms_url]
+    api_url = "#{api_url}"
+    puts api_url
+
+    api_response = seer_api_request_wrapper(api_url)
+
+    { response: api_response[:response], error: api_response[:error] }
+  end
+
+  def schemas(staging_algorithm)
+    api_url = Rails.application.credentials.seer[Rails.env.to_sym][:schemas_url]
+    api_url = api_url.gsub(':algorithm', staging_algorithm)
+    api_url = api_url.gsub(':version', 'latest')
+    puts api_url
+
+    api_response = seer_api_request_wrapper(api_url)
+
+    { response: api_response[:response], error: api_response[:error] }
+  end
+
+  def schema(staging_algorithm, schema_id)
+    api_url = Rails.application.credentials.seer[Rails.env.to_sym][:schema_url]
+    api_url = api_url.gsub(':algorithm', staging_algorithm)
+    if staging_algorithm == 'eod_public'
+      api_url = api_url.gsub(':version', '1.5')
+    else
+      api_url = api_url.gsub(':version', 'latest')
+    end
+    api_url = api_url.gsub(':schema_id', schema_id)
+    puts api_url
+    api_response = seer_api_request_wrapper(api_url)
+
+    { response: api_response[:response], error: api_response[:error] }
+  end
+
+  def table(staging_algorithm, table_id)
+    api_url = Rails.application.credentials.seer[Rails.env.to_sym][:table_url]
+    api_url = api_url.gsub(':algorithm', staging_algorithm)
+    if staging_algorithm == 'eod_public'
+      api_url = api_url.gsub(':version', '1.5')
+    else
+      api_url = api_url.gsub(':version', 'latest')
+    end
+    puts api_url
+    api_url = api_url.gsub(':table_id', table_id.to_s)
+    puts api_url
     api_response = seer_api_request_wrapper(api_url)
 
     { response: api_response[:response], error: api_response[:error] }
