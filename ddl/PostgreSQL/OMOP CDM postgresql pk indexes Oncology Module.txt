@@ -1,0 +1,27 @@
+/**************************/
+
+
+/************************
+*************************
+*************************
+*************************
+
+Primary key constraints
+
+*************************
+*************************
+*************************
+************************/
+
+
+
+/************************
+
+Standardized vocabulary
+
+************************/
+
+
+ALTER TABLE episode ADD CONSTRAINT xpk_episode PRIMARY KEY ( episode_id ) ;
+
+ALTER TABLE episode_event ADD CONSTRAINT xpk_episode_event PRIMARY KEY (episode_id, event_id, episode_event_field_concept_id);
