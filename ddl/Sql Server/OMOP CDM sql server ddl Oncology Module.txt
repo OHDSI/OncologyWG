@@ -1,5 +1,20 @@
 /************************
 
+Standardized vocabulary
+
+************************/
+--HINT DISTRIBUTE ON RANDOM
+CREATE TABLE concept_numeric (
+  concept_id          INTEGER       NOT NULL,
+  value_as_number     FLOAT         NULL,
+  unit_concept_id     INTEGER       NULL,
+  operator_concept_id INTEGER       NULL
+)
+;
+
+
+/************************
+
 Standardized clinical data
 
 ************************/

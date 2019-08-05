@@ -15,6 +15,16 @@ Foreign key constraints
 
 /************************
 
+Standardized vocabulary
+
+************************/
+ALTER TABLE concept_numeric ADD CONSTRAINT fpk_concept_numeric_concept FOREIGN KEY (concept_id)  REFERENCES concept (concept_id);
+ALTER TABLE concept_numeric ADD CONSTRAINT fpk_concept_numeric_unit FOREIGN KEY (unit_concept_id)  REFERENCES concept (concept_id);
+ALTER TABLE concept_numeric ADD CONSTRAINT fpk_concept_numeric_operator FOREIGN KEY (operator_concept_id)  REFERENCES concept (concept_id);
+
+
+/************************
+
 Standardized clinical data
 
 ************************/
