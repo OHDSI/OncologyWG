@@ -31,13 +31,13 @@ SET person_id = pii_mrn.person_id
 FROM pii_mrn
 WHERE naaccr_data_points.medical_record_number = pii_mrn.mrn;
 
---Step 1
+--Setp 1: Diagnosis
 
 DROP TABLE IF EXISTS condition_occurrence_temp;
 
 CREATE TEMPORARY TABLE condition_occurrence_temp
 (
-  condition_occurrence_id		    BIGINT        NOT NULL ,
+  condition_occurrence_id        BIGINT        NOT NULL ,
   person_id                     BIGINT        NOT NULL ,
   condition_concept_id          BIGINT        NOT NULL ,
   condition_start_date          DATE          NOT NULL ,
@@ -45,15 +45,15 @@ CREATE TEMPORARY TABLE condition_occurrence_temp
   condition_end_date            DATE          NULL ,
   condition_end_datetime        TIMESTAMP     NULL ,
   condition_type_concept_id     BIGINT        NOT NULL ,
-  stop_reason                   VARCHAR(20)	  NULL ,
+  stop_reason                   VARCHAR(20)    NULL ,
   provider_id                   BIGINT        NULL ,
   visit_occurrence_id           BIGINT        NULL ,
   --1/23/2019 Removing because we are trying to match the EDW's OMOP instance.
   -- visit_detail_id               BIGINT     NULL ,
-  condition_source_value        VARCHAR(50)	  NULL ,
+  condition_source_value        VARCHAR(50)    NULL ,
   condition_source_concept_id   BIGINT        NULL ,
-  condition_status_source_value	VARCHAR(50)   NULL ,
-  condition_status_concept_id	  BIGINT        NULL,
+  condition_status_source_value  VARCHAR(50)   NULL ,
+  condition_status_concept_id    BIGINT        NULL,
   record_id                     varchar(255)  NULL
 );
 
@@ -139,7 +139,7 @@ AND s.person_id IS NOT NULL;
 --       , condition_status_concept_id
 -- FROM condition_occurrence_temp;
 
---Step 2
+--Step 2: Diagnosis Modifiers
 
 DROP TABLE IF EXISTS measurement_temp;
 
@@ -161,8 +161,8 @@ CREATE TEMPORARY TABLE measurement_temp
   provider_id                   BIGINT       NULL ,
   visit_occurrence_id           BIGINT       NULL ,
   visit_detail_id               BIGINT       NULL ,
-  measurement_source_value      VARCHAR(50)	 NULL ,
-  measurement_source_concept_id	BIGINT       NULL ,
+  measurement_source_value      VARCHAR(50)   NULL ,
+  measurement_source_concept_id  BIGINT       NULL ,
   unit_source_value             VARCHAR(50)  NULL ,
   value_source_value            VARCHAR(50)  NULL ,
   modifier_of_event_id          BIGINT       NULL ,
@@ -248,7 +248,7 @@ AND EXISTS(
   AND cr.concept_id_2 = '35918916' --Histology
 );
 
---Non-standard categorical
+--Step  3: Diagnosis Modifiers Non-standard categorical
 INSERT INTO measurement_temp
 (
     measurement_id
@@ -328,20 +328,21 @@ AND EXISTS(
   AND cr.concept_id_2 = '35918916' --Histology
 );
 
+--Step 4: Diagnosis Modifiers Numeric
 
 DROP TABLE IF EXISTS concept_temp;
 
 CREATE TEMPORARY TABLE concept_temp (
-  concept_id			    BIGINT			  NOT NULL ,
-  concept_name			  VARCHAR(255)	NOT NULL ,
-  domain_id				    VARCHAR(20)		NOT NULL ,
-  vocabulary_id			  VARCHAR(20)		NOT NULL ,
-  concept_class_id		VARCHAR(20)		NOT NULL ,
-  standard_concept		VARCHAR(1)		NULL ,
-  concept_code			  VARCHAR(50)		NOT NULL ,
-  valid_start_date		DATE			    NOT NULL ,
-  valid_end_date		  DATE			    NOT NULL ,
-  invalid_reason		  VARCHAR(1)		NULL
+  concept_id          BIGINT        NOT NULL ,
+  concept_name        VARCHAR(255)  NOT NULL ,
+  domain_id            VARCHAR(20)    NOT NULL ,
+  vocabulary_id        VARCHAR(20)    NOT NULL ,
+  concept_class_id    VARCHAR(20)    NOT NULL ,
+  standard_concept    VARCHAR(1)    NULL ,
+  concept_code        VARCHAR(50)    NOT NULL ,
+  valid_start_date    DATE          NOT NULL ,
+  valid_end_date      DATE          NOT NULL ,
+  invalid_reason      VARCHAR(1)    NULL
 )
 ;
 
@@ -370,7 +371,7 @@ SELECT  c1.concept_id
 FROM concept c1   JOIN concept_relationship crn ON c1.concept_id = crn.concept_id_1 and crn.relationship_id = 'Has type' and crn.concept_id_2 = 32676 --'Numeric'
 ;
 
---Numeric
+
 INSERT INTO measurement_temp
 (
     measurement_id
@@ -549,7 +550,7 @@ INSERT INTO episode_temp
 SELECT ( CASE WHEN  (SELECT MAX(episode_id) FROM episode) IS NULL THEN 0 ELSE  (SELECT MAX(episode_id) FROM episode) END + row_number() over())                 AS episode_id
       , s.person_id                                                                                                                                             AS person_id
       , c4.concept_id                                                                                                                                           AS episode_concept_id
-      , NULL                                                                                                                                                    AS episode_start_datetime        --?
+      , CASE WHEN length(sd.naaccr_item_value) = 8 THEN to_date(sd.naaccr_item_value,'YYYYMMDD') ELSE NULL END                                                  AS episode_start_datetime        --?
       , NULL                                                                                                                                                    AS episode_end_datetime          --?
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
@@ -560,12 +561,22 @@ SELECT ( CASE WHEN  (SELECT MAX(episode_id) FROM episode) IS NULL THEN 0 ELSE  (
       , s.record_id                                                                                                                                             AS record_id
 FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
                              JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
+--                             JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Proc Schema'
+
                              JOIN concept AS c1                ON cr1.concept_id_2 = c1.concept_id AND c1.vocabulary_id = 'NAACCR'
                               ---- Getting variables
                              JOIN concept AS c2                ON c2.vocabulary_id = 'NAACCR' AND (c2.concept_code = s.naaccr_item_number OR c2.concept_code = c1.concept_code || '@' || s.naaccr_item_number) AND c2.domain_id = 'Episode' AND c2.standard_concept IS NULL
                              JOIN concept_relationship cr2     ON c2.concept_id = cr2.concept_id_1 AND cr2.relationship_id = 'Maps to'
                              JOIN concept AS c4                ON cr2.concept_id_2 = c4.concept_id
-                              ---- Getting permissible value
+                              -- Getting permissible value
                              JOIN concept AS c3                ON c3.vocabulary_id = 'NAACCR' AND (c3.concept_code = s.naaccr_item_number ||  '@' || s.naaccr_item_value OR c3.concept_code = c1.concept_name || '@'  || s.naaccr_item_number  || '@'  || s.naaccr_item_value) AND c3.standard_concept = 'S' --AND c3.domain_id = 'Meas Value'
-WHERE s.person_id IS NOT NULL
+                             --                               ---- Getting permissible value
+
+                             JOIN concept_relationship cr3     ON c2.concept_id = cr3.concept_id_1 AND cr3.relationship_id = 'Variable has date'
+                             JOIN concept c5                   ON cr3.concept_id_2 = c5.concept_id
+                             JOIN naaccr_data_points sd        ON s.record_id = sd.record_id AND c5.concept_code = sd.naaccr_item_number
 ;
+
+
+SELECT *
+FROM episode_temp;
