@@ -25,7 +25,7 @@ CREATE TABLE episode (
 	person_id                   BIGINT      NOT NULL,
 	episode_concept_id          INTEGER     NOT NULL,
 	episode_start_datetime      DATETIME2 	NOT NULL,
-	episode_end_datetime        DATETIME2 	NOT NULL,
+	episode_end_datetime        DATETIME2 	NULL,
 	episode_parent_id           BIGINT      NULL,
 	episode_number              INTEGER     NULL,
 	episode_object_concept_id   INTEGER     NOT NULL,
