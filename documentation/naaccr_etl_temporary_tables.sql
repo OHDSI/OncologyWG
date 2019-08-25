@@ -139,7 +139,7 @@ AND s.person_id IS NOT NULL;
 --       , condition_status_concept_id
 -- FROM condition_occurrence_temp;
 
---Step 2: Diagnosis Modifiers
+--Step 2: Diagnosis Modifiers Standard categorical
 
 DROP TABLE IF EXISTS measurement_temp;
 
@@ -170,7 +170,6 @@ CREATE TEMPORARY TABLE measurement_temp
   record_id                     VARCHAR(255) NULL
 );
 
---Standard categorical
 INSERT INTO measurement_temp
 (
     measurement_id
@@ -329,7 +328,6 @@ AND EXISTS(
 );
 
 --Step 4: Diagnosis Modifiers Numeric
-
 DROP TABLE IF EXISTS concept_temp;
 
 CREATE TEMPORARY TABLE concept_temp (
@@ -513,6 +511,58 @@ AND sd.naaccr_item_value NOT IN('0', '99999999');
 --     , modifier_of_field_concept_id
 -- FROM measurement_temp;
 
+--Step 5: Treatment Episodes
+
+--moomin
+SET search_path TO omop, public;
+
+DELETE FROM condition_occurrence
+WHERE condition_type_concept_id = 32534;
+
+DELETE FROM measurement
+WHERE measurement_type_concept_id = 32534;
+
+UPDATE naaccr_data_points
+SET histology_site =  overlay(histology placing substring(histology, 4, 1) || '/' from 4 for 1)  || '-' || overlay(site placing substring(site, 3,1) || '.' from 3 for 1);
+
+
+UPDATE naaccr_data_points
+SET person_id = pii_mrn.person_id
+FROM pii_mrn
+WHERE naaccr_data_points.medical_record_number = pii_mrn.mrn;
+
+
+DROP TABLE IF EXISTS measurement_temp;
+
+CREATE TEMPORARY TABLE measurement_temp
+(
+  measurement_id                BIGINT       NOT NULL ,
+  person_id                     BIGINT       NOT NULL ,
+  measurement_concept_id        BIGINT       NOT NULL ,
+  measurement_date              DATE         NOT NULL ,
+  measurement_time              VARCHAR(10)  NULL ,
+  measurement_datetime          TIMESTAMP    NULL ,
+  measurement_type_concept_id   BIGINT       NOT NULL ,
+  operator_concept_id           BIGINT       NULL ,
+  value_as_number               NUMERIC      NULL ,
+  value_as_concept_id           BIGINT       NULL ,
+  unit_concept_id               BIGINT       NULL ,
+  range_low                     NUMERIC      NULL ,
+  range_high                    NUMERIC      NULL ,
+  provider_id                   BIGINT       NULL ,
+  visit_occurrence_id           BIGINT       NULL ,
+  visit_detail_id               BIGINT       NULL ,
+  measurement_source_value      VARCHAR(50)   NULL ,
+  measurement_source_concept_id  BIGINT       NULL ,
+  unit_source_value             VARCHAR(50)  NULL ,
+  value_source_value            VARCHAR(50)  NULL ,
+  modifier_of_event_id          BIGINT       NULL ,
+  modifier_of_field_concept_id  BIGINT       NULL,
+  record_id                     VARCHAR(255) NULL
+);
+
+--moomin
+
 DROP TABLE IF EXISTS episode_temp;
 
 CREATE TABLE episode_temp (
@@ -574,9 +624,79 @@ FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_i
 
                              JOIN concept_relationship cr3     ON c2.concept_id = cr3.concept_id_1 AND cr3.relationship_id = 'Variable has date'
                              JOIN concept c5                   ON cr3.concept_id_2 = c5.concept_id
-                             JOIN naaccr_data_points sd        ON s.record_id = sd.record_id AND c5.concept_code = sd.naaccr_item_number
-;
+                             JOIN naaccr_data_points sd        ON s.record_id = sd.record_id AND c5.concept_code = sd.naaccr_item_number AND sd.naaccr_item_value NOT IN('99999999', '0') AND (sd.naaccr_item_number ~ '^([0-9]+[.]?[0-9]*|[.][0-9]+)$');
 
-
-SELECT *
-FROM episode_temp;
+--Step 6: Treatment Episode Modifiers Standard Categorical
+INSERT INTO measurement_temp
+(
+    measurement_id
+  , person_id
+  , measurement_concept_id
+  , measurement_date
+  , measurement_time
+  , measurement_datetime
+  , measurement_type_concept_id
+  , operator_concept_id
+  , value_as_number
+  , value_as_concept_id
+  , unit_concept_id
+  , range_low
+  , range_high
+  , provider_id
+  , visit_occurrence_id
+  , visit_detail_id
+  , measurement_source_value
+  , measurement_source_concept_id
+  , unit_source_value
+  , value_source_value
+  , modifier_of_event_id
+  , modifier_of_field_concept_id
+  , record_id
+)
+SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement) IS NULL THEN 0 ELSE  (SELECT MAX(measurement_id) FROM measurement) END + row_number() over()) AS measurement_id
+      , s.person_id                                                                                                                                             AS person_id
+      , c2.concept_id                                                                                                                                           AS measurement_concept_id
+      , et.episode_start_datetime                                                                                                                               AS measurement_date
+      , NULL                                                                                                                                                    AS measurement_time
+      , et.episode_start_datetime                                                                                                                               AS measurement_datetime
+      , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
+      , NULL                                                                                                                                                    AS operator_concept_id
+      , NULL                                                                                                                                                    AS value_as_number
+      , c3.concept_id                                                                                                                                           AS value_as_concept_id
+      , NULL                                                                                                                                                    AS unit_concept_id
+      , NULL                                                                                                                                                    AS range_low
+      , NULL                                                                                                                                                    AS range_high
+      , NULL                                                                                                                                                    AS provider_id
+      , NULL                                                                                                                                                    AS visit_occurrence_id
+      , NULL                                                                                                                                                    AS visit_detail_id
+      , c2.concept_code                                                                                                                                         AS measurement_source_value
+      , c2.concept_id                                                                                                                                           AS measurement_source_concept_id
+      , NULL                                                                                                                                                    AS unit_source_value
+      , c3.concept_code                                                                                                                                         AS value_source_value
+      , et.episode_id                                                                                                                                           AS modifier_of_event_id
+      , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘episode.episode_id’ concept
+      , s.record_id                                                                                                                                             AS record_id
+FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
+                             JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
+                             JOIN concept AS c1                ON cr1.concept_id_2 = c1.concept_id AND c1.vocabulary_id = 'NAACCR'
+                              ---- Getting variables
+                             JOIN concept AS c2                ON c2.vocabulary_id = 'NAACCR' AND (c2.concept_code = s.naaccr_item_number OR c2.concept_code = c1.concept_code || '@' || s.naaccr_item_number) AND c2.domain_id = 'Measurement' AND c2.standard_concept = 'S'
+                              -- Identify numeric type variables
+                             LEFT JOIN concept_relationship cn ON c2.concept_id = cn.concept_id_1 and cn.relationship_id = 'Has type' and cn.concept_id_2 = 32676 --'Numeric'
+                              ---- Getting permissible value
+                             JOIN concept AS c3                ON c3.vocabulary_id = 'NAACCR' AND (c3.concept_code = s.naaccr_item_number ||  '@' || s.naaccr_item_value OR c3.concept_code = c1.concept_code || '@'  || s.naaccr_item_number  || '@'  || s.naaccr_item_value) AND  c3.domain_id = 'Meas Value' AND c3.standard_concept = 'S'
+                              ---- Getting episode record
+                             JOIN episode_temp et             ON s.record_id = et.record_id
+WHERE cn.concept_id_1 IS NULL -- excluding numeric types
+AND s.person_id IS NOT NULL
+AND EXISTS(
+  SELECT 1
+  FROM concept_relationship cr
+  WHERE c2.concept_id =  cr.concept_id_1
+  AND cr.relationship_id = 'Has parent item'
+  AND cr.concept_id_2  IN(
+      35918834  --
+    , 35918894  --RX Date Radiation
+    , 35918372  --RX Date Rad Ended
+  )
+);
