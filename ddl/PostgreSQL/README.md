@@ -18,3 +18,5 @@ In order to create your instantiation of the Common Data Model, we recommend fol
 Note: you could also apply the constraints and/or the indexes before loading the data, but this will slow down the insertion of the data considerably.
 
 6. Repeat steps 1-3, executing the script `OMOP CDM Results postgresql ddl.txt`
+
+7. (temporary step - won't be needed once we add them to the Athena release) Execute 'CDM_patch.sql' script to add CDM fields and tables concepts.
