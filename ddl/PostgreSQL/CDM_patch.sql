@@ -10,7 +10,8 @@ BEGIN
 	--create sequence for concept id's
 
 	drop sequence if exists v5_concept;
-	execute 'create sequence v5_concept increment by 1 start with ' 2000000000 ' cache 20';
+	execute 'create sequence v5_concept increment by 1 start with 1000000000 -- don't use 2000000000 as such concepts might interfere with custom concepts created during ETL
+cache 20'; 
 
 	--create new Field concept='modifier_of_event_id' for existing table 'measurement'
 	insert into concept (concept_id, concept_name, domain_id, vocabulary_id, concept_class_id, standard_concept, concept_code, valid_start_date, valid_end_date, invalid_reason)
