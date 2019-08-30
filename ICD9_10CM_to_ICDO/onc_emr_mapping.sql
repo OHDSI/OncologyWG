@@ -53,3 +53,14 @@ select icd_code,histology_code,behavior,cnt, concept_id,concept_name,concept_cod
 union all
 select icd_code,histology_code,behavior,cnt,   concept_id,concept_name,concept_code  , source_value as condition_source_value , source_concept_id as condition_source_concept_id from oemr_map_v0 
 ;
+
+--5. look up with all the descriptions needed
+select b.concept_name as icd_name , h.concept_name as hist_name, 
+case when behavior = 3 then 'MALIGNANT PRIMARY'
+when behavior = 6 then 'SEcondary'
+when behavior = 2 then 'IN SITU'
+when behavior = 0 then 'Benign'
+when behavior = 1 then 'Unspec'
+else null end as behaviour_descr, 
+a.* from oemr_map a join concept B on icd_code = b.concept_code and b.vocabulary_id in ('ICD10CM', 'ICD9CM') 
+join  concept h on h.concept_code =  histology_code || '/' || behavior and h.vocabulary_id ='ICDO3'
