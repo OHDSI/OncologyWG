@@ -25,13 +25,28 @@ WHERE measurement_type_concept_id = 32534;
 UPDATE naaccr_data_points
 SET histology_site =  overlay(histology placing substring(histology, 4, 1) || '/' from 4 for 1)  || '-' || overlay(site placing substring(site, 3,1) || '.' from 3 for 1);
 
-
 UPDATE naaccr_data_points
 SET person_id = pii_mrn.person_id
 FROM pii_mrn
 WHERE naaccr_data_points.medical_record_number = pii_mrn.mrn;
 
 --Setp 1: Diagnosis
+
+DROP TABLE IF EXISTS concept_temp;
+
+CREATE TEMPORARY TABLE concept_temp (
+  concept_id          BIGINT        NOT NULL ,
+  concept_name        VARCHAR(255)  NOT NULL ,
+  domain_id            VARCHAR(20)    NOT NULL ,
+  vocabulary_id        VARCHAR(20)    NOT NULL ,
+  concept_class_id    VARCHAR(20)    NOT NULL ,
+  standard_concept    VARCHAR(1)    NULL ,
+  concept_code        VARCHAR(50)    NOT NULL ,
+  valid_start_date    DATE          NOT NULL ,
+  valid_end_date      DATE          NOT NULL ,
+  invalid_reason      VARCHAR(1)    NULL
+)
+;
 
 DROP TABLE IF EXISTS condition_occurrence_temp;
 
@@ -217,7 +232,7 @@ SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement) IS NULL THEN 0
       , NULL                                                                                                                                                    AS unit_source_value
       , c3.concept_code                                                                                                                                         AS value_source_value
       , cot.condition_occurrence_id                                                                                                                             AS modifier_of_event_id
-      , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
+      , 1000000003                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
       , s.record_id                                                                                                                                             AS record_id
 FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
                              JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
@@ -295,7 +310,7 @@ SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement) IS NULL THEN 0
       , NULL                                                                                                                                                    AS unit_source_value
       , c4.concept_code                                                                                                                                         AS value_source_value
       , cot.condition_occurrence_id                                                                                                                             AS modifier_of_event_id
-      , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
+      , 1000000003                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
       , s.record_id                                                                                                                                             AS record_id
 FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
                              JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
@@ -328,21 +343,7 @@ AND EXISTS(
 );
 
 --Step 4: Diagnosis Modifiers Numeric
-DROP TABLE IF EXISTS concept_temp;
-
-CREATE TEMPORARY TABLE concept_temp (
-  concept_id          BIGINT        NOT NULL ,
-  concept_name        VARCHAR(255)  NOT NULL ,
-  domain_id            VARCHAR(20)    NOT NULL ,
-  vocabulary_id        VARCHAR(20)    NOT NULL ,
-  concept_class_id    VARCHAR(20)    NOT NULL ,
-  standard_concept    VARCHAR(1)    NULL ,
-  concept_code        VARCHAR(50)    NOT NULL ,
-  valid_start_date    DATE          NOT NULL ,
-  valid_end_date      DATE          NOT NULL ,
-  invalid_reason      VARCHAR(1)    NULL
-)
-;
+DELETE FROM concept_temp;
 
 INSERT INTO concept_temp
 (  concept_id
@@ -368,7 +369,6 @@ SELECT  c1.concept_id
       , c1.invalid_reason
 FROM concept c1   JOIN concept_relationship crn ON c1.concept_id = crn.concept_id_1 and crn.relationship_id = 'Has type' and crn.concept_id_2 = 32676 --'Numeric'
 ;
-
 
 INSERT INTO measurement_temp
 (
@@ -417,13 +417,13 @@ SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement) IS NULL THEN 0
       , NULL                                                                                                                                                    AS unit_source_value
       , c3.concept_code                                                                                                                                         AS value_source_value
       , cot.condition_occurrence_id                                                                                                                             AS modifier_of_event_id
-      , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
+      , 1000000003                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
       , s.record_id                                                                                                                                             AS record_id
 FROM naaccr_data_points AS s JOIN concept d                             ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
                              JOIN concept_relationship cr1              ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
                              JOIN concept AS c1                         ON cr1.concept_id_2 = c1.concept_id AND c1.vocabulary_id = 'NAACCR'
                               ---- Getting variables
-                             JOIN concept_temp AS c2                         ON c2.vocabulary_id = 'NAACCR' AND (c2.concept_code = s.naaccr_item_number OR c2.concept_code = c1.concept_code || '@' || s.naaccr_item_number) AND c2.domain_id = 'Measurement' AND c2.standard_concept = 'S'
+                             JOIN concept_temp AS c2                    ON c2.vocabulary_id = 'NAACCR' AND (c2.concept_code = s.naaccr_item_number OR c2.concept_code = c1.concept_code || '@' || s.naaccr_item_number) AND c2.domain_id = 'Measurement' AND c2.standard_concept = 'S'
                              -- Getting units if exist
                              LEFT JOIN concept_relationship AS cru      ON c2.concept_id = cru.concept_id_1 and cru.relationship_id = 'Has unit'
                              -- Getting permissible value for ranges
@@ -512,56 +512,54 @@ AND sd.naaccr_item_value NOT IN('0', '99999999');
 -- FROM measurement_temp;
 
 --Step 5: Treatment Episodes
-
---moomin
 SET search_path TO omop, public;
+DROP TABLE IF EXISTS concept_temp;
 
-DELETE FROM condition_occurrence
-WHERE condition_type_concept_id = 32534;
+CREATE TEMPORARY TABLE concept_temp (
+  concept_id          BIGINT        NOT NULL ,
+  concept_name        VARCHAR(255)  NOT NULL ,
+  domain_id            VARCHAR(20)    NOT NULL ,
+  vocabulary_id        VARCHAR(20)    NOT NULL ,
+  concept_class_id    VARCHAR(20)    NOT NULL ,
+  standard_concept    VARCHAR(1)    NULL ,
+  concept_code        VARCHAR(50)    NOT NULL ,
+  valid_start_date    DATE          NOT NULL ,
+  valid_end_date      DATE          NOT NULL ,
+  invalid_reason      VARCHAR(1)    NULL
+)
+;
 
-DELETE FROM measurement
-WHERE measurement_type_concept_id = 32534;
+DELETE FROM concept_temp;
 
-UPDATE naaccr_data_points
-SET histology_site =  overlay(histology placing substring(histology, 4, 1) || '/' from 4 for 1)  || '-' || overlay(site placing substring(site, 3,1) || '.' from 3 for 1);
-
-
-UPDATE naaccr_data_points
-SET person_id = pii_mrn.person_id
-FROM pii_mrn
-WHERE naaccr_data_points.medical_record_number = pii_mrn.mrn;
-
-
-DROP TABLE IF EXISTS measurement_temp;
-
-CREATE TEMPORARY TABLE measurement_temp
-(
-  measurement_id                BIGINT       NOT NULL ,
-  person_id                     BIGINT       NOT NULL ,
-  measurement_concept_id        BIGINT       NOT NULL ,
-  measurement_date              DATE         NOT NULL ,
-  measurement_time              VARCHAR(10)  NULL ,
-  measurement_datetime          TIMESTAMP    NULL ,
-  measurement_type_concept_id   BIGINT       NOT NULL ,
-  operator_concept_id           BIGINT       NULL ,
-  value_as_number               NUMERIC      NULL ,
-  value_as_concept_id           BIGINT       NULL ,
-  unit_concept_id               BIGINT       NULL ,
-  range_low                     NUMERIC      NULL ,
-  range_high                    NUMERIC      NULL ,
-  provider_id                   BIGINT       NULL ,
-  visit_occurrence_id           BIGINT       NULL ,
-  visit_detail_id               BIGINT       NULL ,
-  measurement_source_value      VARCHAR(50)   NULL ,
-  measurement_source_concept_id  BIGINT       NULL ,
-  unit_source_value             VARCHAR(50)  NULL ,
-  value_source_value            VARCHAR(50)  NULL ,
-  modifier_of_event_id          BIGINT       NULL ,
-  modifier_of_field_concept_id  BIGINT       NULL,
-  record_id                     VARCHAR(255) NULL
-);
-
---moomin
+INSERT INTO concept_temp
+(  concept_id
+      , concept_name
+      , domain_id
+      , vocabulary_id
+      , concept_class_id
+      , standard_concept
+      , concept_code
+      , valid_start_date
+      , valid_end_date
+      , invalid_reason
+)
+SELECT  c1.concept_id
+      , c1.concept_name
+      , c1.domain_id
+      , c1.vocabulary_id
+      , c1.concept_class_id
+      , c1.standard_concept
+      , c1.concept_code
+      , c1.valid_start_date
+      , c1.valid_end_date
+      , c1.invalid_reason
+FROM concept c1
+WHERE EXISTS(
+SELECT 1
+FROM concept_relationship crn JOIN concept c2 ON crn.concept_id_1 = c2.concept_id AND crn.relationship_id = 'Variable has date' AND c2.vocabulary_id = 'NAACCR'
+WHERE c1.concept_id = crn.concept_id_2
+)
+AND c1.concept_code IN('1200', '1210', '1220', '1230', '1240'); -- 1200=RX DATE SURGERY, 1210=RX DATE RADIATION, 1220=RX DATE CHEMO, 1230=RX DATE HORMONE, 1240=RX DATE BRM
 
 DROP TABLE IF EXISTS episode_temp;
 
@@ -583,17 +581,17 @@ CREATE TABLE episode_temp (
 
 INSERT INTO episode_temp
 (
-	  episode_id
-	, person_id
-	, episode_concept_id
-	, episode_start_datetime
-	, episode_end_datetime
-	, episode_parent_id
-	, episode_number
-	, episode_object_concept_id
-	, episode_type_concept_id
-	, episode_source_value
-	, episode_source_concept_id
+    episode_id
+  , person_id
+  , episode_concept_id
+  , episode_start_datetime
+  , episode_end_datetime
+  , episode_parent_id
+  , episode_number
+  , episode_object_concept_id
+  , episode_type_concept_id
+  , episode_source_value
+  , episode_source_concept_id
   , record_id
 
 )
@@ -609,6 +607,8 @@ SELECT ( CASE WHEN  (SELECT MAX(episode_id) FROM episode) IS NULL THEN 0 ELSE  (
       , s.naaccr_item_number || '@' || s.naaccr_item_value                                                                                                      AS episode_source_value
       , c3.concept_id                                                                                                                                           AS episode_source_concept_id
       , s.record_id                                                                                                                                             AS record_id
+      -- , c4.concept_name
+      -- , c3.concept_name
 FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
                              JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
 --                             JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Proc Schema'
@@ -623,10 +623,75 @@ FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_i
                              --                               ---- Getting permissible value
 
                              JOIN concept_relationship cr3     ON c2.concept_id = cr3.concept_id_1 AND cr3.relationship_id = 'Variable has date'
-                             JOIN concept c5                   ON cr3.concept_id_2 = c5.concept_id
-                             JOIN naaccr_data_points sd        ON s.record_id = sd.record_id AND c5.concept_code = sd.naaccr_item_number AND sd.naaccr_item_value NOT IN('99999999', '0') AND (sd.naaccr_item_number ~ '^([0-9]+[.]?[0-9]*|[.][0-9]+)$');
+                             -- JOIN concept c5                   ON cr3.concept_id_2 = c5.concept_id
+                             JOIN concept_temp c5              ON cr3.concept_id_2 = c5.concept_id
+                             JOIN naaccr_data_points sd        ON s.record_id = sd.record_id AND c5.concept_code = sd.naaccr_item_number AND sd.naaccr_item_value NOT IN('99999999', '0') AND (sd.naaccr_item_number ~ '^([0-9]+[.]?[0-9]*|[.][0-9]+)$')
+WHERE s.person_id IS NOT NULL;
 
---Step 6: Treatment Episode Modifiers Standard Categorical
+ --Step 6: Treatment Procedure Occurrence
+ DROP TABLE IF EXISTS procedure_occurrence_temp;
+
+ CREATE TABLE procedure_occurrence_temp
+ (
+  procedure_occurrence_id     BIGINT        NOT NULL ,
+  person_id	                  BIGINT        NOT NULL ,
+  procedure_concept_id        BIGINT        NOT NULL ,
+  procedure_date              DATE          NOT NULL ,
+  procedure_datetime          TIMESTAMP     NULL ,
+  procedure_type_concept_id   BIGINT        NOT NULL ,
+  modifier_concept_id         BIGINT        NULL ,
+  quantity                    BIGINT        NULL ,
+  provider_id                 BIGINT        NULL ,
+  visit_occurrence_id         BIGINT        NULL ,
+  visit_detail_id             BIGINT        NULL ,
+  procedure_source_value      VARCHAR(50)	  NULL ,
+  procedure_source_concept_id	BIGINT        NULL ,
+  modifier_source_value       VARCHAR(50)	  NULL,
+  episode_id                  BIGINT        NOT NULL,
+  record_id                   VARCHAR(255)  NULL
+ )
+ ;
+
+ INSERT INTO procedure_occurrence_temp
+(
+   procedure_occurrence_id
+ , person_id
+ , procedure_concept_id
+ , procedure_date
+ , procedure_datetime
+ , procedure_type_concept_id
+ , modifier_concept_id
+ , quantity
+ , provider_id
+ , visit_occurrence_id
+ , visit_detail_id
+ , procedure_source_value
+ , procedure_source_concept_id
+ , modifier_source_value
+ , episode_id
+ , record_id
+)
+SELECT ( CASE WHEN  (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence) IS NULL THEN 0 ELSE  (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence) END + row_number() over())  AS procedure_occurrence_id
+    , et.person_id                                                                                                                                                                                  AS person_id
+    , et.episode_object_concept_id                                                                                                                                                                   AS procedure_concept_id
+    , et.episode_start_datetime::date                                                                                                                                                                AS procedure_date
+    , et.episode_start_datetime                                                                                                                                                                      AS procedure_datetime
+    , 32534                                                                                                                                                                                          AS procedure_type_concept_id -- ‘Tumor registry’ concept. Fix me.
+    , NULL                                                                                                                                                                                           AS modifier_concept_id
+    , 1                                                                                                                                                                                              AS quantity --Is this OK to hardcode?
+    , NULL                                                                                                                                                                                           AS provider_id
+    , NULL                                                                                                                                                                                           AS visit_occurrence_id
+    , NULL                                                                                                                                                                                           AS visit_detail_id
+    , et.episode_source_value                                                                                                                                                                        AS procedure_source_value
+    , et.episode_source_concept_id                                                                                                                                                                   AS procedure_source_concept_id
+    , NULL                                                                                                                                                                                           AS modifier_source_value
+    , et.episode_id                                                                                                                                                                                  AS episode_id
+    , et.record_id                                                                                                                                                                                    AS record_id
+    -- , c1.concept_name
+FROM episode_temp et JOIN concept c1 ON et.episode_object_concept_id = c1.concept_id AND c1.standard_concept = 'S' AND c1.domain_id = 'Procedure'
+
+
+--Step 7: Treatment Episode Modifiers Standard Categorical
 INSERT INTO measurement_temp
 (
     measurement_id
@@ -674,7 +739,7 @@ SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement) IS NULL THEN 0
       , NULL                                                                                                                                                    AS unit_source_value
       , c3.concept_code                                                                                                                                         AS value_source_value
       , et.episode_id                                                                                                                                           AS modifier_of_event_id
-      , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘episode.episode_id’ concept
+      , 1000000003                                                                                                                                               AS modifier_field_concept_id -- ‘episode.episode_id’ concept
       , s.record_id                                                                                                                                             AS record_id
 FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
                              JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
@@ -695,8 +760,10 @@ AND EXISTS(
   WHERE c2.concept_id =  cr.concept_id_1
   AND cr.relationship_id = 'Has parent item'
   AND cr.concept_id_2  IN(
-      35918834  --
-    , 35918894  --RX Date Radiation
-    , 35918372  --RX Date Rad Ended
+      35918686  --Phase I Radiation Treatment Modality
+    , 35918378  --Phase II Radiation Treatment Modality
+    , 35918255  --Phase III Radiation Treatment Modality
+    , 35918593  --RX Summ--Surg Prim Site
+
   )
 );
