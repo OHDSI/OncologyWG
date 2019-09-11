@@ -37,7 +37,7 @@ SELECT *
 FROM condition_occurrence
 WHERE condition_type_concept_id = 32534;
 
-----Step 2,3 and 4: Diagnosis Condition Occurrence
+----Steps 2,3 and 4: Diagnosis Condition Occurrence modifiers
 --Diagnosis Modifiers Standard categorical
 --Diagnosis Modifiers Non-standard categorical
 --Diagnosis Modifiers Numeric
@@ -218,3 +218,108 @@ FROM episode e1 JOIN concept c1               ON e1.episode_concept_id = c1.conc
 WHERE e1.episode_concept_id = 32531 --Treatment Regimen
 AND c2.domain_id = 'Regimen'
 AND de1.drug_type_concept_id = 32534 -- ‘Tumor registry’ concept. Fix me.
+
+----Steps 13 and 14: Treatment Episode modifiers
+--Treatment Episode Modifiers Standard Categorical
+--Treatment Episode Modifiers Numeric
+
+--Expectation
+-- Surgery
+SET search_path TO omop, public;
+SELECT  ni.*
+      , ndp4.*
+FROM naaccr_data_points ndp1 JOIN naaccr_data_points ndp2 ON ndp1.record_id = ndp2.record_id AND ndp1.naaccr_item_number = '400' AND ndp2.naaccr_item_number = '521' AND ndp1.naaccr_item_value IS NOT NULL AND ndp2.naaccr_item_value IS NOT NULL AND ndp1.person_id IS NOT NULL AND ndp2.person_id IS NOT NULL
+                             JOIN naaccr_data_points ndp3 ON ndp1.record_id = ndp3.record_id AND ndp3.naaccr_item_number ='1200' AND ndp3.naaccr_item_value IS NOT NULL AND ndp3.person_id IS NOT NULL AND CASE WHEN length(ndp3.naaccr_item_value) = 8 THEN to_date(ndp3.naaccr_item_value,'YYYYMMDD') ELSE NULL END IS NOT NULL
+                             JOIN naaccr_data_points ndp4 ON ndp1.record_id = ndp4.record_id AND ndp4.naaccr_item_number NOT IN('400', '521', '1200') AND ndp4.naaccr_item_value IS NOT NULL AND trim(ndp4.naaccr_item_value) != '' AND ndp4.person_id IS NOT NULL
+                             JOIN naaccr_items ni ON ndp4.naaccr_item_number = ni.item_number
+WHERE ni.section IN('Treatment-1st Course')
+AND
+EXISTS(
+SELECT 1
+FROM concept c1 JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Has parent item' AND cr1.concept_id_2 = 35918593  --RX Summ--Surg Prim Site
+WHERE ndp4.naaccr_item_number = CASE WHEN c1.concept_code like '%@%' THEN split_part(c1.concept_code, '@', 2) ELSE concept_code END
+AND c1.domain_id = 'Measurement'
+)
+--AND ndp4.record_id = '?'
+ORDER BY ndp1.record_id, ni.item_number
+
+-- Radiation Therapy
+SET search_path TO omop, public;
+SELECT  ni.*
+      , ndp4.*
+FROM naaccr_data_points ndp1 JOIN naaccr_data_points ndp2 ON ndp1.record_id = ndp2.record_id AND ndp1.naaccr_item_number = '400' AND ndp2.naaccr_item_number = '521' AND ndp1.naaccr_item_value IS NOT NULL AND ndp2.naaccr_item_value IS NOT NULL AND ndp1.person_id IS NOT NULL AND ndp2.person_id IS NOT NULL
+                             JOIN naaccr_data_points ndp3 ON ndp1.record_id = ndp3.record_id AND ndp3.naaccr_item_number ='1200' AND ndp3.naaccr_item_value IS NOT NULL AND ndp3.person_id IS NOT NULL AND CASE WHEN length(ndp3.naaccr_item_value) = 8 THEN to_date(ndp3.naaccr_item_value,'YYYYMMDD') ELSE NULL END IS NOT NULL
+                             JOIN naaccr_data_points ndp4 ON ndp1.record_id = ndp4.record_id AND ndp4.naaccr_item_number NOT IN('400', '521', '1200') AND ndp4.naaccr_item_value IS NOT NULL AND trim(ndp4.naaccr_item_value) != '' AND ndp4.person_id IS NOT NULL
+                             JOIN naaccr_items ni ON ndp4.naaccr_item_number = ni.item_number
+WHERE ni.section IN('Treatment-1st Course')
+AND
+EXISTS(
+SELECT 1
+FROM concept c1 JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Has parent item'
+AND cr1.concept_id_2 IN(35918686) --Phase I Radiation Treatment Modality
+WHERE ndp4.naaccr_item_number = CASE WHEN c1.concept_code like '%@%' THEN split_part(c1.concept_code, '@', 2) ELSE concept_code END
+
+AND c1.domain_id = 'Measurement'
+)
+--AND ndp4.record_id = '?'
+ORDER BY ndp1.record_id, ni.item_number
+
+SET search_path TO omop, public;
+SELECT  ni.*
+      , ndp4.*
+FROM naaccr_data_points ndp1 JOIN naaccr_data_points ndp2 ON ndp1.record_id = ndp2.record_id AND ndp1.naaccr_item_number = '400' AND ndp2.naaccr_item_number = '521' AND ndp1.naaccr_item_value IS NOT NULL AND ndp2.naaccr_item_value IS NOT NULL AND ndp1.person_id IS NOT NULL AND ndp2.person_id IS NOT NULL
+                             JOIN naaccr_data_points ndp3 ON ndp1.record_id = ndp3.record_id AND ndp3.naaccr_item_number ='1210' AND ndp3.naaccr_item_value IS NOT NULL AND ndp3.person_id IS NOT NULL AND CASE WHEN length(ndp3.naaccr_item_value) = 8 THEN to_date(ndp3.naaccr_item_value,'YYYYMMDD') ELSE NULL END IS NOT NULL
+                             JOIN naaccr_data_points ndp4 ON ndp1.record_id = ndp4.record_id AND ndp4.naaccr_item_number NOT IN('400', '521', '1210') AND ndp4.naaccr_item_value IS NOT NULL AND trim(ndp4.naaccr_item_value) != '' AND ndp4.person_id IS NOT NULL
+                             JOIN naaccr_items ni ON ndp4.naaccr_item_number = ni.item_number
+WHERE ni.section IN('Treatment-1st Course')
+AND
+EXISTS(
+SELECT 1
+FROM concept c1 JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Has parent item'
+AND cr1.concept_id_2 IN(35918378) --Phase II Radiation Treatment Modality
+WHERE ndp4.naaccr_item_number = CASE WHEN c1.concept_code like '%@%' THEN split_part(c1.concept_code, '@', 2) ELSE concept_code END
+
+AND c1.domain_id = 'Measurement'
+)
+--AND ndp4.record_id = '?'
+ORDER BY ndp1.record_id, ni.item_number
+
+SET search_path TO omop, public;
+SELECT  ni.*
+      , ndp4.*
+FROM naaccr_data_points ndp1 JOIN naaccr_data_points ndp2 ON ndp1.record_id = ndp2.record_id AND ndp1.naaccr_item_number = '400' AND ndp2.naaccr_item_number = '521' AND ndp1.naaccr_item_value IS NOT NULL AND ndp2.naaccr_item_value IS NOT NULL AND ndp1.person_id IS NOT NULL AND ndp2.person_id IS NOT NULL
+                             JOIN naaccr_data_points ndp3 ON ndp1.record_id = ndp3.record_id AND ndp3.naaccr_item_number ='1210' AND ndp3.naaccr_item_value IS NOT NULL AND ndp3.person_id IS NOT NULL AND CASE WHEN length(ndp3.naaccr_item_value) = 8 THEN to_date(ndp3.naaccr_item_value,'YYYYMMDD') ELSE NULL END IS NOT NULL
+                             JOIN naaccr_data_points ndp4 ON ndp1.record_id = ndp4.record_id AND ndp4.naaccr_item_number NOT IN('400', '521', '1210') AND ndp4.naaccr_item_value IS NOT NULL AND trim(ndp4.naaccr_item_value) != '' AND ndp4.person_id IS NOT NULL
+                             JOIN naaccr_items ni ON ndp4.naaccr_item_number = ni.item_number
+WHERE ni.section IN('Treatment-1st Course')
+AND
+EXISTS(
+SELECT 1
+FROM concept c1 JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Has parent item'
+AND cr1.concept_id_2 IN(35918255) --Phase III Radiation Treatment Modality
+WHERE ndp4.naaccr_item_number = c1.concept_code
+AND c1.domain_id = 'Measurement'
+)
+--AND ndp4.record_id = '?'
+ORDER BY ndp1.record_id, ni.item_number
+
+--Result
+SET search_path TO omop, public;
+
+SELECT  e1.episode_number
+      , CASE WHEN c1.concept_code like '%@%' THEN split_part(c1.concept_code, '@', 2) ELSE c1.concept_code END AS item_number
+      , c1.concept_name
+      , c1.concept_code
+      , c2.concept_code
+      , c2.concept_name
+      , c2.standard_concept
+      , m1.value_as_concept_id
+      , m1.value_as_number
+      , m1.measurement_source_value
+      , m1.value_source_value
+FROM episode e1 JOIN measurement m1 ON e1.episode_id = m1.modifier_of_event_id AND m1.modifier_of_field_concept_id = 1000000003 -- ‘episode.episode_id’ concept
+                JOIN concept c1 ON m1.measurement_concept_id = c1.concept_id
+                LEFT JOIN concept c2 on m1.value_as_concept_id = c2.concept_id
+WHERE  e1.episode_concept_id = 32531 --Treatment Regimen
+--AND --e1.episode_number = '?'
+ORDER BY e1.episode_number, CASE WHEN c1.concept_code like '%@%' THEN split_part(c1.concept_code, '@', 2) ELSE c1.concept_code END

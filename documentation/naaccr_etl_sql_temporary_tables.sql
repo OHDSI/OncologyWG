@@ -67,6 +67,48 @@ CREATE TEMPORARY TABLE condition_occurrence_temp
   record_id                     varchar(255)  NULL
 );
 
+DELETE FROM concept_temp;
+
+--Restrict to schemas that do not have ICDO overlapping site/histology combinations
+INSERT INTO concept_temp
+(  concept_id
+      , concept_name
+      , domain_id
+      , vocabulary_id
+      , concept_class_id
+      , standard_concept
+      , concept_code
+      , valid_start_date
+      , valid_end_date
+      , invalid_reason
+)
+SELECT  c3.concept_id
+      , c3.concept_name
+      , c3.domain_id
+      , c3.vocabulary_id
+      , c3.concept_class_id
+      , c3.standard_concept
+      , c3.concept_code
+      , c3.valid_start_date
+      , c3.valid_end_date
+      , c3.invalid_reason
+FROM concept c3
+WHERE c3.concept_id IN(
+  SELECT  c2.concept_id as schema_concept_id
+  FROM concept c1 JOIN concept_relationship cr ON c1.concept_id = cr.concept_id_1 AND vocabulary_id='ICDO3'
+                  JOIN concept c2              ON cr.concept_id_2 = c2.concept_id AND relationship_id = 'ICDO to Schema'
+                  JOIN (
+                          SELECT  c1.concept_id
+                                , c1.concept_code
+                                , count(*) as total
+                          FROM concept c1 JOIN concept_relationship cr ON c1.concept_id = cr.concept_id_1 AND c1.vocabulary_id='ICDO3'
+                                          JOIN concept c2              ON cr.concept_id_2 = c2.concept_id AND relationship_id = 'ICDO to Schema'
+                          GROUP BY c1.concept_id, c1.concept_code
+                          HAVING count(*) = 1
+                      ) as dupl ON c1.concept_id = dupl.concept_id
+  GROUP BY c2.concept_id
+);
+
 INSERT INTO condition_occurrence_temp
 (
     condition_occurrence_id
@@ -87,7 +129,6 @@ INSERT INTO condition_occurrence_temp
   , condition_status_concept_id
   , record_id
 )
-
 SELECT ( CASE WHEN  (SELECT MAX(condition_occurrence_id) FROM condition_occurrence) IS NULL THEN 0 ELSE  (SELECT MAX(condition_occurrence_id) FROM condition_occurrence) END + row_number() over()) AS condition_occurrence_id
       , s.person_id                                                                                           AS person_id
       , c2.concept_id                                                                                         AS condition_concept_id
@@ -101,13 +142,16 @@ SELECT ( CASE WHEN  (SELECT MAX(condition_occurrence_id) FROM condition_occurren
       , NULL                                                                                                  AS visit_occurrence_id
 --    , NULL                                                                                                  AS visit_detail_id
       , s.histology_site                                                                                      AS condition_source_value
-      , c1.concept_id                                                                                         AS condition_source_concept_id
+      , d.concept_id                                                                                          AS condition_source_concept_id
       , NULL                                                                                                  AS condition_status_source_value
       , NULL                                                                                                  AS condition_status_concept_id
       , s.record_id                                                                                           AS record_id
-FROM naaccr_data_points AS s JOIN concept AS c2              ON c2.standard_concept = 'S'
-                             JOIN concept_relationship AS ra ON ra.concept_id_2 = c2.concept_id AND ra.relationship_id = 'Maps to'
-                             JOIN concept as c1              ON c1.concept_id = ra.concept_id_1  AND c1.concept_code = s.histology_site  AND c1.vocabulary_id ='ICDO3'
+FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
+                             JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
+                             JOIN concept c1                   ON cr1.concept_id_2 = c1.concept_id AND c1.vocabulary_id = 'NAACCR'
+                             JOIN concept_temp                 ON c1.concept_id = concept_temp.concept_id
+                             JOIN concept_relationship    ra   ON ra.concept_id_1 = d.concept_id AND ra.relationship_id = 'Maps to'
+                             JOIN concept  c2                  ON c2.standard_concept = 'S' AND ra.concept_id_2 = c2.concept_id
 WHERE s.naaccr_item_number = '390'
 AND CASE WHEN length(s.naaccr_item_value) = 8 THEN to_date(s.naaccr_item_value,'YYYYMMDD') ELSE NULL END IS NOT NULL
 AND s.person_id IS NOT NULL;
@@ -663,7 +707,7 @@ SELECT ( CASE WHEN  (SELECT MAX(episode_id) FROM episode_temp) IS NULL THEN 0 EL
       , c3.concept_id                                                                                                                                           AS episode_object_concept_id
       , 32546                                                                                                                                                   AS episode_type_concept_id --Episode derived from registry
       , s.naaccr_item_number || '@' || s.naaccr_item_value                                                                                                      AS episode_source_value
-      , c3.concept_id                                                                                                                                           AS episode_source_concept_id
+      , c2.concept_id                                                                                                                                           AS episode_source_concept_id
       , s.record_id                                                                                                                                             AS record_id
       -- , c4.concept_name
       -- , c3.concept_name
@@ -965,6 +1009,9 @@ FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_i
                              JOIN episode_temp et             ON s.record_id = et.record_id
 WHERE cn.concept_id_1 IS NULL -- excluding numeric types
 AND s.person_id IS NOT NULL
+AND et.episode_source_concept_id IN(
+  35918686  --Phase I Radiation Treatment Modality
+)
 AND EXISTS(
   SELECT 1
   FROM concept_relationship cr
@@ -972,9 +1019,231 @@ AND EXISTS(
   AND cr.relationship_id = 'Has parent item'
   AND cr.concept_id_2  IN(
       35918686  --Phase I Radiation Treatment Modality
-    , 35918378  --Phase II Radiation Treatment Modality
-    , 35918255  --Phase III Radiation Treatment Modality
-    , 35918593  --RX Summ--Surg Prim Site
+  )
+);
+
+INSERT INTO measurement_temp
+(
+    measurement_id
+  , person_id
+  , measurement_concept_id
+  , measurement_date
+  , measurement_time
+  , measurement_datetime
+  , measurement_type_concept_id
+  , operator_concept_id
+  , value_as_number
+  , value_as_concept_id
+  , unit_concept_id
+  , range_low
+  , range_high
+  , provider_id
+  , visit_occurrence_id
+  , visit_detail_id
+  , measurement_source_value
+  , measurement_source_concept_id
+  , unit_source_value
+  , value_source_value
+  , modifier_of_event_id
+  , modifier_of_field_concept_id
+  , record_id
+)
+SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL THEN 0 ELSE  (SELECT MAX(measurement_id) FROM measurement_temp) END + row_number() over()) AS measurement_id
+      , s.person_id                                                                                                                                             AS person_id
+      , c2.concept_id                                                                                                                                           AS measurement_concept_id
+      , et.episode_start_datetime                                                                                                                               AS measurement_date
+      , NULL                                                                                                                                                    AS measurement_time
+      , et.episode_start_datetime                                                                                                                               AS measurement_datetime
+      , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
+      , NULL                                                                                                                                                    AS operator_concept_id
+      , NULL                                                                                                                                                    AS value_as_number
+      , c3.concept_id                                                                                                                                           AS value_as_concept_id
+      , NULL                                                                                                                                                    AS unit_concept_id
+      , NULL                                                                                                                                                    AS range_low
+      , NULL                                                                                                                                                    AS range_high
+      , NULL                                                                                                                                                    AS provider_id
+      , NULL                                                                                                                                                    AS visit_occurrence_id
+      , NULL                                                                                                                                                    AS visit_detail_id
+      , c2.concept_code                                                                                                                                         AS measurement_source_value
+      , c2.concept_id                                                                                                                                           AS measurement_source_concept_id
+      , NULL                                                                                                                                                    AS unit_source_value
+      , c3.concept_code                                                                                                                                         AS value_source_value
+      , et.episode_id                                                                                                                                           AS modifier_of_event_id
+      , 1000000003                                                                                                                                              AS modifier_field_concept_id -- ‘episode.episode_id’ concept
+      , s.record_id                                                                                                                                             AS record_id
+FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
+                             JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
+                             JOIN concept AS c1                ON cr1.concept_id_2 = c1.concept_id AND c1.vocabulary_id = 'NAACCR'
+                              ---- Getting variables
+                             JOIN concept AS c2                ON c2.vocabulary_id = 'NAACCR' AND (c2.concept_code = s.naaccr_item_number OR c2.concept_code = c1.concept_code || '@' || s.naaccr_item_number) AND c2.domain_id = 'Measurement' AND c2.standard_concept = 'S'
+                              -- Identify numeric type variables
+                             LEFT JOIN concept_relationship cn ON c2.concept_id = cn.concept_id_1 and cn.relationship_id = 'Has type' and cn.concept_id_2 = 32676 --'Numeric'
+                              ---- Getting permissible value
+                             JOIN concept AS c3                ON c3.vocabulary_id = 'NAACCR' AND (c3.concept_code = s.naaccr_item_number ||  '@' || s.naaccr_item_value OR c3.concept_code = c1.concept_code || '@'  || s.naaccr_item_number  || '@'  || s.naaccr_item_value) AND  c3.domain_id = 'Meas Value' AND c3.standard_concept = 'S'
+                              ---- Getting episode record
+                             JOIN episode_temp et             ON s.record_id = et.record_id
+WHERE cn.concept_id_1 IS NULL -- excluding numeric types
+AND s.person_id IS NOT NULL
+AND et.episode_source_concept_id IN(
+   35918378  --Phase II Radiation Treatment Modality
+)
+AND EXISTS(
+  SELECT 1
+  FROM concept_relationship cr
+  WHERE c2.concept_id =  cr.concept_id_1
+  AND cr.relationship_id = 'Has parent item'
+  AND cr.concept_id_2  IN(
+    35918378  --Phase II Radiation Treatment Modality
+  )
+);
+
+INSERT INTO measurement_temp
+(
+    measurement_id
+  , person_id
+  , measurement_concept_id
+  , measurement_date
+  , measurement_time
+  , measurement_datetime
+  , measurement_type_concept_id
+  , operator_concept_id
+  , value_as_number
+  , value_as_concept_id
+  , unit_concept_id
+  , range_low
+  , range_high
+  , provider_id
+  , visit_occurrence_id
+  , visit_detail_id
+  , measurement_source_value
+  , measurement_source_concept_id
+  , unit_source_value
+  , value_source_value
+  , modifier_of_event_id
+  , modifier_of_field_concept_id
+  , record_id
+)
+SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL THEN 0 ELSE  (SELECT MAX(measurement_id) FROM measurement_temp) END + row_number() over()) AS measurement_id
+      , s.person_id                                                                                                                                             AS person_id
+      , c2.concept_id                                                                                                                                           AS measurement_concept_id
+      , et.episode_start_datetime                                                                                                                               AS measurement_date
+      , NULL                                                                                                                                                    AS measurement_time
+      , et.episode_start_datetime                                                                                                                               AS measurement_datetime
+      , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
+      , NULL                                                                                                                                                    AS operator_concept_id
+      , NULL                                                                                                                                                    AS value_as_number
+      , c3.concept_id                                                                                                                                           AS value_as_concept_id
+      , NULL                                                                                                                                                    AS unit_concept_id
+      , NULL                                                                                                                                                    AS range_low
+      , NULL                                                                                                                                                    AS range_high
+      , NULL                                                                                                                                                    AS provider_id
+      , NULL                                                                                                                                                    AS visit_occurrence_id
+      , NULL                                                                                                                                                    AS visit_detail_id
+      , c2.concept_code                                                                                                                                         AS measurement_source_value
+      , c2.concept_id                                                                                                                                           AS measurement_source_concept_id
+      , NULL                                                                                                                                                    AS unit_source_value
+      , c3.concept_code                                                                                                                                         AS value_source_value
+      , et.episode_id                                                                                                                                           AS modifier_of_event_id
+      , 1000000003                                                                                                                                              AS modifier_field_concept_id -- ‘episode.episode_id’ concept
+      , s.record_id                                                                                                                                             AS record_id
+FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
+                             JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
+                             JOIN concept AS c1                ON cr1.concept_id_2 = c1.concept_id AND c1.vocabulary_id = 'NAACCR'
+                              ---- Getting variables
+                             JOIN concept AS c2                ON c2.vocabulary_id = 'NAACCR' AND (c2.concept_code = s.naaccr_item_number OR c2.concept_code = c1.concept_code || '@' || s.naaccr_item_number) AND c2.domain_id = 'Measurement' AND c2.standard_concept = 'S'
+                              -- Identify numeric type variables
+                             LEFT JOIN concept_relationship cn ON c2.concept_id = cn.concept_id_1 and cn.relationship_id = 'Has type' and cn.concept_id_2 = 32676 --'Numeric'
+                              ---- Getting permissible value
+                             JOIN concept AS c3                ON c3.vocabulary_id = 'NAACCR' AND (c3.concept_code = s.naaccr_item_number ||  '@' || s.naaccr_item_value OR c3.concept_code = c1.concept_code || '@'  || s.naaccr_item_number  || '@'  || s.naaccr_item_value) AND  c3.domain_id = 'Meas Value' AND c3.standard_concept = 'S'
+                              ---- Getting episode record
+                             JOIN episode_temp et             ON s.record_id = et.record_id
+WHERE cn.concept_id_1 IS NULL -- excluding numeric types
+AND s.person_id IS NOT NULL
+AND et.episode_source_concept_id IN(
+   35918255  --Phase III Radiation Treatment Modality
+)
+AND EXISTS(
+  SELECT 1
+  FROM concept_relationship cr
+  WHERE c2.concept_id =  cr.concept_id_1
+  AND cr.relationship_id = 'Has parent item'
+  AND cr.concept_id_2  IN(
+    35918255  --Phase III Radiation Treatment Modality
+  )
+);
+
+INSERT INTO measurement_temp
+(
+    measurement_id
+  , person_id
+  , measurement_concept_id
+  , measurement_date
+  , measurement_time
+  , measurement_datetime
+  , measurement_type_concept_id
+  , operator_concept_id
+  , value_as_number
+  , value_as_concept_id
+  , unit_concept_id
+  , range_low
+  , range_high
+  , provider_id
+  , visit_occurrence_id
+  , visit_detail_id
+  , measurement_source_value
+  , measurement_source_concept_id
+  , unit_source_value
+  , value_source_value
+  , modifier_of_event_id
+  , modifier_of_field_concept_id
+  , record_id
+)
+SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL THEN 0 ELSE  (SELECT MAX(measurement_id) FROM measurement_temp) END + row_number() over()) AS measurement_id
+      , s.person_id                                                                                                                                             AS person_id
+      , c2.concept_id                                                                                                                                           AS measurement_concept_id
+      , et.episode_start_datetime                                                                                                                               AS measurement_date
+      , NULL                                                                                                                                                    AS measurement_time
+      , et.episode_start_datetime                                                                                                                               AS measurement_datetime
+      , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
+      , NULL                                                                                                                                                    AS operator_concept_id
+      , NULL                                                                                                                                                    AS value_as_number
+      , c3.concept_id                                                                                                                                           AS value_as_concept_id
+      , NULL                                                                                                                                                    AS unit_concept_id
+      , NULL                                                                                                                                                    AS range_low
+      , NULL                                                                                                                                                    AS range_high
+      , NULL                                                                                                                                                    AS provider_id
+      , NULL                                                                                                                                                    AS visit_occurrence_id
+      , NULL                                                                                                                                                    AS visit_detail_id
+      , c2.concept_code                                                                                                                                         AS measurement_source_value
+      , c2.concept_id                                                                                                                                           AS measurement_source_concept_id
+      , NULL                                                                                                                                                    AS unit_source_value
+      , c3.concept_code                                                                                                                                         AS value_source_value
+      , et.episode_id                                                                                                                                           AS modifier_of_event_id
+      , 1000000003                                                                                                                                              AS modifier_field_concept_id -- ‘episode.episode_id’ concept
+      , s.record_id                                                                                                                                             AS record_id
+FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
+                             JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
+                             JOIN concept AS c1                ON cr1.concept_id_2 = c1.concept_id AND c1.vocabulary_id = 'NAACCR'
+                              ---- Getting variables
+                             JOIN concept AS c2                ON c2.vocabulary_id = 'NAACCR' AND (c2.concept_code = s.naaccr_item_number OR c2.concept_code = c1.concept_code || '@' || s.naaccr_item_number) AND c2.domain_id = 'Measurement' AND c2.standard_concept = 'S'
+                              -- Identify numeric type variables
+                             LEFT JOIN concept_relationship cn ON c2.concept_id = cn.concept_id_1 and cn.relationship_id = 'Has type' and cn.concept_id_2 = 32676 --'Numeric'
+                              ---- Getting permissible value
+                             JOIN concept AS c3                ON c3.vocabulary_id = 'NAACCR' AND (c3.concept_code = s.naaccr_item_number ||  '@' || s.naaccr_item_value OR c3.concept_code = c1.concept_code || '@'  || s.naaccr_item_number  || '@'  || s.naaccr_item_value) AND  c3.domain_id = 'Meas Value' AND c3.standard_concept = 'S'
+                              ---- Getting episode record
+                             JOIN episode_temp et             ON s.record_id = et.record_id
+WHERE cn.concept_id_1 IS NULL -- excluding numeric types
+AND s.person_id IS NOT NULL
+AND et.episode_source_concept_id IN(
+  35918593  --RX Summ--Surg Prim Site
+)
+AND EXISTS(
+  SELECT 1
+  FROM concept_relationship cr
+  WHERE c2.concept_id =  cr.concept_id_1
+  AND cr.relationship_id = 'Has parent item'
+  AND cr.concept_id_2  IN(
+    35918593  --RX Summ--Surg Prim Site
   )
 );
 
@@ -1088,16 +1357,307 @@ AND
    c3.standard_concept = 'S'
  )
 )
+
+AND et.episode_source_concept_id IN(
+  35918686  --Phase I Radiation Treatment Modality
+)
+
 AND EXISTS(
   SELECT 1
   FROM concept_relationship cr
   WHERE c2.concept_id =  cr.concept_id_1
   AND cr.relationship_id = 'Has parent item'
   AND cr.concept_id_2  IN(
-      35918686  --Phase I Radiation Treatment Modality
-    , 35918378  --Phase II Radiation Treatment Modality
-    , 35918255  --Phase III Radiation Treatment Modality
-    , 35918593  --RX Summ--Surg Prim Site
+    35918686  --Phase I Radiation Treatment Modality
+  )
+);
+
+INSERT INTO measurement_temp
+(
+    measurement_id
+  , person_id
+  , measurement_concept_id
+  , measurement_date
+  , measurement_time
+  , measurement_datetime
+  , measurement_type_concept_id
+  , operator_concept_id
+  , value_as_number
+  , value_as_concept_id
+  , unit_concept_id
+  , range_low
+  , range_high
+  , provider_id
+  , visit_occurrence_id
+  , visit_detail_id
+  , measurement_source_value
+  , measurement_source_concept_id
+  , unit_source_value
+  , value_source_value
+  , modifier_of_event_id
+  , modifier_of_field_concept_id
+  , record_id
+)
+SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL THEN 0 ELSE  (SELECT MAX(measurement_id) FROM measurement_temp) END + row_number() over()) AS measurement_id
+      , s.person_id                                                                                                                                             AS person_id
+      , c2.concept_id                                                                                                                                           AS measurement_concept_id
+      , et.episode_start_datetime::date                                                                                                                         AS measurement_date
+      , NULL                                                                                                                                                    AS measurement_time
+      , et.episode_start_datetime                                                                                                                               AS measurement_datetime
+      , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
+      , CASE WHEN c3.concept_id IS NULL THEN NULL ELSE cn.operator_concept_id END                                                                               AS operator_concept_id
+      , CASE WHEN c3.concept_id IS NULL THEN CAST(s.naaccr_item_value AS float) ELSE cn.value_as_number END                                                     AS value_as_number
+      , c3.concept_id                                                                                                                                           AS value_as_concept_id
+      , CASE WHEN c3.concept_id IS NULL THEN cru.concept_id_2 ELSE cn.unit_concept_id END                                                                       AS unit_concept_id
+      , NULL                                                                                                                                                    AS range_low
+      , NULL                                                                                                                                                    AS range_high
+      , NULL                                                                                                                                                    AS provider_id
+      , NULL                                                                                                                                                    AS visit_occurrence_id
+      , NULL                                                                                                                                                    AS visit_detail_id
+      , c2.concept_code                                                                                                                                         AS measurement_source_value
+      , c2.concept_id                                                                                                                                           AS measurement_source_concept_id
+      , NULL                                                                                                                                                    AS unit_source_value
+      , c3.concept_code                                                                                                                                         AS value_source_value
+      , et.episode_id                                                                                                                                           AS modifier_of_event_id
+      , 1000000003                                                                                                                                              AS modifier_field_concept_id -- ‘episode.episode_id’’ concept
+      , s.record_id                                                                                                                                             AS record_id
+FROM naaccr_data_points AS s JOIN concept d                             ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
+                             JOIN concept_relationship cr1              ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
+                             JOIN concept AS c1                         ON cr1.concept_id_2 = c1.concept_id AND c1.vocabulary_id = 'NAACCR'
+                              ---- Getting variables
+                             JOIN concept_temp AS c2                    ON c2.vocabulary_id = 'NAACCR' AND (c2.concept_code = s.naaccr_item_number OR c2.concept_code = c1.concept_code || '@' || s.naaccr_item_number) AND c2.domain_id = 'Measurement' AND c2.standard_concept = 'S'
+                             -- Getting units if exist
+                             LEFT JOIN concept_relationship AS cru      ON c2.concept_id = cru.concept_id_1 and cru.relationship_id = 'Has unit'
+                             -- Getting permissible value for ranges
+                             LEFT JOIN concept AS c3                    ON c3.vocabulary_id = 'NAACCR' AND (c3.concept_code = s.naaccr_item_number ||  '@' || s.naaccr_item_value OR c3.concept_code = c1.concept_code || '@'  || s.naaccr_item_number  || '@'  || s.naaccr_item_value)
+                             LEFT JOIN concept_numeric AS cn            ON c3.concept_id = cn.concept_id
+                              ---- Getting episode record
+                             JOIN episode_temp et                       ON s.record_id = et.record_id
+WHERE s.person_id IS NOT NULL
+AND s.naaccr_item_value IS NOT NULL
+AND TRIM(s.naaccr_item_value) != ''
+AND
+(
+ (
+   c3.concept_id IS NULL
+   AND
+   (
+     s.naaccr_item_value IS NOT NULL
+     OR
+     cn.value_as_number  IS NOT NULL
+   )
+ )
+ OR
+ (
+   c3.concept_id IS NOT NULL
+   AND
+   c3.standard_concept = 'S'
+ )
+)
+AND et.episode_source_concept_id IN(
+  35918378  --Phase II Radiation Treatment Modality
+)
+
+AND EXISTS(
+  SELECT 1
+  FROM concept_relationship cr
+  WHERE c2.concept_id =  cr.concept_id_1
+  AND cr.relationship_id = 'Has parent item'
+  AND cr.concept_id_2  IN(
+    35918378  --Phase II Radiation Treatment Modality
+  )
+);
+
+INSERT INTO measurement_temp
+(
+    measurement_id
+  , person_id
+  , measurement_concept_id
+  , measurement_date
+  , measurement_time
+  , measurement_datetime
+  , measurement_type_concept_id
+  , operator_concept_id
+  , value_as_number
+  , value_as_concept_id
+  , unit_concept_id
+  , range_low
+  , range_high
+  , provider_id
+  , visit_occurrence_id
+  , visit_detail_id
+  , measurement_source_value
+  , measurement_source_concept_id
+  , unit_source_value
+  , value_source_value
+  , modifier_of_event_id
+  , modifier_of_field_concept_id
+  , record_id
+)
+SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL THEN 0 ELSE  (SELECT MAX(measurement_id) FROM measurement_temp) END + row_number() over()) AS measurement_id
+      , s.person_id                                                                                                                                             AS person_id
+      , c2.concept_id                                                                                                                                           AS measurement_concept_id
+      , et.episode_start_datetime::date                                                                                                                         AS measurement_date
+      , NULL                                                                                                                                                    AS measurement_time
+      , et.episode_start_datetime                                                                                                                               AS measurement_datetime
+      , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
+      , CASE WHEN c3.concept_id IS NULL THEN NULL ELSE cn.operator_concept_id END                                                                               AS operator_concept_id
+      , CASE WHEN c3.concept_id IS NULL THEN CAST(s.naaccr_item_value AS float) ELSE cn.value_as_number END                                                     AS value_as_number
+      , c3.concept_id                                                                                                                                           AS value_as_concept_id
+      , CASE WHEN c3.concept_id IS NULL THEN cru.concept_id_2 ELSE cn.unit_concept_id END                                                                       AS unit_concept_id
+      , NULL                                                                                                                                                    AS range_low
+      , NULL                                                                                                                                                    AS range_high
+      , NULL                                                                                                                                                    AS provider_id
+      , NULL                                                                                                                                                    AS visit_occurrence_id
+      , NULL                                                                                                                                                    AS visit_detail_id
+      , c2.concept_code                                                                                                                                         AS measurement_source_value
+      , c2.concept_id                                                                                                                                           AS measurement_source_concept_id
+      , NULL                                                                                                                                                    AS unit_source_value
+      , c3.concept_code                                                                                                                                         AS value_source_value
+      , et.episode_id                                                                                                                                           AS modifier_of_event_id
+      , 1000000003                                                                                                                                              AS modifier_field_concept_id -- ‘episode.episode_id’’ concept
+      , s.record_id                                                                                                                                             AS record_id
+FROM naaccr_data_points AS s JOIN concept d                             ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
+                             JOIN concept_relationship cr1              ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
+                             JOIN concept AS c1                         ON cr1.concept_id_2 = c1.concept_id AND c1.vocabulary_id = 'NAACCR'
+                              ---- Getting variables
+                             JOIN concept_temp AS c2                    ON c2.vocabulary_id = 'NAACCR' AND (c2.concept_code = s.naaccr_item_number OR c2.concept_code = c1.concept_code || '@' || s.naaccr_item_number) AND c2.domain_id = 'Measurement' AND c2.standard_concept = 'S'
+                             -- Getting units if exist
+                             LEFT JOIN concept_relationship AS cru      ON c2.concept_id = cru.concept_id_1 and cru.relationship_id = 'Has unit'
+                             -- Getting permissible value for ranges
+                             LEFT JOIN concept AS c3                    ON c3.vocabulary_id = 'NAACCR' AND (c3.concept_code = s.naaccr_item_number ||  '@' || s.naaccr_item_value OR c3.concept_code = c1.concept_code || '@'  || s.naaccr_item_number  || '@'  || s.naaccr_item_value)
+                             LEFT JOIN concept_numeric AS cn            ON c3.concept_id = cn.concept_id
+                              ---- Getting episode record
+                             JOIN episode_temp et                       ON s.record_id = et.record_id
+WHERE s.person_id IS NOT NULL
+AND s.naaccr_item_value IS NOT NULL
+AND TRIM(s.naaccr_item_value) != ''
+AND
+(
+ (
+   c3.concept_id IS NULL
+   AND
+   (
+     s.naaccr_item_value IS NOT NULL
+     OR
+     cn.value_as_number  IS NOT NULL
+   )
+ )
+ OR
+ (
+   c3.concept_id IS NOT NULL
+   AND
+   c3.standard_concept = 'S'
+ )
+)
+
+AND et.episode_source_concept_id IN(
+  35918255  --Phase III Radiation Treatment Modality
+)
+
+AND EXISTS(
+  SELECT 1
+  FROM concept_relationship cr
+  WHERE c2.concept_id =  cr.concept_id_1
+  AND cr.relationship_id = 'Has parent item'
+  AND cr.concept_id_2  IN(
+    35918255  --Phase III Radiation Treatment Modality
+  )
+);
+
+
+INSERT INTO measurement_temp
+(
+    measurement_id
+  , person_id
+  , measurement_concept_id
+  , measurement_date
+  , measurement_time
+  , measurement_datetime
+  , measurement_type_concept_id
+  , operator_concept_id
+  , value_as_number
+  , value_as_concept_id
+  , unit_concept_id
+  , range_low
+  , range_high
+  , provider_id
+  , visit_occurrence_id
+  , visit_detail_id
+  , measurement_source_value
+  , measurement_source_concept_id
+  , unit_source_value
+  , value_source_value
+  , modifier_of_event_id
+  , modifier_of_field_concept_id
+  , record_id
+)
+SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL THEN 0 ELSE  (SELECT MAX(measurement_id) FROM measurement_temp) END + row_number() over()) AS measurement_id
+      , s.person_id                                                                                                                                             AS person_id
+      , c2.concept_id                                                                                                                                           AS measurement_concept_id
+      , et.episode_start_datetime::date                                                                                                                         AS measurement_date
+      , NULL                                                                                                                                                    AS measurement_time
+      , et.episode_start_datetime                                                                                                                               AS measurement_datetime
+      , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
+      , CASE WHEN c3.concept_id IS NULL THEN NULL ELSE cn.operator_concept_id END                                                                               AS operator_concept_id
+      , CASE WHEN c3.concept_id IS NULL THEN CAST(s.naaccr_item_value AS float) ELSE cn.value_as_number END                                                     AS value_as_number
+      , c3.concept_id                                                                                                                                           AS value_as_concept_id
+      , CASE WHEN c3.concept_id IS NULL THEN cru.concept_id_2 ELSE cn.unit_concept_id END                                                                       AS unit_concept_id
+      , NULL                                                                                                                                                    AS range_low
+      , NULL                                                                                                                                                    AS range_high
+      , NULL                                                                                                                                                    AS provider_id
+      , NULL                                                                                                                                                    AS visit_occurrence_id
+      , NULL                                                                                                                                                    AS visit_detail_id
+      , c2.concept_code                                                                                                                                         AS measurement_source_value
+      , c2.concept_id                                                                                                                                           AS measurement_source_concept_id
+      , NULL                                                                                                                                                    AS unit_source_value
+      , c3.concept_code                                                                                                                                         AS value_source_value
+      , et.episode_id                                                                                                                                           AS modifier_of_event_id
+      , 1000000003                                                                                                                                              AS modifier_field_concept_id -- ‘episode.episode_id’’ concept
+      , s.record_id                                                                                                                                             AS record_id
+FROM naaccr_data_points AS s JOIN concept d                             ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
+                             JOIN concept_relationship cr1              ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
+                             JOIN concept AS c1                         ON cr1.concept_id_2 = c1.concept_id AND c1.vocabulary_id = 'NAACCR'
+                              ---- Getting variables
+                             JOIN concept_temp AS c2                    ON c2.vocabulary_id = 'NAACCR' AND (c2.concept_code = s.naaccr_item_number OR c2.concept_code = c1.concept_code || '@' || s.naaccr_item_number) AND c2.domain_id = 'Measurement' AND c2.standard_concept = 'S'
+                             -- Getting units if exist
+                             LEFT JOIN concept_relationship AS cru      ON c2.concept_id = cru.concept_id_1 and cru.relationship_id = 'Has unit'
+                             -- Getting permissible value for ranges
+                             LEFT JOIN concept AS c3                    ON c3.vocabulary_id = 'NAACCR' AND (c3.concept_code = s.naaccr_item_number ||  '@' || s.naaccr_item_value OR c3.concept_code = c1.concept_code || '@'  || s.naaccr_item_number  || '@'  || s.naaccr_item_value)
+                             LEFT JOIN concept_numeric AS cn            ON c3.concept_id = cn.concept_id
+                              ---- Getting episode record
+                             JOIN episode_temp et                       ON s.record_id = et.record_id
+WHERE s.person_id IS NOT NULL
+AND s.naaccr_item_value IS NOT NULL
+AND TRIM(s.naaccr_item_value) != ''
+AND
+(
+ (
+   c3.concept_id IS NULL
+   AND
+   (
+     s.naaccr_item_value IS NOT NULL
+     OR
+     cn.value_as_number  IS NOT NULL
+   )
+ )
+ OR
+ (
+   c3.concept_id IS NOT NULL
+   AND
+   c3.standard_concept = 'S'
+ )
+)
+AND et.episode_source_concept_id IN(
+  35918593  --RX Summ--Surg Prim Site
+)
+AND EXISTS(
+  SELECT 1
+  FROM concept_relationship cr
+  WHERE c2.concept_id =  cr.concept_id_1
+  AND cr.relationship_id = 'Has parent item'
+  AND cr.concept_id_2  IN(
+    35918593  --RX Summ--Surg Prim Site
   )
 );
 
