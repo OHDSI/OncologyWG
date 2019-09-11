@@ -79,7 +79,7 @@ How to run
 	
 	Example:
 	
-create_regimens(connectionDetails = connectionDetails,
+  create_regimens(connectionDetails = connectionDetails,
                cdmDatabaseSchema = "full_201904_omop_v5",
                writeDatabaseSchema = "study_reference",
                cohortTable = "hms_cancer_cohort",
