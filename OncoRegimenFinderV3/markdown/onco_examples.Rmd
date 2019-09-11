@@ -1,0 +1,23 @@
+---
+title: "Onco Exposure Examples"
+output: html_document
+---
+
+```{r, results='asis', echo= FALSE, eval = TRUE, include = F}
+subpage_env <- new.env()
+out <- NULL
+
+for (i in c(1:sample_size)){
+  
+  out = c(out, knitr::knit_child(text=str_c("<br>",all_data[[i]]$person_id[1])))
+  
+  plot <- plot_fn(all_data[[i]], colours_to_use)
+
+  assign("plot", plot, subpage_env)
+  
+  out = c(out, knitr::knit_child('child.Rmd', envir = subpage_env))
+
+}
+```
+
+`r paste(knitr::knit_child(text = out), collapse = '')`
