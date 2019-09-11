@@ -43,6 +43,7 @@ WHERE condition_type_concept_id = 32534;
 --Diagnosis Modifiers Numeric
 
 --Expectation
+--This does not filter out non-standard concepts so will be bigger thatn the reulst.  Eyeballing for now.
 SET search_path TO omop, public;
 
 SELECT  ni.*
@@ -59,7 +60,7 @@ FROM concept c1
 WHERE ndp4.naaccr_item_number = CASE WHEN c1.concept_code like '%@%' THEN split_part(c1.concept_code, '@', 2) ELSE concept_code END
 AND c1.domain_id = 'Measurement'
 )
-AND ndp4.record_id = '?'
+--AND ndp4.record_id = '?'
 ORDER BY ndp1.record_id, ni.item_number
 
 --Result
@@ -78,7 +79,7 @@ SELECT  CASE WHEN c1.concept_code like '%@%' THEN split_part(c1.concept_code, '@
 FROM condition_occurrence co1 JOIN measurement m1 ON co1.condition_occurrence_id = m1.modifier_of_event_id AND m1.modifier_of_field_concept_id = 1147127
                               JOIN concept c1 ON m1.measurement_concept_id = c1.concept_id
                               LEFT JOIN concept c2 on m1.value_as_concept_id = c2.concept_id
-WHERE co1.stop_reason = '?'
+--WHERE co1.stop_reason = '?'
 ORDER BY CASE WHEN c1.concept_code like '%@%' THEN split_part(c1.concept_code, '@', 2) ELSE c1.concept_code END
 
 --Step 7: Copy Condition Occurrence Measurements for Disease Episode--Expectation
@@ -163,7 +164,6 @@ from episode e1 join concept c1 on e1.episode_concept_id = c1.concept_id
                 join concept c2 on e1.episode_object_concept_id = c2.concept_id
 where e1.episode_concept_id = 32531 --Treatment Regimen
 --and e1.episode_number = ?;
-
 
 --Step 19: Move procedure_occurrence_temp into procedure_occurrence
 --Expectation

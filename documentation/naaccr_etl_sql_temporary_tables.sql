@@ -627,7 +627,6 @@ SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL T
 FROM measurement_temp mt JOIN episode_temp et ON mt.record_id = et.record_id;
 
 --Step 8: Treatment Episodes
---SET search_path TO omop, public;
 DROP TABLE IF EXISTS concept_temp;
 
 CREATE TEMPORARY TABLE concept_temp (
@@ -709,8 +708,6 @@ SELECT ( CASE WHEN  (SELECT MAX(episode_id) FROM episode_temp) IS NULL THEN 0 EL
       , s.naaccr_item_number || '@' || s.naaccr_item_value                                                                                                      AS episode_source_value
       , c2.concept_id                                                                                                                                           AS episode_source_concept_id
       , s.record_id                                                                                                                                             AS record_id
-      -- , c4.concept_name
-      -- , c3.concept_name
 FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
                              --JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
                              JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Proc Schema'
@@ -918,35 +915,6 @@ SELECT  et.episode_id                     AS episode_id
 FROM drug_exposure_temp det JOIN episode_temp et ON det.record_id = et.record_id AND det.drug_concept_id = et.episode_object_concept_id;
 
 --Step 13: Treatment Episode Modifiers Standard Categorical
-DROP TABLE IF EXISTS measurement_temp;
-
-CREATE TEMPORARY TABLE measurement_temp
-(
-  measurement_id                BIGINT       NOT NULL ,
-  person_id                     BIGINT       NOT NULL ,
-  measurement_concept_id        BIGINT       NOT NULL ,
-  measurement_date              DATE         NOT NULL ,
-  measurement_time              VARCHAR(10)  NULL ,
-  measurement_datetime          TIMESTAMP    NULL ,
-  measurement_type_concept_id   BIGINT       NOT NULL ,
-  operator_concept_id           BIGINT       NULL ,
-  value_as_number               NUMERIC      NULL ,
-  value_as_concept_id           BIGINT       NULL ,
-  unit_concept_id               BIGINT       NULL ,
-  range_low                     NUMERIC      NULL ,
-  range_high                    NUMERIC      NULL ,
-  provider_id                   BIGINT       NULL ,
-  visit_occurrence_id           BIGINT       NULL ,
-  visit_detail_id               BIGINT       NULL ,
-  measurement_source_value      VARCHAR(50)   NULL ,
-  measurement_source_concept_id  BIGINT       NULL ,
-  unit_source_value             VARCHAR(50)  NULL ,
-  value_source_value            VARCHAR(50)  NULL ,
-  modifier_of_event_id          BIGINT       NULL ,
-  modifier_of_field_concept_id  BIGINT       NULL,
-  record_id                     VARCHAR(255) NULL
-);
-
 INSERT INTO measurement_temp
 (
     measurement_id
