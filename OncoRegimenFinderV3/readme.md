@@ -71,7 +71,7 @@ How to run
 	#Generates a loop that helps identify regimens. At this step, 5 would be sufficient.
 	regimen_repeats <- 5
 	
-	#For the first you should have it as TRUE. When you re run the package set it as FALSE.
+	#When you run it for the first time set it TRUE. When you re run the package set it as FALSE.
 	generateVocabTable = F
 	
 	Example:
