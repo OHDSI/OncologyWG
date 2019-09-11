@@ -1,7 +1,7 @@
 WITH add_groups AS (
   SELECT r1.person_id, r1.drug_era_id, r1.concept_name, r1.ingredient_start_date, min(r2.ingredient_start_date) as ingredient_start_date_new
   FROM @writeDatabaseSchema.@regimenTable r1
-  LEFT JOIN @writeDatabaseSchema.@regimenTable r2 on r2.ingredient_start_date <= (r1.ingredient_start_date) and r2.ingredient_start_date >= (r1.ingredient_start_date - @date_lag_input) 
+  LEFT JOIN @writeDatabaseSchema.@regimenTable r2 on r1.person_id = r2.person_id and r2.ingredient_start_date <= (r1.ingredient_start_date) and r2.ingredient_start_date >= (r1.ingredient_start_date - @date_lag_input) 
   GROUP BY r1.person_id, r1.drug_era_id, r1.concept_name, r1.ingredient_start_date
 ),
 regimens AS (
