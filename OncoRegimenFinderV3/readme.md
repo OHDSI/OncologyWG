@@ -90,13 +90,12 @@ How to run
                
 	```
 
-4. The output of the package can be found in the regimenIngredientTable. And can be used to populate the episode table.
+4. The output of the package can be found in the regimenIngredientTable. And can be used to populate the episode table. Example:
 	
-	```r
-	Example:
-	    -- -------------------------------------------------------------------
--- Treatment Episode of Regimen
--- -------------------------------------------------------------------
+	```SQL
+	-- -------------------------------------------------------------------
+	-- Treatment Episode of Regimen
+	-- -------------------------------------------------------------------
 
     EXECUTE PREP_INSERT_LOG
         ( 2                         -- Step Number
@@ -144,9 +143,9 @@ How to run
 
     COMMIT;
 	
--- -------------------------------------------------------------------
--- Treatment Episode Events
--- -------------------------------------------------------------------
+	-- -------------------------------------------------------------------
+	-- Treatment Episode Events
+	-- -------------------------------------------------------------------
 
     EXECUTE PREP_INSERT_LOG
         ( 2                             -- Step Number
