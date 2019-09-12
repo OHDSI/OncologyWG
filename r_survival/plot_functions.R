@@ -1,7 +1,7 @@
 
 plot_survival <-
         function(native_dataframe, survival_time_col, event_col, cohort_col) {
-                source("./r_survival/utils.R")
+                source("utils.R")
                 invisible(load_packages())
                 survival_time_col <- enquo(survival_time_col)
                 event_col         <- enquo(event_col)
@@ -38,7 +38,7 @@ plot_survival <-
 
 plot_time_to_rx_hist <-
         function(native_dataframe, target_value_col, cohort_col) {
-                source("./r_survival/utils.R")
+                source("utils.R")
                 invisible(load_packages())
                 
                 target_value_col <- enquo(target_value_col)
