@@ -1,4 +1,4 @@
-source('r_survival/plot_functions.R')
+source('plot_functions.R')
 
 TEST_DATA <- readRDS("r_survival/test_data.RData")
 plot_survival(native_dataframe  = TEST_DATA,
