@@ -1,5 +1,5 @@
 ## Survival and Time To Treatment Curves Using OMOP Data
-Overview: this subdirectory provides the R scripts that executes Kaplan-Meier curves and Time To Treatment histograms using one R dataframe that contains a single variable that defines each cohort. At this time, cohort definition cannot go beyond a single variable. For example, the provided simulated 1000 patient test_data.RData file produces outputs comparing disease metastasis status ("metastatic", "nonmetastatic," and "unknown") and greater granularity would need to be pursued in the input data itself.
+OVERVIEW: this subdirectory provides the R scripts that executes Kaplan-Meier curves and Time To Treatment histograms using one R dataframe that contains a single variable that defines each cohort. At this time, cohort definition cannot go beyond a single variable. For example, the provided simulated 1000 patient test_data.RData file produces outputs comparing disease metastasis status ("metastatic", "nonmetastatic," and "unknown") and greater granularity would need to be pursued in the input data itself.
 
 DEPENDENCIES
 The dependencies will be installed and/or sourced on first execute of either plot functions.
