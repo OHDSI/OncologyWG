@@ -1,4 +1,4 @@
-source('r_survival/plot_functions.R')
+source('plot_functions.R')
 
 return_median_survival_time(native_dataframe = TEST_DATA,
                             survival_time_col = survival_time_months,
