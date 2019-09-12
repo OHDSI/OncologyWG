@@ -25,6 +25,32 @@ SET person_id = pii_mrn.person_id
 FROM pii_mrn
 WHERE naaccr_data_points.medical_record_number = pii_mrn.mrn;
 
+
+create or replace function is_date(s varchar) returns boolean as $$
+begin
+  perform s::date;
+  return true;
+exception when others then
+  return false;
+end;
+$$ language plpgsql;
+
+UPDATE naaccr_data_points
+SET naaccr_item_value = NULL
+WHERE naaccr_item_number IN(
+   '390'
+, '1200'
+, '1210'
+, '1220'
+, '1230'
+, '1240'
+)
+AND (
+  length(naaccr_item_value) != 8
+or
+  is_date(naaccr_item_value) = false
+);
+
 --Setp 1: Diagnosis Condition Occurrence
 
 DROP TABLE IF EXISTS concept_temp;
@@ -153,7 +179,7 @@ FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_i
                              JOIN concept_relationship    ra   ON ra.concept_id_1 = d.concept_id AND ra.relationship_id = 'Maps to'
                              JOIN concept  c2                  ON c2.standard_concept = 'S' AND ra.concept_id_2 = c2.concept_id
 WHERE s.naaccr_item_number = '390'
-AND CASE WHEN length(s.naaccr_item_value) = 8 THEN to_date(s.naaccr_item_value,'YYYYMMDD') ELSE NULL END IS NOT NULL
+AND s.naaccr_item_value IS NOT NULL
 AND s.person_id IS NOT NULL;
 
 
@@ -816,7 +842,6 @@ SELECT  et.episode_id                     AS episode_id
       , 1147082                           AS episode_event_field_concept_id --procedure_occurrence.procedure_occurrence_id
 FROM procedure_occurrence_temp pet JOIN episode_temp et ON pet.record_id = et.record_id AND pet.procedure_concept_id = et.episode_object_concept_id;
 
-
 --Step 11: Treatment Drug Exposure
 DROP TABLE IF EXISTS drug_exposure_temp;
 
@@ -1329,7 +1354,6 @@ AND
 AND et.episode_source_concept_id IN(
   35918686  --Phase I Radiation Treatment Modality
 )
-
 AND EXISTS(
   SELECT 1
   FROM concept_relationship cr
@@ -1425,7 +1449,6 @@ AND
 AND et.episode_source_concept_id IN(
   35918378  --Phase II Radiation Treatment Modality
 )
-
 AND EXISTS(
   SELECT 1
   FROM concept_relationship cr
@@ -1518,7 +1541,6 @@ AND
    c3.standard_concept = 'S'
  )
 )
-
 AND et.episode_source_concept_id IN(
   35918255  --Phase III Radiation Treatment Modality
 )
