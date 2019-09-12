@@ -7,7 +7,7 @@ The dependencies will be installed and/or sourced on first execution of either p
 REQUIREMENTS:
 One R dataframe object derived from the accompanying SQL script for querying your OMOP instance for the data of interest. The final input data should contain the following fields: survival time in months, death occurrence as numeric binary (0 or 1), time from diagnosis to treatment in days, and a cohort variable. Assigning specific data classes is unnecessary because the script has data class conversion built in.
 
-TEST EXECUTION:
+TEST EXECUTION: _execute_test_plot.R_
 Test data and a test script are included in the repo. The scripts used to plot the data are based on Tidyverse evaluation and column names are entered unquoted. If plots are produced at each script execution, you are ready to run the script on your data using this script as a template.
 
 
