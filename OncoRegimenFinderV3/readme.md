@@ -20,8 +20,9 @@ How to run
 	install.packages("tidyverse")
 	library(devtools)
 	library(tidyverse)
-	install_github("ohdsi/SqlRender", ref = "v1.5.2")
-	install_github("ohdsi/DatabaseConnector", ref = "v2.2.0")
+	install_package("rJava")
+	install_package("SqlRender")
+	install_package("DatabaseConnector")
 	```
 
 	If you experience problems on Windows where rJava can't find Java, one solution may be to add `args = "--no-multiarch"` to each `install_github` call, for example:
