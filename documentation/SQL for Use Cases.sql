@@ -1,0 +1,192 @@
+-- Time between diagnosis and treatment, record level
+select 
+c.concept_name as cancer_type, -- This corresponds to NAACCR schemas
+case coalesce(substring(m.value_source_value from position('@' in m.value_source_value) ), '@') 
+when '@' then 'Unknown' -- No records
+when '@776@00' then 'Non-Metastatic' -- No distant metastasis|Unknown if distant metastasis
+when '@776@05' then 'Non-Metastatic' -- No clinical or radiographic evidence of distant mets|- Tumor cells found in circulating blood, bone marrow or other distant lymph node tissue less than or equal to 0.2 mm
+when '@776@10' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@20' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@30' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@40' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@50' then 'Metastatic' -- Any combination of 10, 20, 30
+when '@776@60' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@70' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@88' then 'Unknown' -- Death certificate only
+when '@776@99' then 'Unknown' -- Unknwon
+else 'Unknown' end 
+as is_metastatic,
+DATE_PART('day', et.episode_start_datetime - ed.episode_start_datetime) as time_daignosis_treatment_days
+from episode ed
+left join 
+(select min(episode_start_datetime) as episode_start_datetime, episode_parent_id
+from episode
+where episode_concept_id in (32531, 32532)
+and episode_parent_id is not null
+group by episode_parent_id
+) as et
+on ed.episode_concept_id = 32528 -- first disease occurrence
+and ed.episode_id = et.episode_parent_id
+join concept_relationship cr1
+on ed.episode_object_concept_id = cr1.concept_id_2
+and cr1.relationship_id = 'Maps to'
+left join concept_relationship cr2
+on cr1.concept_id_1 = cr2.concept_id_1
+and cr2.relationship_id = 'ICDO to Schema'
+join concept c
+on cr2.concept_id_2 = c.concept_id
+left join measurement m
+on ed.episode_id = m.modifier_of_event_id
+and m.modifier_field_concept_id = 1000000003 -- 'epsiode.episode_id'
+and m.measurement_concept_id = 35918335 -- Metastases
+
+
+-- Average time between diagnosis and treatment
+select e.cancer_type, e.is_metastatic, 
+avg(e.time_diagnosis_treatment_days) as avg_time_diagnosis_treatment_days
+from
+(select 
+c.concept_name as cancer_type, 
+case coalesce(substring(m.value_source_value from position('@' in m.value_source_value) ), '@') 
+when '@' then 'Unknown' -- No records
+when '@776@00' then 'Non-Metastatic' -- No distant metastasis|Unknown if distant metastasis
+when '@776@05' then 'Non-Metastatic' -- No clinical or radiographic evidence of distant mets|- Tumor cells found in circulating blood, bone marrow or other distant lymph node tissue less than or equal to 0.2 mm
+when '@776@10' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@20' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@30' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@40' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@50' then 'Metastatic' -- Any combination of 10, 20, 30
+when '@776@60' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@70' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@88' then 'Unknown' -- Death certificate only
+when '@776@99' then 'Unknown' -- Unknwon
+else 'Unknown' end 
+as is_metastatic,
+DATE_PART('day', et.episode_start_datetime - ed.episode_start_datetime) as time_diagnosis_treatment_days
+from episode ed
+left join 
+(select min(episode_start_datetime) as episode_start_datetime, episode_parent_id
+from episode
+where episode_concept_id in (32531, 32532)
+and episode_parent_id is not null
+group by episode_parent_id
+) as et
+on ed.episode_concept_id = 32528 -- first disease occurrence
+and ed.episode_id = et.episode_parent_id
+join concept_relationship cr1
+on ed.episode_object_concept_id = cr1.concept_id_2
+and cr1.relationship_id = 'Maps to'
+left join concept_relationship cr2
+on cr1.concept_id_1 = cr2.concept_id_1
+and cr2.relationship_id = 'ICDO to Schema'
+join concept c
+on cr2.concept_id_2 = c.concept_id
+left join measurement m
+on ed.episode_id = m.modifier_of_event_id
+and m.modifier_field_concept_id = 1000000003 -- 'epsiode.episode_id'
+and m.measurement_concept_id = 35918335 -- Metastases
+) as e
+where e.time_diagnosis_treatment_days is not null
+group by e.cancer_type, e.is_metastatic
+
+
+-- Survival from diagnosis, record level
+select 
+ed.person_id,
+c.concept_name as cancer_type, 
+case coalesce(substring(m.value_source_value from position('@' in m.value_source_value) ), '@') 
+when '@' then 'Unknown' -- No records
+when '@776@00' then 'Non-Metastatic' -- No distant metastasis|Unknown if distant metastasis
+when '@776@05' then 'Non-Metastatic' -- No clinical or radiographic evidence of distant mets|- Tumor cells found in circulating blood, bone marrow or other distant lymph node tissue less than or equal to 0.2 mm
+when '@776@10' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@20' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@30' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@40' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@50' then 'Metastatic' -- Any combination of 10, 20, 30
+when '@776@60' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@70' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@88' then 'Unknown' -- Death certificate only
+when '@776@99' then 'Unknown' -- Unknwon
+else 'Unknown' end 
+as is_metastatic,
+case p.death_datetime is null when true then 'Alive' else 'Dead' end as vital_status,
+round(DATE_PART('day', coalesce(p.death_datetime, op.last_followup_date) - ed.episode_start_datetime)/30) 
+as survival_from_diagnosis_months
+from episode ed
+left join person p 
+on ed.episode_concept_id = 32528 -- first disease occurrence
+and ed.person_id = p.person_id
+left join 
+(select max(observation_period_end_date) as last_followup_date, person_id
+from observation_period
+group by person_id
+) as op
+on ed.episode_concept_id = 32528 -- first disease occurrence
+and ed.person_id = op.person_id
+join concept_relationship cr1
+on ed.episode_object_concept_id = cr1.concept_id_2
+and cr1.relationship_id = 'Maps to'
+left join concept_relationship cr2
+on cr1.concept_id_1 = cr2.concept_id_1
+and cr2.relationship_id = 'ICDO to Schema'
+join concept c
+on cr2.concept_id_2 = c.concept_id
+left join measurement m
+on ed.episode_id = m.modifier_of_event_id
+and m.modifier_field_concept_id = 1000000003 -- 'epsiode.episode_id'
+and m.measurement_concept_id = 35918335 -- Metastases
+
+
+-- Average survival from diagnosis(only for deceased patients)
+select e.cancer_type, e.is_metastatic, 
+avg(e.survival_from_diagnosis_months) as avg_survival_from_diagnosis_months
+from
+(
+select 
+ed.person_id,
+c.concept_name as cancer_type, 
+case coalesce(substring(m.value_source_value from position('@' in m.value_source_value) ), '@') 
+when '@' then 'Unknown' -- No records
+when '@776@00' then 'Non-Metastatic' -- No distant metastasis|Unknown if distant metastasis
+when '@776@05' then 'Non-Metastatic' -- No clinical or radiographic evidence of distant mets|- Tumor cells found in circulating blood, bone marrow or other distant lymph node tissue less than or equal to 0.2 mm
+when '@776@10' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@20' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@30' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@40' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@50' then 'Metastatic' -- Any combination of 10, 20, 30
+when '@776@60' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@70' then 'Metastatic' -- Various organs/lymph nodes
+when '@776@88' then 'Unknown' -- Death certificate only
+when '@776@99' then 'Unknown' -- Unknwon
+else 'Unknown' end 
+as is_metastatic,
+case p.death_datetime is null when true then 'Alive' else 'Dead' end as vital_status,
+round(DATE_PART('day', coalesce(p.death_datetime, op.last_followup_date) - ed.episode_start_datetime)/30) 
+as survival_from_diagnosis_months
+from episode ed
+left join person p 
+on ed.episode_concept_id = 32528 -- first disease occurrence
+and ed.person_id = p.person_id
+left join 
+(select max(observation_period_end_date) as last_followup_date, person_id
+from observation_period
+group by person_id
+) as op
+on ed.episode_concept_id = 32528 -- first disease occurrence
+and ed.person_id = op.person_id
+join concept_relationship cr1
+on ed.episode_object_concept_id = cr1.concept_id_2
+and cr1.relationship_id = 'Maps to'
+left join concept_relationship cr2
+on cr1.concept_id_1 = cr2.concept_id_1
+and cr2.relationship_id = 'ICDO to Schema'
+join concept c
+on cr2.concept_id_2 = c.concept_id
+left join measurement m
+on ed.episode_id = m.modifier_of_event_id
+and m.modifier_field_concept_id = 1000000003 -- 'epsiode.episode_id'
+and m.measurement_concept_id = 35918335 -- Metastases
+) as e
+where e.vital_status = 'Dead'
+group by e.cancer_type, e.is_metastatic
+
