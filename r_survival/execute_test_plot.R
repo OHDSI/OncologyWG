@@ -1,6 +1,6 @@
 source('plot_functions.R')
 
-TEST_DATA <- readRDS("r_survival/test_data.RData")
+TEST_DATA <- readRDS("test_data.RData")
 plot_survival(native_dataframe  = TEST_DATA,
               survival_time_col = survival_time_months,
               event_col         = event_occurred,
