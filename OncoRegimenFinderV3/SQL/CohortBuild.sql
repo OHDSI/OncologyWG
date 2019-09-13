@@ -33,7 +33,7 @@ inner join @cdmDatabaseSchema.concept c on c.concept_id = ca.ancestor_concept_id
 										  FROM @cdmDatabaseSchema.concept_relationship cr1
 										  WHERE c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id IN('Rx antineopl of', 'Rx immunosuppr of')
 										)
-		  ) /* Drug concept_id  */ 
+		  ) /* Drug concept_id  */
 )
 and c.concept_class_id = 'Ingredient'
 )
