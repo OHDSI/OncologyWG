@@ -44,7 +44,7 @@ join concept c
 on cr2.concept_id_2 = c.concept_id
 left join measurement m
 on ed.episode_id = m.modifier_of_event_id
-and m.modifier_field_concept_id = 1000000003 -- 'epsiode.episode_id'
+and m.modifier_of_field_concept_id = 1000000003 -- 'epsiode.episode_id'
 and m.measurement_concept_id
 -- NAACCR items for metastases. Does not include site-specific items.
 in (
@@ -106,7 +106,7 @@ join concept c
 on cr2.concept_id_2 = c.concept_id
 left join measurement m
 on ed.episode_id = m.modifier_of_event_id
-and m.modifier_field_concept_id = 1000000003 -- 'epsiode.episode_id'
+and m.modifier_of_field_concept_id = 1000000003 -- 'epsiode.episode_id'
 and m.measurement_concept_id
 -- NAACCR items for metastases. Does not include site-specific items.
 in (
