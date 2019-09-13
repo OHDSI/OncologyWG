@@ -1,7 +1,7 @@
 
 plot_survival <-
         function(native_dataframe, survival_time_col, event_col, cohort_col) {
-                source("r_survival/utils.R")
+                source("utils.R")
                 invisible(load_packages())
                 survival_time_col <- enquo(survival_time_col)
                 event_col         <- enquo(event_col)
@@ -41,7 +41,7 @@ plot_survival <-
 
 return_median_survival_time <-
         function(native_dataframe, survival_time_col, event_col, cohort_col) {
-                source("r_survival/utils.R")
+                source("utils.R")
                 invisible(load_packages())
                 survival_time_col <- enquo(survival_time_col)
                 event_col         <- enquo(event_col)
@@ -73,7 +73,7 @@ return_median_survival_time <-
 
 return_pval_survival_time <-
         function(native_dataframe, survival_time_col, event_col, cohort_col) {
-                source("r_survival/utils.R")
+                source("utils.R")
                 invisible(load_packages())
                 survival_time_col <- enquo(survival_time_col)
                 event_col         <- enquo(event_col)
@@ -105,7 +105,7 @@ return_pval_survival_time <-
 
 plot_time_to_rx_hist <-
         function(native_dataframe, target_value_col, cohort_col) {
-                source("r_survival/utils.R")
+                source("utils.R")
                 invisible(load_packages())
                 
                 target_value_col <- enquo(target_value_col)
