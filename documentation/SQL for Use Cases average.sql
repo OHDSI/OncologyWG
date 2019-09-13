@@ -1,6 +1,8 @@
--- Time between diagnosis and treatment, record level
-select
-ed.person_id as person_id,
+-- Average time between diagnosis and treatment
+select e.cancer_type, e.is_metastatic,
+avg(e.time_diagnosis_treatment_days) as avg_time_diagnosis_treatment_days
+from
+(select
 c.concept_name as cancer_type,
 case coalesce(reverse(substring(reverse(m.value_source_value) from 1
 for position('@' in reverse(m.value_source_value)) - 1)), '@')
@@ -23,7 +25,7 @@ when '88' then 'Unknown' -- Death certificate only
 when '99' then 'Unknown' -- Unknwon
 else 'Unknown' end
 as is_metastatic,
-DATE_PART('day', et.episode_start_datetime - ed.episode_start_datetime) as time_daignosis_treatment_days
+DATE_PART('day', et.episode_start_datetime - ed.episode_start_datetime) as time_diagnosis_treatment_days
 from episode ed
 left join
 (select min(episode_start_datetime) as episode_start_datetime, episode_parent_id
@@ -48,7 +50,7 @@ and m.modifier_field_concept_id = 1000000003 -- 'epsiode.episode_id'
 and m.measurement_concept_id
 -- NAACCR items for metastases. Does not include site-specific items.
 in (
-35918335 -- EOD Mets
+ 35918335 -- EOD Mets
 ,35918581 -- Mets at DX-Bone
 ,35918692 -- Mets at DX-Brain
 ,35918491 -- Mets at DX-Distant LN
@@ -56,8 +58,15 @@ in (
 ,35918559 -- Mets at DX-Lung
 ,35918527 -- Mets at DX-Other
 )
+) as e
+where e.time_diagnosis_treatment_days is not null
+group by e.cancer_type, e.is_metastatic
 
--- Survival from diagnosis, record level
+-- Average survival from diagnosis(only for deceased patients)
+select e.cancer_type, e.is_metastatic,
+avg(e.survival_from_diagnosis_months) as avg_survival_from_diagnosis_months
+from
+(
 select
 ed.person_id,
 c.concept_name as cancer_type,
@@ -118,3 +127,6 @@ in (
 ,35918559 -- Mets at DX-Lung
 ,35918527 -- Mets at DX-Other
 )
+) as e
+where e.vital_status = 0
+group by e.cancer_type, e.is_metastatic
