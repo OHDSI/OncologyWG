@@ -9,7 +9,7 @@ plot_survival <-
                 
                 native_dataframe <- 
                         native_dataframe %>%
-                        rename(cohort_definition = !!cohort_col)
+                        rename(cohort_definition := !!cohort_col)
                 
                 native_dataframe <-
                         native_dataframe %>%
@@ -39,7 +39,7 @@ plot_survival <-
                                            surv.median.line = "hv",
                                            legend.title = "Cohort",
                                            legend.labs = levels(native_dataframe %>%
-                                                                        select(!!cohort_col) %>%
+                                                                        select(cohort_definition) %>%
                                                                         unlist())) +
                                         xlab("Survival Time (Years)") +
                                         ylab("Survival Probability") +
