@@ -51,7 +51,8 @@ plot_survival <-
                                                          y = (1:nrow(medsurv))/20,
                                                          label = round(medsurv$median/12, 2),
                                                          parse = TRUE
-                                        )
+                                        ) +
+                                        ggplot2::theme(axis.text.x = element_text(hjust = 1, angle=45))
                         }
                 }
                 
@@ -148,9 +149,9 @@ plot_time_to_rx_hist <-
                         ) +
                         coord_cartesian(xlim = c(0,max(native_dataframe %>% select(!!target_value_col) %>% unlist()))) +
                         geom_vline(data = meandat,aes(xintercept=mean_value),linetype="dashed", size = .5) +
-                        geom_text(data = meandat, aes(x = round((mean_value)), y = max(select(native_dataframe, !!target_value_col)), label = paste0("mean = ",mean_value), hjust = -0.2)) +
+                        geom_text(data = meandat, aes(x = round((mean_value)), y = max(group_by(native_dataframe, !!target_value_col) %>% summarise(count = length(!!target_value_col)) %>% select(count)), label = paste0("mean = ",mean_value), hjust = -0.2)) +
                         geom_vline(data = meandat,aes(xintercept=median_value),linetype="solid", size = .3, color = "#CC3300") +
-                        geom_text(data = meandat, aes(x = median_value, y = max(select(native_dataframe, !!target_value_col)), label = paste0("median = ",median_value), vjust = 2, hjust = -0.2)) +
+                        geom_text(data = meandat, aes(x = median_value, y = max(group_by(native_dataframe, !!target_value_col) %>% summarise(count = length(!!target_value_col)) %>% select(count)), label = paste0("median = ",median_value), vjust = 2, hjust = -0.2)) +
                         xlab("Time To Treatment From Diagnosis (Days)") +
                         ylab("Frequency") +
                         labs(title = "Frequency of Time from Diagnosis to First Treatment") +
