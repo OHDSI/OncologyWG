@@ -14,7 +14,7 @@ CAVEATS:
 -A `survival_object` R object will be created in the global environment after executing the _plot_survival_ function on your data. This was a bandaid solution to this function in the interest of time.
 
 DATA PROCESSING:  
--Long strings of cancer type concept names throws off scaling when rendering both plots. It is advised to use /data/concept_name_map.csv and to join your data on the `concept_name` to map to a truncated, cleaner `STANDARD_CANCER_NAME`. Should you keep the column name, that will be the input when designating the `cohort_col` in the function calls in the procedure.  
+-Long strings of cancer type concept names throws off scaling when rendering both plots. It is advised to use /data/concept_name_map.csv and to join your data on the `concept_name` to map to a truncated, cleaner `STANDARD_CANCER_NAME`. Should you keep the column name, this will be the input when designating the `cohort_col` in the function calls in the procedure.  You are welcome to change the column name to works best for you since the functions are written on Tidyverse grammar.  
 
 PROCEDURE:  
 _execute_plot.R_ serves as both a test for plotting functions as well as template for using your own data for analysis. Note that these functions are based on Tidyverse evaluation and column names are entered unquoted. The file "test_data.csv" is a 1000-patient dataset that was simulated on normal distribution curves. Successful execution is confirmed when both plot functions are able to print graphs in your console using "data/test_data.csv".  
