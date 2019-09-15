@@ -9,6 +9,7 @@ plot_survival <-
                 
                 native_dataframe <- 
                         native_dataframe %>%
+                        mutate(!!cohort_col := str_remove_all(as.character(!!cohort_col), "[;]{1}.*|[(]{1}.*")) %>%
                         rename(cohort_definition := !!cohort_col)
                 
                 native_dataframe <-
@@ -30,7 +31,7 @@ plot_survival <-
                                 medsurv <- surv_median(km_fit_01) %>%
                                                 mutate(strata = factor(str_remove_all(strata, "cohort_definition[=]{1}")))
                                 
-                                OUTPUT <-
+                                OUTPUT_01 <-
                                         ggsurvplot(km_fit_01, data = native_dataframe,
                                            pval = pval,
                                            xscale = 12,
@@ -45,14 +46,12 @@ plot_survival <-
                                         ylab("Survival Probability") +
                                         ggtitle("Kaplan-Meier Curves")
                                 
-                                OUTPUT$plot +
-                                        ggplot2::annotate("text",
-                                                         x = medsurv$median + 2, 
-                                                         y = (1:nrow(medsurv))/20,
-                                                         label = round(medsurv$median/12, 2),
-                                                         parse = TRUE
-                                        ) +
-                                        ggplot2::theme(axis.text.x = element_text(hjust = 1, angle=45))
+                                OUTPUT_02 <-
+                                        OUTPUT_01$plot +
+                                        ggplot2::theme(axis.text.x = element_text(hjust = 1, angle=45))+
+                                        scale_y_continuous(expand = c(0, 0))
+                                
+                                print(OUTPUT_02)
                         }
                 }
                 
@@ -68,6 +67,7 @@ return_median_survival_time <-
                 
                 native_dataframe <- 
                         native_dataframe %>%
+                        mutate(!!cohort_col := str_remove_all(as.character(!!cohort_col), "[;]{1}.*|[(]{1}.*")) %>%
                         rename(cohort_definition = !!cohort_col)
                 
                 native_dataframe <-
@@ -100,6 +100,7 @@ return_pval_survival_time <-
                 
                 native_dataframe <- 
                         native_dataframe %>%
+                        mutate(!!cohort_col := str_remove_all(as.character(!!cohort_col), "[;]{1}.*|[(]{1}.*")) %>%
                         rename(cohort_definition = !!cohort_col)
                 
                 native_dataframe <-
@@ -133,6 +134,7 @@ plot_time_to_rx_hist <-
                 native_dataframe <-
                         native_dataframe %>%
                         mutate(!!target_value_col := as.numeric(!!target_value_col)) %>%
+                        mutate(!!cohort_col := str_remove_all(as.character(!!cohort_col), "[;]{1}.*|[(]{1}.*")) %>%
                         mutate(!!cohort_col := as.factor(!!cohort_col))
                 
                 meandat <- native_dataframe %>% 
