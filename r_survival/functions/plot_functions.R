@@ -135,7 +135,8 @@ plot_time_to_rx_hist <-
                         native_dataframe %>%
                         mutate(!!target_value_col := as.numeric(!!target_value_col)) %>%
                         mutate(!!cohort_col := str_remove_all(as.character(!!cohort_col), "[;]{1}.*|[(]{1}.*")) %>%
-                        mutate(!!cohort_col := as.factor(!!cohort_col))
+                        mutate(!!cohort_col := as.factor(!!cohort_col)) %>%
+                        dplyr::filter(!!target_value_col > 0 & !!target_value_col < 200)
                 
                 meandat <- native_dataframe %>% 
                                         dplyr::group_by(!!cohort_col) %>% 
