@@ -1878,7 +1878,9 @@ AND crd.relationship_id = 'Variable has date'
 AND crd.concept_id_2 = cd.concept_id
 AND sd.naaccr_item_number = cd.concept_code
 AND measurement_temp.record_id = sd.record_id
-AND sd.naaccr_item_value NOT IN('0', '99999999');
+AND sd.naaccr_item_value NOT IN('0', '99999999')
+AND sd.naaccr_item_value IS NOT NULL
+AND is_date(sd.naaccr_item_value) = true;
 
 --Step 23: Move measurement_temp into measurement
 INSERT INTO measurement
