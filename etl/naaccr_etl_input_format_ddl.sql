@@ -1,7 +1,6 @@
 --This is DDL for the NAACCR ETL SQL input format.  The NAACCR ETL SQL assumes you have converted your NAACCR data into this structure.
---If you want to change the name or use this as a temporary table, adjust this SQL and the NAACCR ETL SQL accordingly.
 
-CREATE TABLE naaccr_data_source(
+CREATE TABLE naaccr_data_points(
   person_id                    BIGINT,
   record_id                    varchar(255) NULL,
   naaccr_item_number           varchar(255) NULL,
