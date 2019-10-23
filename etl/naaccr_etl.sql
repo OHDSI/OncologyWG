@@ -20,6 +20,8 @@ No longer needed:
 
 --Preliminary mapping/cleanup
 
+-- Clear data from previous executions
+
 DELETE FROM condition_occurrence
 WHERE condition_type_concept_id = 32534;
 
@@ -37,7 +39,7 @@ DELETE FROM episode;
 DELETE FROM episode_event;
 
 
-
+-- Why is this needed? 
 
 create or replace function is_date(s varchar) returns boolean as $$
 begin
@@ -47,6 +49,10 @@ exception when others then
   return false;
 end;
 $$ language plpgsql;
+
+
+
+-- What is this for? 
 
 UPDATE naaccr_data_points
 SET naaccr_item_value = NULL
@@ -64,7 +70,10 @@ or
   is_date(naaccr_item_value) = false
 );
 
---Setp 1: Diagnosis Condition Occurrence
+
+
+-- Create temporary tables 
+
 
 DROP TABLE IF EXISTS concept_temp;
 
@@ -106,7 +115,121 @@ CREATE TEMPORARY TABLE condition_occurrence_temp
   record_id                     varchar(255)  NULL
 );
 
-DELETE FROM concept_temp;
+
+DROP TABLE IF EXISTS measurement_temp;
+
+CREATE TEMPORARY TABLE measurement_temp
+(
+  measurement_id                BIGINT       NOT NULL ,
+  person_id                     BIGINT       NOT NULL ,
+  measurement_concept_id        BIGINT       NOT NULL ,
+  measurement_date              DATE         NOT NULL ,
+  measurement_time              VARCHAR(10)  NULL ,
+  measurement_datetime          TIMESTAMP    NULL ,
+  measurement_type_concept_id   BIGINT       NOT NULL ,
+  operator_concept_id           BIGINT       NULL ,
+  value_as_number               NUMERIC      NULL ,
+  value_as_concept_id           BIGINT       NULL ,
+  unit_concept_id               BIGINT       NULL ,
+  range_low                     NUMERIC      NULL ,
+  range_high                    NUMERIC      NULL ,
+  provider_id                   BIGINT       NULL ,
+  visit_occurrence_id           BIGINT       NULL ,
+  visit_detail_id               BIGINT       NULL ,
+  measurement_source_value      VARCHAR(50)   NULL ,
+  measurement_source_concept_id  BIGINT       NULL ,
+  unit_source_value             VARCHAR(50)  NULL ,
+  value_source_value            VARCHAR(50)  NULL ,
+  modifier_of_event_id          BIGINT       NULL ,
+  modifier_of_field_concept_id  BIGINT       NULL,
+  record_id                     VARCHAR(255) NULL
+);
+
+DROP TABLE IF EXISTS episode_temp;
+
+CREATE TABLE episode_temp (
+  episode_id                  BIGINT        NOT NULL,
+  person_id                   BIGINT        NOT NULL,
+  episode_concept_id          INTEGER       NOT NULL,
+  episode_start_datetime      TIMESTAMP     NULL,       --Fix me
+  episode_end_datetime        TIMESTAMP     NULL,
+  episode_parent_id           BIGINT        NULL,
+  episode_number              INTEGER       NULL,
+  episode_object_concept_id   INTEGER       NOT NULL,
+  episode_type_concept_id     INTEGER       NOT NULL,
+  episode_source_value        VARCHAR(50)   NULL,
+  episode_source_concept_id   INTEGER       NULL,
+  record_id                   VARCHAR(255)  NULL
+)
+;
+
+DROP TABLE IF EXISTS episode_event_temp;
+CREATE TABLE episode_event_temp (
+  episode_id                      BIGINT   NOT NULL,
+  event_id                         BIGINT   NOT NULL,
+  episode_event_field_concept_id  INTEGER NOT NULL
+);
+
+DROP TABLE IF EXISTS procedure_occurrence_temp;
+
+ CREATE TABLE procedure_occurrence_temp
+ (
+  procedure_occurrence_id     BIGINT        NOT NULL ,
+  person_id                    BIGINT        NOT NULL ,
+  procedure_concept_id        BIGINT        NOT NULL ,
+  procedure_date              DATE          NOT NULL ,
+  procedure_datetime          TIMESTAMP     NULL ,
+  procedure_type_concept_id   BIGINT        NOT NULL ,
+  modifier_concept_id         BIGINT        NULL ,
+  quantity                    BIGINT        NULL ,
+  provider_id                 BIGINT        NULL ,
+  visit_occurrence_id         BIGINT        NULL ,
+  visit_detail_id             BIGINT        NULL ,
+  procedure_source_value      VARCHAR(50)    NULL ,
+  procedure_source_concept_id  BIGINT        NULL ,
+  modifier_source_value       VARCHAR(50)    NULL,
+  episode_id                  BIGINT        NOT NULL,
+  record_id                   VARCHAR(255)  NULL
+ )
+ ;
+ 
+DROP TABLE IF EXISTS drug_exposure_temp;
+
+CREATE TABLE drug_exposure_temp
+(
+  drug_exposure_id              BIGINT        NOT NULL ,
+  person_id                     BIGINT        NOT NULL ,
+  drug_concept_id               BIGINT        NOT NULL ,
+  drug_exposure_start_date      DATE          NOT NULL ,
+  drug_exposure_start_datetime  TIMESTAMP      NULL ,
+  drug_exposure_end_date        DATE          NULL ,
+  drug_exposure_end_datetime    TIMESTAMP      NULL ,
+  verbatim_end_date             DATE          NULL ,
+  drug_type_concept_id          BIGINT        NOT NULL ,
+  stop_reason                   VARCHAR(20)   NULL ,
+  refills                       BIGINT        NULL ,
+  quantity                      NUMERIC       NULL ,
+  days_supply                   BIGINT        NULL ,
+  sig                           TEXT          NULL ,
+  route_concept_id              BIGINT        NULL ,
+  lot_number                    VARCHAR(50)   NULL ,
+  provider_id                   BIGINT        NULL ,
+  visit_occurrence_id           BIGINT        NULL ,
+  visit_detail_id               BIGINT        NULL ,
+  drug_source_value             VARCHAR(50)   NULL ,
+  drug_source_concept_id        BIGINT        NULL ,
+  route_source_value            VARCHAR(50)   NULL ,
+  dose_unit_source_value        VARCHAR(50)   NULL,
+  record_id                     VARCHAR(255)    NULL
+)
+;
+ 
+ 
+ 
+ 
+--Step 1: Diagnosis Condition Occurrence
+
+
 
 --Restrict to schemas that do not have ICDO overlapping site/histology combinations
 INSERT INTO concept_temp
@@ -234,34 +357,7 @@ SELECT  condition_occurrence_id
 FROM condition_occurrence_temp;
 
 --Step 2: Diagnosis Modifiers Standard categorical
-DROP TABLE IF EXISTS measurement_temp;
 
-CREATE TEMPORARY TABLE measurement_temp
-(
-  measurement_id                BIGINT       NOT NULL ,
-  person_id                     BIGINT       NOT NULL ,
-  measurement_concept_id        BIGINT       NOT NULL ,
-  measurement_date              DATE         NOT NULL ,
-  measurement_time              VARCHAR(10)  NULL ,
-  measurement_datetime          TIMESTAMP    NULL ,
-  measurement_type_concept_id   BIGINT       NOT NULL ,
-  operator_concept_id           BIGINT       NULL ,
-  value_as_number               NUMERIC      NULL ,
-  value_as_concept_id           BIGINT       NULL ,
-  unit_concept_id               BIGINT       NULL ,
-  range_low                     NUMERIC      NULL ,
-  range_high                    NUMERIC      NULL ,
-  provider_id                   BIGINT       NULL ,
-  visit_occurrence_id           BIGINT       NULL ,
-  visit_detail_id               BIGINT       NULL ,
-  measurement_source_value      VARCHAR(50)   NULL ,
-  measurement_source_concept_id  BIGINT       NULL ,
-  unit_source_value             VARCHAR(50)  NULL ,
-  value_source_value            VARCHAR(50)  NULL ,
-  modifier_of_event_id          BIGINT       NULL ,
-  modifier_of_field_concept_id  BIGINT       NULL,
-  record_id                     VARCHAR(255) NULL
-);
 
 INSERT INTO measurement_temp
 (
@@ -546,23 +642,7 @@ AND EXISTS(
 );
 
 --Step 5: Disease Episodes
-DROP TABLE IF EXISTS episode_temp;
 
-CREATE TABLE episode_temp (
-  episode_id                  BIGINT        NOT NULL,
-  person_id                   BIGINT        NOT NULL,
-  episode_concept_id          INTEGER       NOT NULL,
-  episode_start_datetime      TIMESTAMP     NULL,       --Fix me
-  episode_end_datetime        TIMESTAMP     NULL,
-  episode_parent_id           BIGINT        NULL,
-  episode_number              INTEGER       NULL,
-  episode_object_concept_id   INTEGER       NOT NULL,
-  episode_type_concept_id     INTEGER       NOT NULL,
-  episode_source_value        VARCHAR(50)   NULL,
-  episode_source_concept_id   INTEGER       NULL,
-  record_id                   VARCHAR(255)  NULL
-)
-;
 
 INSERT INTO episode_temp
 (
@@ -594,12 +674,7 @@ SELECT ( CASE WHEN  (SELECT MAX(episode_id) FROM episode) IS NULL THEN 0 ELSE  (
 FROM condition_occurrence_temp cot;
 
 --Step 6: Connect Condition Occurrence to Disease Episodes in Episode Event
-DROP TABLE IF EXISTS episode_event_temp;
-CREATE TABLE episode_event_temp (
-  episode_id                      BIGINT   NOT NULL,
-  event_id                         BIGINT   NOT NULL,
-  episode_event_field_concept_id  INTEGER NOT NULL
-);
+
 
 INSERT INTO episode_event_temp
 (
@@ -666,23 +741,8 @@ SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL T
 FROM measurement_temp mt JOIN episode_temp et ON mt.record_id = et.record_id;
 
 --Step 8: Treatment Episodes
-DROP TABLE IF EXISTS concept_temp;
 
-CREATE TEMPORARY TABLE concept_temp (
-  concept_id          BIGINT        NOT NULL ,
-  concept_name        VARCHAR(255)  NOT NULL ,
-  domain_id            VARCHAR(20)    NOT NULL ,
-  vocabulary_id        VARCHAR(20)    NOT NULL ,
-  concept_class_id    VARCHAR(20)    NOT NULL ,
-  standard_concept    VARCHAR(1)    NULL ,
-  concept_code        VARCHAR(50)    NOT NULL ,
-  valid_start_date    DATE          NOT NULL ,
-  valid_end_date      DATE          NOT NULL ,
-  invalid_reason      VARCHAR(1)    NULL
-)
-;
-
-DELETE FROM concept_temp;
+TRUNCATE TABLE concept_temp;
 
 INSERT INTO concept_temp
 (  concept_id
@@ -781,28 +841,7 @@ AND
 );
 
  --Step 9: Treatment Procedure Occurrence
- DROP TABLE IF EXISTS procedure_occurrence_temp;
-
- CREATE TABLE procedure_occurrence_temp
- (
-  procedure_occurrence_id     BIGINT        NOT NULL ,
-  person_id                    BIGINT        NOT NULL ,
-  procedure_concept_id        BIGINT        NOT NULL ,
-  procedure_date              DATE          NOT NULL ,
-  procedure_datetime          TIMESTAMP     NULL ,
-  procedure_type_concept_id   BIGINT        NOT NULL ,
-  modifier_concept_id         BIGINT        NULL ,
-  quantity                    BIGINT        NULL ,
-  provider_id                 BIGINT        NULL ,
-  visit_occurrence_id         BIGINT        NULL ,
-  visit_detail_id             BIGINT        NULL ,
-  procedure_source_value      VARCHAR(50)    NULL ,
-  procedure_source_concept_id  BIGINT        NULL ,
-  modifier_source_value       VARCHAR(50)    NULL,
-  episode_id                  BIGINT        NOT NULL,
-  record_id                   VARCHAR(255)  NULL
- )
- ;
+ 
 
  INSERT INTO procedure_occurrence_temp
 (
@@ -856,36 +895,7 @@ SELECT  et.episode_id                     AS episode_id
 FROM procedure_occurrence_temp pet JOIN episode_temp et ON pet.record_id = et.record_id AND pet.procedure_concept_id = et.episode_object_concept_id;
 
 --Step 11: Treatment Drug Exposure
-DROP TABLE IF EXISTS drug_exposure_temp;
 
-CREATE TABLE drug_exposure_temp
-(
-  drug_exposure_id              BIGINT        NOT NULL ,
-  person_id                     BIGINT        NOT NULL ,
-  drug_concept_id               BIGINT        NOT NULL ,
-  drug_exposure_start_date      DATE          NOT NULL ,
-  drug_exposure_start_datetime  TIMESTAMP      NULL ,
-  drug_exposure_end_date        DATE          NULL ,
-  drug_exposure_end_datetime    TIMESTAMP      NULL ,
-  verbatim_end_date             DATE          NULL ,
-  drug_type_concept_id          BIGINT        NOT NULL ,
-  stop_reason                   VARCHAR(20)   NULL ,
-  refills                       BIGINT        NULL ,
-  quantity                      NUMERIC       NULL ,
-  days_supply                   BIGINT        NULL ,
-  sig                           TEXT          NULL ,
-  route_concept_id              BIGINT        NULL ,
-  lot_number                    VARCHAR(50)   NULL ,
-  provider_id                   BIGINT        NULL ,
-  visit_occurrence_id           BIGINT        NULL ,
-  visit_detail_id               BIGINT        NULL ,
-  drug_source_value             VARCHAR(50)   NULL ,
-  drug_source_concept_id        BIGINT        NULL ,
-  route_source_value            VARCHAR(50)   NULL ,
-  dose_unit_source_value        VARCHAR(50)   NULL,
-  record_id                     VARCHAR(255)    NULL
-)
-;
  INSERT INTO drug_exposure_temp
 (
     drug_exposure_id
