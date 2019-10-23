@@ -304,8 +304,79 @@ INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id],
  
  
  
+  
+ 
  
  -- Append schema 
+ -- (only considers records with NULL 'schema_concept_id')
+
+
+ -- Start with ambiguous schemas
+  MERGE naaccr_data_points ndp
+  USING 
+  (
+	  SELECT DISTINCT record_id, asd.schema_concept_id
+	  FROM
+	  (
+	  SELECT DISTINCT 
+					record_id
+					,  histology_site
+					, naaccr_item_number
+					, naaccr_item_value
+	  FROM [NAACCR_OMOP].[dbo].[naaccr_data_points]
+	  WHERE schema_concept_id IS NULL 
+	  --AND naaccr_item_number in (SELECT DISTINCT [discrim_item_num] FROM [NAACCR_OMOP].[dbo].[ambig_schema_discrim]) 
+	  AND naaccr_item_number in ('220', '2879')
+	  ) x
+	  INNER JOIN 
+	  (
+		SELECT DISTINCT conc.concept_code, cr.concept_id_2
+		FROM concept conc
+		INNER JOIN concept_relationship cr
+		ON conc. vocabulary_id = 'ICDO3'
+		AND cr.concept_id_1 = conc.concept_id 
+		AND relationship_id = 'ICDO to Schema'
+		-- Theres a ton of duplicated schemas here that arent in the mapping file... Item/value must be identical between schemas? 
+		AND cr.concept_id_2 IN (SELECT DISTINCT schema_concept_id FROM ambig_schema_discrim)
+	  ) ambig_cond
+	  ON x.histology_site = ambig_cond.concept_code
+	  INNER JOIN ambig_schema_discrim asd
+	  ON ambig_cond.concept_id_2 = asd.schema_concept_id
+	  AND x.naaccr_item_number = asd.discrim_item_num
+	  AND x.naaccr_item_value = asd.discrim_item_value
+  ) schm 
+  ON ndp.record_id = schm.record_id
+  WHEN MATCHED THEN UPDATE SET ndp.schema_concept_id = schm.schema_concept_id
+  ; 
+ 
+ 
+ -- Append standard schemas - uses histology_site
+   MERGE naaccr_data_points ndp
+   USING 
+   (
+		SELECT DISTINCT concept_code, concept_id_2
+		FROM
+		(
+			SELECT  c1.concept_code
+				, cr.concept_id_2
+				-- arbitrary selection of schema, assuming they are identical
+				, ROW_NUMBER() OVER (PARTITION BY c1.concept_id ORDER BY cr.concept_id_2) rn 
+			FROM concept c1 
+			INNER JOIN concept_relationship cr 
+			ON c1.vocabulary_id='ICDO3'
+			AND c1.concept_id = cr.concept_id_1 
+			AND relationship_id = 'ICDO to Schema'
+			-- Schema isn't listed as ambiguous
+			AND cr.concept_id_2 NOT IN (SELECT DISTINCT schema_concept_id FROM ambig_schema_discrim)
+		) x
+		WHERE rn = 1
+   ) schm 
+   ON ndp.histology_site = schm.concept_code
+   -- ignore if already mapped
+   AND ndp.schema_concept_id IS NULL 
+   WHEN MATCHED THEN UPDATE set ndp.schema_concept_id = schm.concept_id_2
+   ;
+ 
  
  
  
