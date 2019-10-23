@@ -8,4 +8,5 @@ CREATE TABLE naaccr_data_points(
   histology                    varchar(255) NULL,
   site                         varchar(255) NULL,
   histology_site               varchar(255) NULL,
+  schema_concept_id            varchar(255) NULL
 );
