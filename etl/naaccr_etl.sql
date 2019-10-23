@@ -72,6 +72,7 @@ or
 
 
 
+
 -- Create temporary tables 
 
 
@@ -224,6 +225,81 @@ CREATE TABLE drug_exposure_temp
 )
 ;
  
+ 
+ 
+ -- Create ambiguous schema discriminator mapping tables
+ 
+ 
+DROP TABLE IF EXISTS ambig_schema_discrim
+
+
+ CREATE TABLE [dbo].[ambig_schema_discrim](
+	[schema_concept_code] [varchar](50) NULL,
+	[schema_concept_id] [bigint] NULL,
+	[discrim_item_num] [varchar](50) NULL,
+	[discrim_item_value] [varchar](50) NULL
+);
+ 
+ -- Populate table 
+ 
+ INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'stomach', 35909803, N'2879', N'000')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'stomach', 35909803, N'2879', N'030')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'stomach', 35909803, N'2879', N'981')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'stomach', 35909803, N'2879', N'999')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'esophagus_gejunction', 35909724, N'2879', N'020')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'esophagus_gejunction', 35909724, N'2879', N'040')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'esophagus_gejunction', 35909724, N'2879', N'982')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_distal', 35909746, N'2879', N'040')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_distal', 35909746, N'2879', N'070')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_perihilar', 35909846, N'2879', N'010')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_perihilar', 35909846, N'2879', N'020')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_perihilar', 35909846, N'2879', N'050')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_perihilar', 35909846, N'2879', N'060')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_perihilar', 35909846, N'2879', N'999')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'cystic_duct', 35909773, N'2879', N'030')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'lacrimal_gland', 35909735, N'2879', N'015')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'lacrimal_sac', 35909739, N'2879', N'025')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'melanoma_ciliary_body', 35909820, N'2879', N'010')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'melanoma_iris', 35909687, N'2879', N'020')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'nasopharynx', 35909813, N'2879', N'010')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'nasopharynx', 35909813, N'2879', N'981')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'pharyngeal_tonsil', 35909780, N'2879', N'020')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum', 35909796, N'220', N'1')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum', 35909796, N'220', N'3')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum', 35909796, N'220', N'4')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum', 35909796, N'220', N'5')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum', 35909796, N'220', N'9')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum_female_gen', 35909817, N'220', N'2')
+GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum_female_gen', 35909817, N'220', N'6')
+;
  
  
  
