@@ -19,7 +19,6 @@ No longer needed:
 
 
 --Preliminary mapping/cleanup
-SET search_path TO omop, public;
 
 DELETE FROM condition_occurrence
 WHERE condition_type_concept_id = 32534;
