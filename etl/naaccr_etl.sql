@@ -1,3 +1,23 @@
+/* Scripts assumes:
+	-using Sql Server
+	-input data exists on same database in specified format inside of 'naacr_data_points'
+	-histology_site is represented in ICDO3 concept_code format
+	-the 'person_id' column is already populated
+
+No longer needed:
+
+	UPDATE naaccr_data_points
+	SET histology_site =  overlay(histology placing substring(histology, 4, 1) || '/' from 4 for 1)  || '-' || overlay(site placing substring(site, 3,1) || '.' from 3 for 1);
+
+	UPDATE naaccr_data_points
+	SET person_id = pii_mrn.person_id
+	FROM pii_mrn
+	WHERE naaccr_data_points.medical_record_number = pii_mrn.mrn;
+
+*/
+
+
+
 --Preliminary mapping/cleanup
 SET search_path TO omop, public;
 
@@ -17,13 +37,7 @@ DELETE FROM episode;
 
 DELETE FROM episode_event;
 
-UPDATE naaccr_data_points
-SET histology_site =  overlay(histology placing substring(histology, 4, 1) || '/' from 4 for 1)  || '-' || overlay(site placing substring(site, 3,1) || '.' from 3 for 1);
 
-UPDATE naaccr_data_points
-SET person_id = pii_mrn.person_id
-FROM pii_mrn
-WHERE naaccr_data_points.medical_record_number = pii_mrn.mrn;
 
 
 create or replace function is_date(s varchar) returns boolean as $$
