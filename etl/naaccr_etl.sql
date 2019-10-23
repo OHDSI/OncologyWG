@@ -40,7 +40,7 @@ DELETE FROM episode_event;
 
 
 -- Why is this needed? 
-
+/*
 create or replace function is_date(s varchar) returns boolean as $$
 begin
   perform s::date;
@@ -49,10 +49,10 @@ exception when others then
   return false;
 end;
 $$ language plpgsql;
+*/
 
 
-
--- What is this for? 
+-- Is there a better way to do this? 
 
 UPDATE naaccr_data_points
 SET naaccr_item_value = NULL
@@ -65,9 +65,9 @@ WHERE naaccr_item_number IN(
 , '1240'
 )
 AND (
-  length(naaccr_item_value) != 8
-or
-  is_date(naaccr_item_value) = false
+  LEN(naaccr_item_value) != 8
+	or
+   TRY_PARSE(SUBSTRING(naaccr_item_value, 1,4) + '-' + SUBSTRING(naaccr_item_value, 5,2)+ '-' + SUBSTRING(naaccr_item_value, 7,2) as date) IS NULL
 );
 
 
@@ -300,6 +300,24 @@ INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id],
 GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum_female_gen', 35909817, N'220', N'6')
 ;
+ 
+ 
+ 
+ 
+ 
+ -- Append schema 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
  
  
