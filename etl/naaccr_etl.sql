@@ -104,9 +104,9 @@ CREATE TABLE condition_occurrence_temp
   person_id                     BIGINT        NOT NULL ,
   condition_concept_id          BIGINT        NOT NULL ,
   condition_start_date          DATE          NOT NULL ,
-  condition_start_datetime      TIMESTAMP     NULL ,
+  condition_start_datetime      DATETIME     NULL ,
   condition_end_date            DATE          NULL ,
-  condition_end_datetime        TIMESTAMP     NULL ,
+  condition_end_datetime        DATETIME     NULL ,
   condition_type_concept_id     BIGINT        NOT NULL ,
   stop_reason                   VARCHAR(20)    NULL ,
   provider_id                   BIGINT        NULL ,
@@ -130,7 +130,7 @@ CREATE TABLE measurement_temp
   measurement_concept_id        BIGINT       NOT NULL ,
   measurement_date              DATE         NOT NULL ,
   measurement_time              VARCHAR(10)  NULL ,
-  measurement_datetime          TIMESTAMP    NULL ,
+  measurement_datetime          DATETIME    NULL ,
   measurement_type_concept_id   BIGINT       NOT NULL ,
   operator_concept_id           BIGINT       NULL ,
   value_as_number               NUMERIC      NULL ,
@@ -157,8 +157,8 @@ CREATE TABLE episode_temp (
   episode_id                  BIGINT        NOT NULL,
   person_id                   BIGINT        NOT NULL,
   episode_concept_id          INTEGER       NOT NULL,
-  episode_start_datetime      TIMESTAMP     NULL,       --Fix me
-  episode_end_datetime        TIMESTAMP     NULL,
+  episode_start_datetime      DATETIME     NULL,       --Fix me
+  episode_end_datetime        DATETIME     NULL,
   episode_parent_id           BIGINT        NULL,
   episode_number              INTEGER       NULL,
   episode_object_concept_id   INTEGER       NOT NULL,
@@ -187,7 +187,7 @@ IF OBJECT_ID('procedure_occurrence_temp', 'U') IS NOT NULL           -- Drop tem
   person_id                    BIGINT        NOT NULL ,
   procedure_concept_id        BIGINT        NOT NULL ,
   procedure_date              DATE          NOT NULL ,
-  procedure_datetime          TIMESTAMP     NULL ,
+  procedure_datetime          DATETIME     NULL ,
   procedure_type_concept_id   BIGINT        NOT NULL ,
   modifier_concept_id         BIGINT        NULL ,
   quantity                    BIGINT        NULL ,
@@ -211,9 +211,9 @@ CREATE TABLE drug_exposure_temp
   person_id                     BIGINT        NOT NULL ,
   drug_concept_id               BIGINT        NOT NULL ,
   drug_exposure_start_date      DATE          NOT NULL ,
-  drug_exposure_start_datetime  TIMESTAMP      NULL ,
+  drug_exposure_start_datetime  DATETIME      NULL ,
   drug_exposure_end_date        DATE          NULL ,
-  drug_exposure_end_datetime    TIMESTAMP      NULL ,
+  drug_exposure_end_datetime    DATETIME      NULL ,
   verbatim_end_date             DATE          NULL ,
   drug_type_concept_id          BIGINT        NOT NULL ,
   stop_reason                   VARCHAR(20)   NULL ,
@@ -296,15 +296,15 @@ INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id],
 	  SELECT DISTINCT record_id, asd.schema_concept_id
 	  FROM
 	  (
-	  SELECT DISTINCT 
-					record_id
-					,  histology_site
-					, naaccr_item_number
-					, naaccr_item_value
-	  FROM [NAACCR_OMOP].[dbo].[naaccr_data_points]
-	  WHERE schema_concept_id IS NULL 
-	  --AND naaccr_item_number in (SELECT DISTINCT [discrim_item_num] FROM [NAACCR_OMOP].[dbo].[ambig_schema_discrim]) 
-	  AND naaccr_item_number in ('220', '2879')
+		  SELECT DISTINCT 
+						record_id
+						,  histology_site
+						, naaccr_item_number
+						, naaccr_item_value
+		  FROM [NAACCR_OMOP].[dbo].[naaccr_data_points]
+		  WHERE schema_concept_id IS NULL 
+		  --AND naaccr_item_number in (SELECT DISTINCT [discrim_item_num] FROM [NAACCR_OMOP].[dbo].[ambig_schema_discrim]) 
+		  AND naaccr_item_number in ('220', '2879')
 	  ) x
 	  INNER JOIN 
 	  (
@@ -364,8 +364,11 @@ INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id],
 --Step 1: Diagnosis Condition Occurrence
 
 
+/* Not needed with schema_concept_id?
 
 --Restrict to schemas that do not have ICDO overlapping site/histology combinations
+
+
 INSERT INTO concept_temp
 (  concept_id
       , concept_name
@@ -405,6 +408,8 @@ WHERE c3.concept_id IN(
   GROUP BY c2.concept_id
 );
 
+*/
+
 INSERT INTO condition_occurrence_temp
 (
     condition_occurrence_id
@@ -425,11 +430,16 @@ INSERT INTO condition_occurrence_temp
   , condition_status_concept_id
   , record_id
 )
-SELECT ( CASE WHEN  (SELECT MAX(condition_occurrence_id) FROM condition_occurrence) IS NULL THEN 0 ELSE  (SELECT MAX(condition_occurrence_id) FROM condition_occurrence) END + row_number() over()) AS condition_occurrence_id
+				
+SELECT ( CASE WHEN  (SELECT MAX(condition_occurrence_id) FROM condition_occurrence) IS NULL 
+					THEN 0 
+					ELSE  (SELECT MAX(condition_occurrence_id) FROM condition_occurrence) 
+				END + row_number() over (order by record_id)
+	  ) AS condition_occurrence_id
       , s.person_id                                                                                           AS person_id
       , c2.concept_id                                                                                         AS condition_concept_id
-      , CASE WHEN length(s.naaccr_item_value) = 8 THEN to_date(s.naaccr_item_value,'YYYYMMDD') ELSE NULL END  AS condition_start_date
-      , CASE WHEN length(s.naaccr_item_value) = 8 THEN to_date(s.naaccr_item_value,'YYYYMMDD') ELSE NULL END  AS condition_start_datetime
+      , diag_date																							  AS condition_start_date
+      , diag_date																							  AS condition_start_datetime
       , NULL                                                                                                  AS condition_end_date
       , NULL                                                                                                  AS condition_end_datetime
       , 32534                                                                                                 AS condition_type_concept_id -- ‘Tumor registry’ concept
@@ -442,17 +452,38 @@ SELECT ( CASE WHEN  (SELECT MAX(condition_occurrence_id) FROM condition_occurren
       , NULL                                                                                                  AS condition_status_source_value
       , NULL                                                                                                  AS condition_status_concept_id
       , s.record_id                                                                                           AS record_id
-FROM naaccr_data_points AS s JOIN concept d                    ON d.vocabulary_id = 'ICDO3' AND d.concept_code = s.histology_site
-                             JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
-                             JOIN concept c1                   ON cr1.concept_id_2 = c1.concept_id AND c1.vocabulary_id = 'NAACCR'
-                             JOIN concept_temp                 ON c1.concept_id = concept_temp.concept_id
-                             JOIN concept_relationship    ra   ON ra.concept_id_1 = d.concept_id AND ra.relationship_id = 'Maps to'
-                             JOIN concept  c2                  ON c2.standard_concept = 'S' AND ra.concept_id_2 = c2.concept_id
-WHERE s.naaccr_item_number = '390'
-AND s.naaccr_item_value IS NOT NULL
-AND s.person_id IS NOT NULL;
+FROM 
 
+	(	
+		SELECT *,
+			  --TODO: Does LEN() translate in SqlRender?
+			 CASE WHEN LEN(naaccr_item_value) = 8 
+				THEN  TRY_PARSE(SUBSTRING(naaccr_item_value, 1,4) + '-' + SUBSTRING(naaccr_item_value, 5,2)+ '-' + SUBSTRING(naaccr_item_value, 7,2) as date)
+				ELSE NULL 
+			END as diag_date
+		FROM naaccr_data_points
+		WHERE naaccr_item_number = '390'
+		AND naaccr_item_value IS NOT NULL
+		AND person_id IS NOT NULL
+	) s 
+		JOIN concept d                    
+			ON d.vocabulary_id = 'ICDO3' 
+			AND d.concept_code = s.histology_site
+   --   JOIN concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema'
+   --   JOIN concept c1                   ON cr1.concept_id_2 = c1.concept_id AND c1.vocabulary_id = 'NAACCR'
+   --   JOIN concept_temp                 ON c1.concept_id = concept_temp.concept_id
+   
+        JOIN concept_relationship    ra   
+			ON ra.concept_id_1 = d.concept_id
+			AND ra.relationship_id = 'Maps to'
+        JOIN concept  c2                  
+			ON c2.standard_concept = 'S' 
+			AND ra.concept_id_2 = c2.concept_id
+			AND c2.domain_id = 'Condition'
+	WHERE s.diag_date IS NOT NULL
+	;
 
+-- assumes there is no IDENTITY on condition_occurrence_id
 INSERT INTO condition_occurrence
 (
     condition_occurrence_id
@@ -488,7 +519,8 @@ SELECT  condition_occurrence_id
       , condition_source_concept_id
       , condition_status_source_value
       , condition_status_concept_id
-FROM condition_occurrence_temp;
+FROM condition_occurrence_temp
+;
 
 --Step 2: Diagnosis Modifiers Standard categorical
 
