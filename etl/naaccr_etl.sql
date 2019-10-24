@@ -73,12 +73,14 @@ AND (
 
 
 
+
 -- Create temporary tables 
 
 
-DROP TABLE IF EXISTS concept_temp;
+IF OBJECT_ID('concept_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
+  DROP TABLE concept_temp;  
 
-CREATE TEMPORARY TABLE concept_temp (
+CREATE TABLE concept_temp (
   concept_id          BIGINT        NOT NULL ,
   concept_name        VARCHAR(255)  NOT NULL ,
   domain_id            VARCHAR(20)    NOT NULL ,
@@ -92,9 +94,11 @@ CREATE TEMPORARY TABLE concept_temp (
 )
 ;
 
-DROP TABLE IF EXISTS condition_occurrence_temp;
 
-CREATE TEMPORARY TABLE condition_occurrence_temp
+IF OBJECT_ID('condition_occurrence_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
+  DROP TABLE condition_occurrence_temp;  
+
+CREATE TABLE condition_occurrence_temp
 (
   condition_occurrence_id        BIGINT        NOT NULL ,
   person_id                     BIGINT        NOT NULL ,
@@ -116,10 +120,10 @@ CREATE TEMPORARY TABLE condition_occurrence_temp
   record_id                     varchar(255)  NULL
 );
 
+IF OBJECT_ID('measurement_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
+  DROP TABLE measurement_temp;  
 
-DROP TABLE IF EXISTS measurement_temp;
-
-CREATE TEMPORARY TABLE measurement_temp
+CREATE TABLE measurement_temp
 (
   measurement_id                BIGINT       NOT NULL ,
   person_id                     BIGINT       NOT NULL ,
@@ -146,7 +150,8 @@ CREATE TEMPORARY TABLE measurement_temp
   record_id                     VARCHAR(255) NULL
 );
 
-DROP TABLE IF EXISTS episode_temp;
+IF OBJECT_ID('episode_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
+  DROP TABLE episode_temp;  
 
 CREATE TABLE episode_temp (
   episode_id                  BIGINT        NOT NULL,
@@ -164,14 +169,17 @@ CREATE TABLE episode_temp (
 )
 ;
 
-DROP TABLE IF EXISTS episode_event_temp;
+IF OBJECT_ID('episode_event_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
+  DROP TABLE episode_event_temp;  
+
 CREATE TABLE episode_event_temp (
   episode_id                      BIGINT   NOT NULL,
   event_id                         BIGINT   NOT NULL,
   episode_event_field_concept_id  INTEGER NOT NULL
 );
 
-DROP TABLE IF EXISTS procedure_occurrence_temp;
+IF OBJECT_ID('procedure_occurrence_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
+  DROP TABLE procedure_occurrence_temp;  
 
  CREATE TABLE procedure_occurrence_temp
  (
@@ -193,8 +201,9 @@ DROP TABLE IF EXISTS procedure_occurrence_temp;
   record_id                   VARCHAR(255)  NULL
  )
  ;
- 
-DROP TABLE IF EXISTS drug_exposure_temp;
+
+ IF OBJECT_ID('drug_exposure_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
+  DROP TABLE drug_exposure_temp;  
 
 CREATE TABLE drug_exposure_temp
 (
@@ -229,9 +238,8 @@ CREATE TABLE drug_exposure_temp
  
  -- Create ambiguous schema discriminator mapping tables
  
- 
-DROP TABLE IF EXISTS ambig_schema_discrim
-
+ IF OBJECT_ID('[ambig_schema_discrim]', 'U') IS NOT NULL           -- Drop temp table if it exists
+  DROP TABLE [ambig_schema_discrim];  
 
  CREATE TABLE [dbo].[ambig_schema_discrim](
 	[schema_concept_code] [varchar](50) NULL,
@@ -242,69 +250,39 @@ DROP TABLE IF EXISTS ambig_schema_discrim
  
  -- Populate table 
  
- INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'stomach', 35909803, N'2879', N'000')
-GO
+INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'stomach', 35909803, N'2879', N'000')
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'stomach', 35909803, N'2879', N'030')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'stomach', 35909803, N'2879', N'981')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'stomach', 35909803, N'2879', N'999')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'esophagus_gejunction', 35909724, N'2879', N'020')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'esophagus_gejunction', 35909724, N'2879', N'040')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'esophagus_gejunction', 35909724, N'2879', N'982')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_distal', 35909746, N'2879', N'040')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_distal', 35909746, N'2879', N'070')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_perihilar', 35909846, N'2879', N'010')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_perihilar', 35909846, N'2879', N'020')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_perihilar', 35909846, N'2879', N'050')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_perihilar', 35909846, N'2879', N'060')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'bile_ducts_perihilar', 35909846, N'2879', N'999')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'cystic_duct', 35909773, N'2879', N'030')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'lacrimal_gland', 35909735, N'2879', N'015')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'lacrimal_sac', 35909739, N'2879', N'025')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'melanoma_ciliary_body', 35909820, N'2879', N'010')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'melanoma_iris', 35909687, N'2879', N'020')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'nasopharynx', 35909813, N'2879', N'010')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'nasopharynx', 35909813, N'2879', N'981')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'pharyngeal_tonsil', 35909780, N'2879', N'020')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum', 35909796, N'220', N'1')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum', 35909796, N'220', N'3')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum', 35909796, N'220', N'4')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum', 35909796, N'220', N'5')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum', 35909796, N'220', N'9')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum_female_gen', 35909817, N'220', N'2')
-GO
 INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id], [discrim_item_num], [discrim_item_value]) VALUES (N'peritoneum_female_gen', 35909817, N'220', N'6')
 ;
  
  
  
- 
-  
  
  
  -- Append schema 
@@ -376,15 +354,6 @@ INSERT [dbo].[ambig_schema_discrim] ([schema_concept_code], [schema_concept_id],
    AND ndp.schema_concept_id IS NULL 
    WHEN MATCHED THEN UPDATE set ndp.schema_concept_id = schm.concept_id_2
    ;
- 
- 
- 
- 
- 
- 
- 
- 
- 
  
  
  
