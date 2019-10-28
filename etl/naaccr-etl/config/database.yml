@@ -1,0 +1,13 @@
+development:
+  host: localhost
+  adapter: postgresql
+  database: naaccr_etl_development
+  username: naaccr_etl_development
+  password: naaccr_etl_development
+
+test: &TEST
+  host: localhost
+  adapter: postgresql
+  database: naaccr_etl_test
+  username: naaccr_etl_test
+  password: naaccr_etl_test
