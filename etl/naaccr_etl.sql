@@ -771,9 +771,9 @@ SELECT NULL																																				        AS observation_id
       , NULL                                                                                                                                                    AS observation_type_concept_id 
       , NULL																							                                                        AS value_as_number
       , NULL		                                                                                                                                            AS value_as_concept_id
-	  , NULL																																					AS value_as_string
+      , NULL																																					AS value_as_string
       , NULL																			                                                                        AS unit_concept_id
-	  , NULL																																					AS qualifier_concept_id
+      , NULL																																					AS qualifier_concept_id
       , NULL                                                                                                                                                    AS provider_id
       , NULL                                                                                                                                                    AS visit_occurrence_id
       , NULL                                                                                                                                                    AS visit_detail_id
@@ -783,15 +783,15 @@ SELECT NULL																																				        AS observation_id
       , NULL		                                                                                                                                            AS qualifier_source_value
       , NULL                                                                                                                            						AS observation_event_id
       , NULL                                                                                                                                              		AS obs_event_field_concept_id 
-	  , NULL																																					AS value_as_datetime
+      , NULL																																					AS value_as_datetime
       , s.record_id                                                                                                                                             AS record_id
-FROM naaccr_data_points AS s JOIN full_201907_omop_v5.concept d                             ON d.vocabulary_id = 'NAACCR' AND d.concept_code = s.naaccr_item_value
-                             JOIN full_201907_omop_v5.concept_relationship cr1              ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Maps to'
-                             JOIN full_201907_omop_v5.concept AS c1                         ON cr1.concept_id_2 = c1.concept_id 
-							 AND c1.vocabulary_id = 'NAACCR' 
-							 AND c1.concept_class_id = 'NAACCR Value' 
-							 AND c1.domain_id = 'Observation' 
-							 AND c1.standard_concept = 'S'
+FROM naaccr_data_points AS s JOIN full_201907_omop_v5.concept d                   ON d.vocabulary_id = 'NAACCR' AND d.concept_code = s.naaccr_item_value
+                             JOIN full_201907_omop_v5.concept_relationship cr1    ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Maps to'
+                             JOIN full_201907_omop_v5.concept AS c1               ON cr1.concept_id_2 = c1.concept_id 
+			     AND c1.vocabulary_id = 'NAACCR' 
+			     AND c1.concept_class_id = 'NAACCR Value' 
+			     AND c1.domain_id = 'Observation' 
+			     AND c1.standard_concept = 'S'
 /* 
 As of now, all "did not happen" treatment concepts can be obtained with following criteria:
 vocabulary_id = 'NAACCR' AND concept_class_id = 'NAACCR Value' AND domain_id = 'Observation' AND standard_concept = 'S'
@@ -830,33 +830,33 @@ INSERT INTO observation
   , value_as_datetime
 --  , record_id
 )
-SELECT ( CASE WHEN  (SELECT MAX(observation_id) FROM observation_temp) IS NULL THEN 0 ELSE  (SELECT MAX(observation_id) FROM observation_temp) END + row_number() over()) AS observation_id
-      , s.person_id                                                                                                                                             AS person_id
-      , obt.observation_concept_id                                                                                                                              AS observation_concept_id
-      , s.naaccr_item_value  /* CASE WHEN length(s.naaccr_item_value) = 8 THEN to_date(s.naaccr_item_value,'YYYYMMDD') ELSE NULL END */                         AS observation_date
-      , s.naaccr_item_value  /* CASE WHEN length(s.naaccr_item_value) = 8 THEN to_date(s.naaccr_item_value,'YYYYMMDD') ELSE NULL END */                         AS observation_datetime
-      , 32534                                                                                                                                                   AS observation_type_concept_id -- ‘Tumor registry’ concept
-      , NULL																							                                                        AS value_as_number
-	  , NULL																																					AS value_as_string
-      , NULL		                                                                                                                                            AS value_as_concept_id
-	  , NULL																																					AS qualifier_concept_id
-      , NULL																			                                                                        AS unit_concept_id
-      , NULL                                                                                                                                                    AS provider_id
-      , NULL                                                                                                                                                    AS visit_occurrence_id
-      , NULL                                                                                                                                                    AS visit_detail_id
-      , obt.observation_source_value                                                                                                                            AS observation_source_value
-      , obt.observation_source_concept_id                                                                                                                       AS observation_source_concept_id
-      , NULL                                                                                                                                                    AS unit_source_value
-      , NULL		                                                                                                                                            AS qualifier_source_value
-      , NULL                                                                                                                            						AS observation_event_id
-      , NULL                                                                                                                                              		AS obs_event_field_concept_id 
-	  , NULL																																					AS value_as_datetime
---      , s.record_id                                                                                                                                             AS record_id
-FROM naaccr_data_points AS s JOIN full_201907_omop_v5.concept d                             ON d.concept_code = s.naaccr_item_number  
-                             JOIN full_201907_omop_v5.concept_relationship cr1              ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Date of variable'  -
-							 JOIN full_201907_omop_v5.concept AS c1                			ON cr1.concept_id_2 = c1.concept_id  
-							 JOIN full_201907_omop_v5.concept_relationship cr2				ON c1.concept_id = cr2.concept_id_1 AND cr2.relationship_id = 'Has Answer'
-							 JOIN observation_temp obt         								ON cr2.concept_id_2 = obt.observation_concept_id AND s.record_id = obt.record_id
+SELECT ( CASE WHEN  (SELECT MAX(observation_id) FROM observation_temp) IS NULL THEN 0 ELSE  (SELECT MAX(observation_id) FROM observation_temp) END + row_number() over()) 	AS observation_id
+      , s.person_id                                                                                                                                             		AS person_id
+      , obt.observation_concept_id                                                                                                                              		AS observation_concept_id
+      , CASE WHEN length(s.naaccr_item_value) = 8 THEN to_date(s.naaccr_item_value,'YYYYMMDD') ELSE NULL END                         						AS observation_date
+      , CASE WHEN length(s.naaccr_item_value) = 8 THEN to_date(s.naaccr_item_value,'YYYYMMDD') ELSE NULL END                          						AS observation_datetime
+      , 32534                                                                                                                                                   		AS observation_type_concept_id -- ‘Tumor registry’ concept
+      , NULL																	                                AS value_as_number
+      , NULL																					AS value_as_string
+      , NULL		                                                                                                                                            		AS value_as_concept_id
+      , NULL																					AS qualifier_concept_id
+      , NULL														                                          		AS unit_concept_id
+      , NULL                                                                                                                                                    		AS provider_id
+      , NULL                                                                                                                                                    		AS visit_occurrence_id
+      , NULL                                                                                                                                                    		AS visit_detail_id
+      , obt.observation_source_value                                                                                                                            		AS observation_source_value
+      , obt.observation_source_concept_id                                                                                                                       		AS observation_source_concept_id
+      , NULL                                                                                                                                                    		AS unit_source_value
+      , NULL		                                                                                                                                            		AS qualifier_source_value
+      , NULL                                                                                                                            					AS observation_event_id
+      , NULL                                                                                                                                              			AS obs_event_field_concept_id 
+      , NULL																					AS value_as_datetime
+--    , s.record_id                                                                                                                                             		AS record_id
+FROM naaccr_data_points AS s JOIN full_201907_omop_v5.concept d                    ON d.concept_code = s.naaccr_item_number  
+                             JOIN full_201907_omop_v5.concept_relationship cr1     ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Date of variable'  -
+			     JOIN full_201907_omop_v5.concept AS c1                ON cr1.concept_id_2 = c1.concept_id  
+			     JOIN full_201907_omop_v5.concept_relationship cr2	   ON c1.concept_id = cr2.concept_id_1 AND cr2.relationship_id = 'Has Answer'
+			     JOIN observation_temp obt         			   ON cr2.concept_id_2 = obt.observation_concept_id AND s.record_id = obt.record_id
 WHERE s.person_id IS NOT NULL
 AND s.naaccr_item_value IS NOT NULL
 AND TRIM(s.naaccr_item_value) != ''
