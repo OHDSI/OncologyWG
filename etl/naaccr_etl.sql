@@ -713,28 +713,28 @@ DROP TABLE IF EXISTS observation_temp;
 
 CREATE TEMPORARY TABLE observation_temp			-- Version 6.0
 (
-  observation_id                BIGINT       NULL ,
-  person_id                     BIGINT       NOT NULL ,
-  observation_concept_id        BIGINT       NOT NULL ,
-  observation_date              DATE         NULL ,
-  observation_datetime          TIMESTAMP    NULL ,
-  observation_type_concept_id   BIGINT       NULL ,
-  value_as_number               NUMERIC      NULL ,
-  value_as_string				VARCHAR(255) NULL,
-  value_as_concept_id           BIGINT       NULL ,
+  observation_id                	BIGINT       NULL ,
+  person_id                     	BIGINT       NOT NULL ,
+  observation_concept_id        	BIGINT       NOT NULL ,
+  observation_date              	DATE         NULL ,
+  observation_datetime          	TIMESTAMP    NULL ,
+  observation_type_concept_id   	BIGINT       NULL ,
+  value_as_number               	NUMERIC      NULL ,
+  value_as_string			VARCHAR(255) NULL,
+  value_as_concept_id           	BIGINT       NULL ,
   qualifier_concept_id			BIGINT       NULL ,
-  unit_concept_id               BIGINT       NULL ,
-  provider_id                   BIGINT       NULL ,
-  visit_occurrence_id           BIGINT       NULL ,
-  visit_detail_id               BIGINT       NULL ,
-  observation_source_value      VARCHAR(50)   NULL ,
-  observation_source_concept_id  BIGINT       NULL ,
-  unit_source_value             VARCHAR(50)  NULL ,
+  unit_concept_id               	BIGINT       NULL ,
+  provider_id                   	BIGINT       NULL ,
+  visit_occurrence_id           	BIGINT       NULL ,
+  visit_detail_id               	BIGINT       NULL ,
+  observation_source_value      	VARCHAR(50)   NULL ,
+  observation_source_concept_id  	BIGINT       NULL ,
+  unit_source_value             	VARCHAR(50)  NULL ,
   qualifier_source_value		VARCHAR(255) NULL,
   observation_event_id			BIGINT       NULL ,
-  obs_event_field_concept_id	BIGINT       NULL ,
-  value_as_datetime				BIGINT       NULL ,
-  record_id                     VARCHAR(255) NULL
+  obs_event_field_concept_id		BIGINT       NULL ,
+  value_as_datetime			BIGINT       NULL ,
+  record_id                     	VARCHAR(255) NULL
 );
 
 
