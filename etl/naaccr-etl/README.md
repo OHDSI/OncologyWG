@@ -4,7 +4,7 @@ This repository is for developing and testing the OMOP NAACCR ETL SQL.
 
 The repository is Ruby on Rails application but the OMOP NAACCR ETL SQL is pure SQL and the Ruby on Rails repository is used just to setup a test harness.
 
-The OMOP NAACCR SQL lives here: [/etl/naaccr_etl.sql](../etl/naaccr_etl.sql).
+The OMOP NAACCR SQL lives here: [/etl/naaccr_etl.sql](../naaccr_etl.sql).
 
 To run the test suite locally, do the following:
 
