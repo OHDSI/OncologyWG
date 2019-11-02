@@ -1,0 +1,2 @@
+class NaaccrDataPoint < ApplicationRecord
+end

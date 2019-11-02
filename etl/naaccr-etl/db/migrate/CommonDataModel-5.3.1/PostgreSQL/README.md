@@ -1,7 +1,7 @@
 Common-Data-Model / PostgreSQL
 =================
 
-This folder contains the SQL scripts for PostgreSQL. 
+This folder contains the SQL scripts for PostgreSQL.
 
 In order to create your instantiation of the Common Data Model, we recommend following these steps:
 
@@ -13,6 +13,6 @@ In order to create your instantiation of the Common Data Model, we recommend fol
 
 4. Execute the script `OMOP CDM postgresql indexes required.txt` to add the minimum set of indexes and primary keys we recommend.
 
-5. Execute the script `OMOP CDM postgresql constraints.txt` to add the constraints (foreign keys). 
+5. Execute the script `OMOP CDM postgresql constraints.txt` to add the constraints (foreign keys).
 
 Note: you could also apply the constraints and/or the indexes before loading the data, but this will slow down the insertion of the data considerably.

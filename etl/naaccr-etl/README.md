@@ -12,7 +12,7 @@ To run the test suite locally, do the following:
   * MAC: https://rvm.io/rvm/install
   * Windows: https://rubyinstaller.org/
 
-* Install PosgreSQL.
+* Install PostgreSQL.
   * https://www.postgresql.org/download/
 
 * Create databases.
@@ -28,4 +28,12 @@ To run the test suite locally, do the following:
 * Download the latest OMOP vocabulary distribution
   * http://athena.ohdsi.org
 
-*
+* Unzip and prepare the vocabulary to /db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport
+
+* Run the following rake tasks to prepare the testing environment.
+  * RAILS_ENV=test bundle exec rake db:migrate
+  * RAILS_ENV=test bundle exec rake setup:load_omop_vocabulary_tables
+  * RAILS_ENV=test bundle exec rake setup:compile_omop_indexes
+  * RAILS_ENV=test bundle exec rake setup:compile_omop_oncology_extension_indexes
+  * RAILS_ENV=test bundle exec rake setup:compile_omop_constraints
+  * RAILS_ENV=test bundle exec rake setup:compile_omop_oncology_extension_constraints

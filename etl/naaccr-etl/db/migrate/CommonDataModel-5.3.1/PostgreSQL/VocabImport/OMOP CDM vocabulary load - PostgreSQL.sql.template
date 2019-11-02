@@ -43,22 +43,22 @@ author:  Lee Evans
 
 *************************/
 
-\COPY DRUG_STRENGTH FROM '/Users/mjg994/Documents/source/OncologyWG/etl/naaccr-etl/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/DRUG_STRENGTH.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
+\COPY DRUG_STRENGTH FROM 'RAILS_ROOT/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/DRUG_STRENGTH.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
 
-\COPY CONCEPT FROM '/Users/mjg994/Documents/source/OncologyWG/etl/naaccr-etl/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/CONCEPT.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
+\COPY CONCEPT FROM 'RAILS_ROOT/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/CONCEPT.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
 
-\COPY CONCEPT_RELATIONSHIP FROM '/Users/mjg994/Documents/source/OncologyWG/etl/naaccr-etl/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/CONCEPT_RELATIONSHIP.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
+\COPY CONCEPT_RELATIONSHIP FROM 'RAILS_ROOT/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/CONCEPT_RELATIONSHIP.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
 
-\COPY CONCEPT_ANCESTOR FROM '/Users/mjg994/Documents/source/OncologyWG/etl/naaccr-etl/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/CONCEPT_ANCESTOR.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
+\COPY CONCEPT_ANCESTOR FROM 'RAILS_ROOT/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/CONCEPT_ANCESTOR.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
 
-\COPY CONCEPT_SYNONYM FROM '/Users/mjg994/Documents/source/OncologyWG/etl/naaccr-etl/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/CONCEPT_SYNONYM.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
+\COPY CONCEPT_SYNONYM FROM 'RAILS_ROOT/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/CONCEPT_SYNONYM.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
 
-\COPY VOCABULARY FROM '/Users/mjg994/Documents/source/OncologyWG/etl/naaccr-etl/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/VOCABULARY.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
+\COPY VOCABULARY FROM 'RAILS_ROOT/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/VOCABULARY.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
 
-\COPY RELATIONSHIP FROM '/Users/mjg994/Documents/source/OncologyWG/etl/naaccr-etl/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/RELATIONSHIP.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
+\COPY RELATIONSHIP FROM 'RAILS_ROOT/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/RELATIONSHIP.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
 
-\COPY CONCEPT_CLASS FROM '/Users/mjg994/Documents/source/OncologyWG/etl/naaccr-etl/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/CONCEPT_CLASS.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
+\COPY CONCEPT_CLASS FROM 'RAILS_ROOT/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/CONCEPT_CLASS.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
 
-\COPY DOMAIN FROM '/Users/mjg994/Documents/source/OncologyWG/etl/naaccr-etl/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/DOMAIN.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
+\COPY DOMAIN FROM 'RAILS_ROOT/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/DOMAIN.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
 
-\COPY CONCEPT_NUMERIC FROM '/Users/mjg994/Documents/source/OncologyWG/etl/naaccr-etl/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/CONCEPT_NUMERIC.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;
+\COPY CONCEPT_NUMERIC FROM 'RAILS_ROOT/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/CONCEPT_NUMERIC.csv' WITH DELIMITER E'\t' CSV HEADER QUOTE E'\b' ;

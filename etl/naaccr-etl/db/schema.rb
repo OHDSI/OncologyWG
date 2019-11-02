@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_10_28_121935) do
+ActiveRecord::Schema.define(version: 2019_10_30_115110) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -96,6 +96,13 @@ ActiveRecord::Schema.define(version: 2019_10_28_121935) do
     t.string "concept_class_id", limit: 20, null: false
     t.string "concept_class_name", limit: 255, null: false
     t.integer "concept_class_concept_id", null: false
+  end
+
+  create_table "concept_numeric", id: false, force: :cascade do |t|
+    t.integer "concept_id", null: false
+    t.decimal "value_as_number"
+    t.integer "unit_concept_id"
+    t.integer "operator_concept_id"
   end
 
   create_table "concept_relationship", id: false, force: :cascade do |t|
@@ -261,6 +268,26 @@ ActiveRecord::Schema.define(version: 2019_10_28_121935) do
     t.string "invalid_reason", limit: 1
   end
 
+  create_table "episode", id: false, force: :cascade do |t|
+    t.bigint "episode_id", null: false
+    t.bigint "person_id", null: false
+    t.integer "episode_concept_id", null: false
+    t.datetime "episode_start_datetime", null: false
+    t.datetime "episode_end_datetime"
+    t.bigint "episode_parent_id"
+    t.integer "episode_number"
+    t.integer "episode_object_concept_id", null: false
+    t.integer "episode_type_concept_id", null: false
+    t.string "episode_source_value", limit: 50
+    t.integer "episode_source_concept_id"
+  end
+
+  create_table "episode_event", id: false, force: :cascade do |t|
+    t.bigint "episode_id", null: false
+    t.bigint "event_id", null: false
+    t.integer "episode_event_field_concept_id", null: false
+  end
+
   create_table "fact_relationship", id: false, force: :cascade do |t|
     t.integer "domain_concept_id_1", null: false
     t.integer "fact_id_1", null: false
@@ -301,6 +328,8 @@ ActiveRecord::Schema.define(version: 2019_10_28_121935) do
     t.integer "measurement_source_concept_id"
     t.string "unit_source_value", limit: 50
     t.string "value_source_value", limit: 50
+    t.bigint "modifier_of_event_id"
+    t.integer "modifier_of_field_concept_id"
   end
 
   create_table "metadata", id: false, force: :cascade do |t|
@@ -311,6 +340,16 @@ ActiveRecord::Schema.define(version: 2019_10_28_121935) do
     t.integer "value_as_concept_id"
     t.date "metadata_date"
     t.datetime "metadata_datetime"
+  end
+
+  create_table "naaccr_data_points", id: false, force: :cascade do |t|
+    t.bigint "person_id"
+    t.string "record_id", limit: 255
+    t.string "naaccr_item_number", limit: 255
+    t.string "naaccr_item_value", limit: 255
+    t.string "histology", limit: 255
+    t.string "site", limit: 255
+    t.string "histology_site", limit: 255
   end
 
   create_table "note", id: false, force: :cascade do |t|
@@ -535,7 +574,7 @@ ActiveRecord::Schema.define(version: 2019_10_28_121935) do
     t.string "vocabulary_id", limit: 20, null: false
     t.string "vocabulary_name", limit: 255, null: false
     t.string "vocabulary_reference", limit: 255, null: false
-    t.string "vocabulary_version", limit: 255, null: false
+    t.string "vocabulary_version", limit: 255
     t.integer "vocabulary_concept_id", null: false
   end
 

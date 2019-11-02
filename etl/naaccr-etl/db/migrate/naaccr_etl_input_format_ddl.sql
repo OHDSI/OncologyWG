@@ -1,0 +1,1 @@
+../../../naaccr_etl_input_format_ddl.sql

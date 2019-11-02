@@ -1,11 +1,22 @@
 require 'fileutils'
-require 'csv'
 module NaaccrEtl
   module Setup
     def self.compile_omop_tables
       ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
 
       `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/CommonDataModel-5.3.1/PostgreSQL/OMOP CDM postgresql ddl.txt"`
+    end
+
+    def self.compile_omop_oncology_extension_tables
+      ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
+
+      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/OMOP CDM postgresql ddl Oncology Module.txt"`
+    end
+
+    def self.compile_naaccr_data_points
+      ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
+
+      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/naaccr_etl_input_format_ddl.sql"`
     end
 
     def self.load_omop_vocabulary_tables
@@ -18,59 +29,33 @@ module NaaccrEtl
 
       ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
       `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/OMOP CDM vocabulary load - PostgreSQL.sql"`
-    end
-
-    def self.compile_omop_constraints
-      ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
-      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/CommonDataModel-5.3.1/PostgreSQL/OMOP CDM postgresql constraints.sql"`
-    end
-
-    def self.compile_omop_vocabulary_indexes
-      ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
-      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/CommonDataModel-5.3.0/PostgreSQL/OMOP CDM postgresql indexes standardized vocabulary.sql"`
-    end
-
-    def self.drop_omop_indexes
-      ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
-      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/CommonDataModel-5.3.0/PostgreSQL/Drop OMOP CDM postgresql indexes.sql"`
-    end
-
-    def self.drop_omop_vocabulary_indexes
-      ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
-      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/CommonDataModel-5.3.0/PostgreSQL/Drop OMOP CDM postgresql indexes standardized vocabulary.sql"`
+      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/CDM_patch.sql"`
     end
 
     def self.compile_omop_indexes
       ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
-      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/CommonDataModel-5.3.0/PostgreSQL/OMOP CDM postgresql indexes.sql"`
+      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/CommonDataModel-5.3.1/PostgreSQL/OMOP CDM postgresql indexes.txt"`
     end
 
-    def self.truncate_omop_vocabulary_tables
-      ActiveRecord::Base.connection.execute('TRUNCATE TABLE concept CASCADE;')
-      ActiveRecord::Base.connection.execute('TRUNCATE TABLE concept_ancestor CASCADE;')
-      ActiveRecord::Base.connection.execute('TRUNCATE TABLE concept_class CASCADE;')
-      ActiveRecord::Base.connection.execute('TRUNCATE TABLE concept_relationship CASCADE;')
-      ActiveRecord::Base.connection.execute('TRUNCATE TABLE concept_synonym CASCADE;')
-      ActiveRecord::Base.connection.execute('TRUNCATE TABLE domain CASCADE;')
-      ActiveRecord::Base.connection.execute('TRUNCATE TABLE drug_strength CASCADE;')
-      ActiveRecord::Base.connection.execute('TRUNCATE TABLE relationship CASCADE;')
-      ActiveRecord::Base.connection.execute('TRUNCATE TABLE vocabulary CASCADE;')
-    end
-
-    def self.drop_omop_constraints
+    def self.compile_omop_oncology_extension_indexes
       ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
-      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/CommonDataModel-5.3.0/PostgreSQL/DROP OMOP CDM postgresql constraints.sql"`
+      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/OMOP CDM postgresql pk indexes Oncology Module.txt"`
+    end
+
+    def self.compile_omop_constraints
+      ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
+      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/CommonDataModel-5.3.1/PostgreSQL/OMOP CDM postgresql constraints.txt"`
+    end
+
+    def self.compile_omop_oncology_extension_constraints
+      ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
+      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/OMOP CDM postgresql constraints Oncology Module.txt"`
+    end
+
+    def self.execute_naaccr_etl
+      ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
+
+      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} --u #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/lib/naaccr_etl.sql"`
     end
   end
 end
-
-# vocabulary refresh
-# bundle exec rake db:migrate
-# bundle exec rake data:drop_omop_indexes
-# bundle exec rake data:drop_omop_vocabulary_indexes
-# bundle exec rake data:truncate_omop_vocabulary_tables
-# bundle exec rake data:drop_omop_constraints
-# bundle exec rake data:load_omop_vocabulary_tables
-# bundle exec rake data:compile_omop_vocabulary_indexes
-# bundle exec rake data:compile_omop_constraints
-# bundle exec rake data:compile_omop_indexes
