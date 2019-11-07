@@ -30,6 +30,8 @@ To run the test suite locally, do the following:
 
 * Unzip and prepare the vocabulary to /db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport
 
+* Run `bundle install` to install all dependencies.
+
 * Run the following rake tasks to prepare the testing environment.
   * RAILS_ENV=test bundle exec rake db:migrate
   * RAILS_ENV=test bundle exec rake setup:load_omop_vocabulary_tables
