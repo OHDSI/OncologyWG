@@ -322,7 +322,47 @@ CREATE TABLE naaccr_data_points_tmp
 
 
 	 -- Start with ambiguous schemas
-	  MERGE naaccr_data_points_tmp ndp
+	  UPDATE naaccr_data_points_tmp 
+	  SET schema_concept_id = schm.schema_concept_id,
+			schema_concept_code = schm.schema_concept_code
+	  FROM naaccr_data_points_tmp ndp
+	  INNER JOIN
+	  (
+		  SELECT DISTINCT record_id, asd.schema_concept_id, asd.schema_concept_code
+		  FROM
+		  (
+			  SELECT DISTINCT 
+							record_id
+							,  histology_site
+							, naaccr_item_number
+							, naaccr_item_value
+			  FROM [NAACCR_OMOP].[dbo].[naaccr_data_points_tmp]
+			  WHERE schema_concept_id IS NULL 
+			  --AND naaccr_item_number in (SELECT DISTINCT [discrim_item_num] FROM [NAACCR_OMOP].[dbo].[ambig_schema_discrim]) 
+			  AND naaccr_item_number in ('220', '2879')
+		  ) x
+		  INNER JOIN 
+		  (
+			SELECT DISTINCT conc.concept_code, cr.concept_id_2
+			FROM concept conc
+			INNER JOIN concept_relationship cr
+			ON conc. vocabulary_id = 'ICDO3'
+			AND cr.concept_id_1 = conc.concept_id 
+			AND relationship_id = 'ICDO to Schema'
+			-- Theres a ton of duplicated schemas here that arent in the mapping file... Item/value must be identical between schemas? 
+			AND cr.concept_id_2 IN (SELECT DISTINCT schema_concept_id FROM ambig_schema_discrim)
+		  ) ambig_cond
+		  ON x.histology_site = ambig_cond.concept_code
+		  INNER JOIN ambig_schema_discrim asd
+		  ON ambig_cond.concept_id_2 = asd.schema_concept_id
+		  AND x.naaccr_item_number = asd.discrim_item_num
+		  AND x.naaccr_item_value = asd.discrim_item_value
+	  ) schm 
+	  ON  ndp.record_id = schm.record_id
+	  WHERE schm.schema_concept_id IS NOT NULL
+	  ; 
+	/**
+   MERGE naaccr_data_points_tmp ndp
 	  USING 
 	  (
 		  SELECT DISTINCT record_id, asd.schema_concept_id, asd.schema_concept_code
@@ -361,9 +401,45 @@ CREATE TABLE naaccr_data_points_tmp
 			SET ndp.schema_concept_id = schm.schema_concept_id,
 			 ndp.schema_concept_code = schm.schema_concept_code
 	  ; 
- 
+	  **/
+
+
  
 	 -- Append standard schemas - uses histology_site
+	   UPDATE naaccr_data_points_tmp 
+		SET schema_concept_id = schm.schema_concept_id,
+				schema_concept_code = schm.schema_concept_code 
+		FROM naaccr_data_points_tmp ndp
+		INNER JOIN
+	   (
+			SELECT DISTINCT x.concept_code
+						, c2.concept_id schema_concept_id
+						, c2.concept_code schema_concept_code
+			FROM
+			(
+				SELECT  c1.concept_code
+					, cr.concept_id_2
+					-- arbitrary selection of schema, assuming they are identical
+					, ROW_NUMBER() OVER (PARTITION BY c1.concept_id ORDER BY cr.concept_id_2) rn 
+				FROM concept c1 
+				INNER JOIN concept_relationship cr 
+				ON c1.vocabulary_id='ICDO3'
+				AND c1.concept_id = cr.concept_id_1 
+				AND relationship_id = 'ICDO to Schema'
+				-- Schema isn't listed as ambiguous
+				AND cr.concept_id_2 NOT IN (SELECT DISTINCT schema_concept_id FROM ambig_schema_discrim)
+			) x
+			INNER JOIN concept c2
+			ON x.concept_id_2 = c2.concept_id
+			WHERE rn = 1
+	   ) schm 
+	   ON ndp.histology_site = schm.concept_code
+	   -- ignore if already mapped
+	   WHERE ndp.schema_concept_id IS NULL 
+	   AND schm.schema_concept_id IS NOT NULL 				
+	   ;
+
+	   /**
 	   MERGE naaccr_data_points_tmp ndp
 	   USING 
 	   (
@@ -396,11 +472,28 @@ CREATE TABLE naaccr_data_points_tmp
 				set ndp.schema_concept_id = schm.schema_concept_id,
 							 ndp.schema_concept_code = schm.schema_concept_code
 	   ;
+	   **/
  
  
 	-- Variables
 
 		-- schema-independent
+	UPDATE naaccr_data_points_tmp 
+	SET variable_concept_code = conc.concept_code
+				,variable_concept_id = conc.concept_id
+	FROM naaccr_data_points_tmp ndp
+	INNER JOIN
+	(
+		SELECT concept_id, concept_code
+		FROM concept
+		WHERE vocabulary_id = 'NAACCR'	
+		AND concept_class_id = 'NAACCR Variable'
+	) conc
+	ON ndp.naaccr_item_number IS NULL
+	AND conc.concept_id IS NOT NULL 	
+	AND ndp.naaccr_item_number = conc.concept_code	
+	;
+	/**
 	MERGE naaccr_data_points_tmp ndp
 	USING
 	(
@@ -415,56 +508,61 @@ CREATE TABLE naaccr_data_points_tmp
 			SET ndp.variable_concept_code = conc.concept_code
 				,ndp.variable_concept_id = conc.concept_id
 	;
+	**/
 
 		--schema dependent 
-	MERGE naaccr_data_points_tmp ndp
-	USING
+	UPDATE naaccr_data_points_tmp 
+	SET variable_concept_code = conc.concept_code
+				,variable_concept_id = conc.concept_id
+	FROM naaccr_data_points_tmp ndp
+	INNER JOIN
 	(
 		SELECT concept_id, concept_code
 		FROM concept
 		WHERE vocabulary_id = 'NAACCR'	
 		AND concept_class_id = 'NAACCR Variable'
 	) conc
-	ON CONCAT(ndp.schema_concept_code,'@', ndp.naaccr_item_number) = conc.concept_code
-	WHEN MATCHED
-		THEN UPDATE
-			SET ndp.variable_concept_code = conc.concept_code
-				,ndp.variable_concept_id = conc.concept_id
+	ON ndp.naaccr_item_number IS NULL
+	AND conc.concept_id IS NOT NULL 	
+	AND CONCAT(ndp.schema_concept_code,'@', ndp.naaccr_item_number) = conc.concept_code
+	
 	;
  
  
 	-- Values 
 
-	MERGE naaccr_data_points_tmp ndp
-	USING
+	UPDATE naaccr_data_points_tmp 
+	SET value_concept_code = conc.concept_code
+			,value_concept_id = conc.concept_id
+	FROM naaccr_data_points_tmp ndp
+	INNER JOIN
 	(
 		SELECT concept_id, concept_code
 		FROM concept
 		WHERE vocabulary_id = 'NAACCR'	
 		AND concept_class_id = 'NAACCR Value'
 	) conc 
-	ON LEN(ndp.naaccr_item_value) < 10 
+	ON ndp.naaccr_item_number IS NULL
+	AND conc.concept_id IS NOT NULL 	
+	-- placeholder for better approach
+	AND LEN(ndp.naaccr_item_value) < 10 
 	AND CONCAT(ndp.variable_concept_code,'@', ndp.naaccr_item_value) = conc.concept_code
-	WHEN MATCHED THEN UPDATE
-		SET ndp.value_concept_code = conc.concept_code
-			,ndp.value_concept_id = conc.concept_id
-		;
+	;
 
 
 	-- Type
 
-
-	MERGE naaccr_data_points_tmp ndp
-	USING
+	UPDATE naaccr_data_points_tmp 
+	SET type_concept_id = cr.concept_id_2
+	FROM naaccr_data_points_tmp ndp
+	INNER JOIN
 	(
 		SELECT *
 		FROM concept_relationship
 		WHERE relationship_id = 'Has type'
 	) cr
 	ON ndp.variable_concept_id = cr.concept_id_1
-	WHEN MATCHED THEN UPDATE
-		SET ndp.type_concept_id = cr.concept_id_2
-		;
+	;
 
 
 
@@ -1550,8 +1648,10 @@ Insert new:
 
 Update existing person table:
 	 
-	MERGE person per
-	USING
+	UPDATE person 
+	SET death_datetime = dth.max_dth_date
+	FROM person per
+	INNER JOIN
 	(
 		 SELECT per.person_id, dth_dates.max_dth_date
 		 FROM
@@ -1573,9 +1673,7 @@ Update existing person table:
 		 ON per.person_id = dth_dates.person_id
 	) dth
 	ON per.person_id = dth.person_id
-	--AND per.death_datetime IS NULL
-	WHEN MATCHED THEN UPDATE
-		SET per.death_datetime = dth.max_dth_date
+	--AND per.death_datetime IS NULL	
 		;
 
 
