@@ -328,7 +328,7 @@ CREATE TABLE naaccr_data_points_tmp
 	  FROM naaccr_data_points_tmp ndp
 	  INNER JOIN
 	  (
-		  SELECT DISTINCT record_id, asd.schema_concept_id, asd.schema_concept_code
+		  SELECT DISTINCT record_id rec_id, asd.schema_concept_id, asd.schema_concept_code
 		  FROM
 		  (
 			  SELECT DISTINCT 
@@ -358,8 +358,9 @@ CREATE TABLE naaccr_data_points_tmp
 		  AND x.naaccr_item_number = asd.discrim_item_num
 		  AND x.naaccr_item_value = asd.discrim_item_value
 	  ) schm 
-	  ON  ndp.record_id = schm.record_id
-	  WHERE schm.schema_concept_id IS NOT NULL
+	  ON  ndp.record_id = schm.rec_id
+	 
+	  WHERE record_id = ndp.record_id
 	  ; 
 	/**
    MERGE naaccr_data_points_tmp ndp
@@ -436,7 +437,8 @@ CREATE TABLE naaccr_data_points_tmp
 	   ON ndp.histology_site = schm.concept_code
 	   -- ignore if already mapped
 	   WHERE ndp.schema_concept_id IS NULL 
-	   AND schm.schema_concept_id IS NOT NULL 				
+	   AND schm.schema_concept_id IS NOT NULL
+	   AND record_id = ndp.record_id 				
 	   ;
 
 	   /**
@@ -489,9 +491,11 @@ CREATE TABLE naaccr_data_points_tmp
 		WHERE vocabulary_id = 'NAACCR'	
 		AND concept_class_id = 'NAACCR Variable'
 	) conc
-	ON ndp.naaccr_item_number IS NULL
+	ON variable_concept_id IS NULL
 	AND conc.concept_id IS NOT NULL 	
 	AND ndp.naaccr_item_number = conc.concept_code	
+	WHERE record_id = ndp.record_id
+	AND naaccr_item_number = ndp.naaccr_item_number
 	;
 	/**
 	MERGE naaccr_data_points_tmp ndp
@@ -522,10 +526,11 @@ CREATE TABLE naaccr_data_points_tmp
 		WHERE vocabulary_id = 'NAACCR'	
 		AND concept_class_id = 'NAACCR Variable'
 	) conc
-	ON ndp.naaccr_item_number IS NULL
+	ON ndp.variable_concept_id IS NULL
 	AND conc.concept_id IS NOT NULL 	
 	AND CONCAT(ndp.schema_concept_code,'@', ndp.naaccr_item_number) = conc.concept_code
-	
+	WHERE record_id = ndp.record_id
+	AND naaccr_item_number = ndp.naaccr_item_number
 	;
  
  
@@ -542,11 +547,13 @@ CREATE TABLE naaccr_data_points_tmp
 		WHERE vocabulary_id = 'NAACCR'	
 		AND concept_class_id = 'NAACCR Value'
 	) conc 
-	ON ndp.naaccr_item_number IS NULL
+	ON ndp.value_concept_id IS NULL
 	AND conc.concept_id IS NOT NULL 	
 	-- placeholder for better approach
 	AND LEN(ndp.naaccr_item_value) < 10 
 	AND CONCAT(ndp.variable_concept_code,'@', ndp.naaccr_item_value) = conc.concept_code
+	WHERE record_id = ndp.record_id
+	AND naaccr_item_number = ndp.naaccr_item_number
 	;
 
 
@@ -562,6 +569,8 @@ CREATE TABLE naaccr_data_points_tmp
 		WHERE relationship_id = 'Has type'
 	) cr
 	ON ndp.variable_concept_id = cr.concept_id_1
+	WHERE record_id = ndp.record_id
+	AND naaccr_item_number = ndp.naaccr_item_number
 	;
 
 
