@@ -55,8 +55,6 @@ Contents:
 
 --Preliminary mapping/cleanup
 
--- Clear data from previous executions
-
 DELETE FROM condition_occurrence
 WHERE condition_type_concept_id = 32534;
 
@@ -72,7 +70,6 @@ WHERE procedure_type_concept_id = 32534;
 DELETE FROM episode;
 
 DELETE FROM episode_event;
-
 
 
 -- Create temporary tables 
