@@ -1,1 +1,0 @@
-../../../../ddl/PostgreSQL/CDM_patch.sql

@@ -30,6 +30,8 @@ To run the test suite locally, do the following:
 
 * Unzip and prepare the vocabulary to /db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport
 
+* Navigate to the directory containing this Readme file: /etl/naaccr_etl.
+
 * Run `bundle install` to install all dependencies.
 
 * Run the following rake tasks to prepare the testing environment.
