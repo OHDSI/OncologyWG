@@ -34,11 +34,4 @@ In order to create your instance of the Common Data Model, we recommend followin
    9. OMOP CDM redshift vocab load copy vocabulary_3_9.sql
    10. OMOP CDM redshift vocab load copy concept_numeric_3_10.sql 
    ***Note the source data file CONCEPT_NUMERIC.csv is located with this directory.
-   
-   
-   
-   
-   
-   
-   
-   
+  
