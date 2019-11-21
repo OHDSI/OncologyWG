@@ -77,8 +77,7 @@ DELETE FROM episode_event;
 -- Create temporary tables
 
 
-IF OBJECT_ID('condition_occurrence_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE condition_occurrence_temp;  
+DROP TABLE IF EXISTS condition_occurrence_temp;  
 
 CREATE TABLE condition_occurrence_temp
 (
@@ -86,9 +85,9 @@ CREATE TABLE condition_occurrence_temp
   person_id                     BIGINT        NOT NULL ,
   condition_concept_id          BIGINT        NOT NULL ,
   condition_start_date          DATE          NOT NULL ,
-  condition_start_datetime      DATETIME     NULL ,
+  condition_start_datetime      TIMESTAMP     NULL ,
   condition_end_date            DATE          NULL ,
-  condition_end_datetime        DATETIME     NULL ,
+  condition_end_datetime        TIMESTAMP     NULL ,
   condition_type_concept_id     BIGINT        NOT NULL ,
   stop_reason                   VARCHAR(20)    NULL ,
   provider_id                   BIGINT        NULL ,
@@ -102,8 +101,7 @@ CREATE TABLE condition_occurrence_temp
   record_id                     varchar(255)  NULL
 );
 
-IF OBJECT_ID('measurement_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE measurement_temp;  
+DROP TABLE IF EXISTS measurement_temp;  
 
 CREATE TABLE measurement_temp
 (
@@ -112,7 +110,7 @@ CREATE TABLE measurement_temp
   measurement_concept_id        BIGINT       NOT NULL ,
   measurement_date              DATE         NOT NULL ,
   measurement_time              VARCHAR(10)  NULL ,
-  measurement_datetime          DATETIME    NULL ,
+  measurement_datetime          TIMESTAMP    NULL ,
   measurement_type_concept_id   BIGINT       NOT NULL ,
   operator_concept_id           BIGINT       NULL ,
   value_as_number               NUMERIC      NULL ,
@@ -132,15 +130,14 @@ CREATE TABLE measurement_temp
   record_id                     VARCHAR(255) NULL
 );
 
-IF OBJECT_ID('episode_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE episode_temp;  
+DROP TABLE IF EXISTS episode_temp;  
 
 CREATE TABLE episode_temp (
   episode_id                  BIGINT        NOT NULL,
   person_id                   BIGINT        NOT NULL,
   episode_concept_id          INTEGER       NOT NULL,
-  episode_start_datetime      DATETIME     NULL,       --Fix me
-  episode_end_datetime        DATETIME     NULL,
+  episode_start_datetime      TIMESTAMP     NULL,       --Fix me
+  episode_end_datetime        TIMESTAMP     NULL,
   episode_parent_id           BIGINT        NULL,
   episode_number              INTEGER       NULL,
   episode_object_concept_id   INTEGER       NOT NULL,
@@ -151,8 +148,7 @@ CREATE TABLE episode_temp (
 )
 ;
 
-IF OBJECT_ID('episode_event_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE episode_event_temp;  
+DROP TABLE IF EXISTS episode_event_temp;  
 
 CREATE TABLE episode_event_temp (
   episode_id                      BIGINT   NOT NULL,
@@ -160,8 +156,7 @@ CREATE TABLE episode_event_temp (
   episode_event_field_concept_id  INTEGER NOT NULL
 );
 
-IF OBJECT_ID('procedure_occurrence_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE procedure_occurrence_temp;  
+DROP TABLE IF EXISTS procedure_occurrence_temp;  
 
  CREATE TABLE procedure_occurrence_temp
  (
@@ -169,7 +164,7 @@ IF OBJECT_ID('procedure_occurrence_temp', 'U') IS NOT NULL           -- Drop tem
   person_id                    BIGINT        NOT NULL ,
   procedure_concept_id        BIGINT        NOT NULL ,
   procedure_date              DATE          NOT NULL ,
-  procedure_datetime          DATETIME     NULL ,
+  procedure_datetime          TIMESTAMP     NULL ,
   procedure_type_concept_id   BIGINT        NOT NULL ,
   modifier_concept_id         BIGINT        NULL ,
   quantity                    BIGINT        NULL ,
@@ -184,8 +179,7 @@ IF OBJECT_ID('procedure_occurrence_temp', 'U') IS NOT NULL           -- Drop tem
  )
  ;
 
- IF OBJECT_ID('drug_exposure_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE drug_exposure_temp;  
+ DROP TABLE IF EXISTS drug_exposure_temp;  
 
 CREATE TABLE drug_exposure_temp
 (
@@ -193,9 +187,9 @@ CREATE TABLE drug_exposure_temp
   person_id                     BIGINT        NOT NULL ,
   drug_concept_id               BIGINT        NOT NULL ,
   drug_exposure_start_date      DATE          NOT NULL ,
-  drug_exposure_start_datetime  DATETIME      NULL ,
+  drug_exposure_start_datetime  TIMESTAMP      NULL ,
   drug_exposure_end_date        DATE          NULL ,
-  drug_exposure_end_datetime    DATETIME      NULL ,
+  drug_exposure_end_datetime    TIMESTAMP      NULL ,
   verbatim_end_date             DATE          NULL ,
   drug_type_concept_id          BIGINT        NOT NULL ,
   stop_reason                   VARCHAR(20)   NULL ,
@@ -218,8 +212,7 @@ CREATE TABLE drug_exposure_temp
  
  -- Create ambiguous schema discriminator mapping tables
  
- IF OBJECT_ID('ambig_schema_discrim', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE ambig_schema_discrim;  
+ DROP TABLE IF EXISTS ambig_schema_discrim;  
 
  CREATE TABLE ambig_schema_discrim(
 	schema_concept_code varchar(50) NULL,
@@ -261,8 +254,7 @@ CREATE TABLE drug_exposure_temp
 
 
 
-IF OBJECT_ID('naaccr_data_points_tmp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE naaccr_data_points_tmp;  
+DROP TABLE IF EXISTS naaccr_data_points_tmp;  
 
 CREATE TABLE naaccr_data_points_tmp
 (
@@ -270,13 +262,13 @@ CREATE TABLE naaccr_data_points_tmp
 	record_id VARCHAR(255) NULL,
 	histology_site VARCHAR(255) NULL,
 	naaccr_item_number VARCHAR(255) NULL,
-	naaccr_item_value VARCHAR(max) NULL,
+	naaccr_item_value TEXT NULL,
 	schema_concept_id BIGINT NULL,
 	schema_concept_code VARCHAR(255),
 	variable_concept_id BIGINT NULL,
 	variable_concept_code VARCHAR(255) NULL,
 	value_concept_id BIGINT NULL,
-	value_concept_code VARCHAR(max) NULL,
+	value_concept_code TEXT NULL,
 	type_concept_id BIGINT NULL,
 )
 ;
@@ -325,7 +317,7 @@ CREATE TABLE naaccr_data_points_tmp
   ,'3220'
   )
   AND (
-    LEN(naaccr_item_value) != 8
+    CHAR_LENGTH(naaccr_item_value) != 8
 	or
 	SUBSTRING(naaccr_item_value, 1,4) NOT BETWEEN '1800' AND '2099' -- year
 	or
@@ -611,7 +603,7 @@ CREATE TABLE naaccr_data_points_tmp
   AND c1.concept_id IS NOT NULL
   AND c1.vocabulary_id = 'NAACCR'
   AND c1.concept_class_id = 'NAACCR Value'
-  AND LEN(naaccr_data_points_tmp.naaccr_item_value) < 10
+  AND CHAR_LENGTH(naaccr_data_points_tmp.naaccr_item_value) < 10
   AND CONCAT(naaccr_data_points_tmp.variable_concept_code,'@', naaccr_data_points_tmp.naaccr_item_value) = c1.concept_code;
 
   -- Type
@@ -676,8 +668,8 @@ CREATE TABLE naaccr_data_points_tmp
       ) AS condition_occurrence_id
       , s.person_id                                                                                           AS person_id
       , c2.concept_id                                                                                         AS condition_concept_id
-      , CONVERT(date, s.naaccr_item_value,112)  		                                                          AS condition_start_date
-      , CONVERT(date, s.naaccr_item_value,112)																	  AS condition_start_datetime
+      , TO_DATE(s.naaccr_item_value,112, 'yyyymmdd')  		                                                          AS condition_start_date
+      , TO_DATE(s.naaccr_item_value,112, 'yyyymmdd')																	  AS condition_start_datetime
       , NULL                                                                                                  AS condition_end_date
       , NULL                                                                                                  AS condition_end_datetime
       , 32534                                                                                                 AS condition_type_concept_id -- ‘Tumor registry’ concept
@@ -797,7 +789,7 @@ CREATE TABLE naaccr_data_points_tmp
         WHEN ndp.value_concept_id IS NULL
             AND ndp.type_concept_id = 32676
   --          AND ISNUMERIC(ndp.naaccr_item_value) = 1 MGURLEY There is no ISNUMERIC on PostgreSQL
-          THEN COALESCE(CAST(ndp.naaccr_item_value AS float), conc_num.value_as_number)
+          THEN COALESCE(CAST(ndp.naaccr_item_value AS NUMERIC), conc_num.value_as_number)
         ELSE NULL
       END as value_as_number
         , ndp.value_concept_id                                                                                                                          AS value_as_concept_id
@@ -839,7 +831,7 @@ CREATE TABLE naaccr_data_points_tmp
                                 )
                       )
       -- filter empty values
-      AND LEN(naaccr_item_value) > 0
+      AND CHAR_LENGTH(naaccr_item_value) > 0
 
      ) ndp
 
@@ -1009,7 +1001,7 @@ CREATE TABLE naaccr_data_points_tmp
       (SELECT MAX(episode_id) FROM episode_temp) END + row_number() over(order by ndp.record_id))                 AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
-      , CONVERT(date,ndp_dates.naaccr_item_value, 112)  		                                                          AS episode_start_datetime        --?
+      , TO_DATE(ndp_dates.naaccr_item_value, 112, 'yyyymmdd')  		                                                          AS episode_start_datetime        --?
       , NULL                                                                                                                                                    AS episode_end_datetime          --?
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
@@ -1056,7 +1048,7 @@ CREATE TABLE naaccr_data_points_tmp
       (SELECT MAX(episode_id) FROM episode_temp) END + row_number() over(order by ndp.record_id))                 AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
-      , CONVERT(date,ndp_dates.naaccr_item_value,112)  		                                                          AS episode_start_datetime        --?
+      , TO_DATE(ndp_dates.naaccr_item_value,112, 'yyyymmdd')  		                                                          AS episode_start_datetime        --?
       , NULL                                                                                                                                                    AS episode_end_datetime          --?
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
@@ -1107,7 +1099,7 @@ CREATE TABLE naaccr_data_points_tmp
       (SELECT MAX(episode_id) FROM episode_temp) END + row_number() over(order by ndp.record_id))                 AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
-      , CONVERT(date,ndp_dates.naaccr_item_value,112)  		                                                          AS episode_start_datetime        --?
+      , TO_DATE(ndp_dates.naaccr_item_value,112, 'yyyymmdd')  		                                                          AS episode_start_datetime        --?
       , NULL                                                                                                                                                    AS episode_end_datetime          --?
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
@@ -1135,7 +1127,7 @@ CREATE TABLE naaccr_data_points_tmp
   -- get procedure
   INNER JOIN concept var_conc
     ON var_conc.concept_class_id = 'NAACCR Procedure'
-    AND CONCAT(schem_conc.concept_code, '@1290@', ndp.naaccr_item_value) = var_conc.concept_code
+    AND CONCAT(schem_conc.concept_code, '@', ndp.naaccr_item_value) = var_conc.concept_code
 
   -- hardcoded for now until update
   INNER JOIN naaccr_data_points_tmp ndp_dates
@@ -1289,11 +1281,11 @@ CREATE TABLE naaccr_data_points_tmp
   -- Drug Treatment Episodes:   Update to standard 'Regimen' concepts.
   UPDATE episode_temp
   SET episode_object_concept_id = CASE
-                    WHEN episode_source_value = '1390@01' THEN 35803401 --Hemonc Chemotherapy Modality
-                    WHEN episode_source_value = '1390@02' THEN 35803401
-                    WHEN episode_source_value = '1390@03' THEN 35803401
-                    WHEN episode_source_value = '1400@01' THEN 35803407
-                    WHEN episode_source_value = '1410@01' THEN 35803410
+                    WHEN episode_source_value = '1390' THEN 35803401 --Hemonc Chemotherapy Modality
+                    WHEN episode_source_value = '1390' THEN 35803401
+                    WHEN episode_source_value = '1390' THEN 35803401
+                    WHEN episode_source_value = '1400' THEN 35803407
+                    WHEN episode_source_value = '1410' THEN 35803410
                   ELSE episode_object_concept_id
                   END;
 
@@ -1340,7 +1332,7 @@ CREATE TABLE naaccr_data_points_tmp
       WHEN ndp.value_concept_id IS NULL
           AND ndp.type_concept_id = 32676
           --AND ISNUMERIC(ndp.naaccr_item_value) = 1
-          THEN COALESCE(CAST(ndp.naaccr_item_value AS float), conc_num.value_as_number)
+          THEN COALESCE(CAST(ndp.naaccr_item_value AS NUMERIC), conc_num.value_as_number)
       ELSE NULL
     END as value_as_number
       , ndp.value_concept_id                                                                                                                          AS value_as_concept_id
@@ -1373,7 +1365,7 @@ CREATE TABLE naaccr_data_points_tmp
                               )
                     )
     -- filter empty values
-    AND LEN(naaccr_item_value) > 0
+    AND CHAR_LENGTH(naaccr_item_value) > 0
 
    ) ndp
 
@@ -1761,26 +1753,19 @@ Insert new:
 --Cleanup
 --Delete temp tables
 
-IF OBJECT_ID('naaccr_data_points_tmp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	  DROP TABLE naaccr_data_points_tmp;  
+DROP TABLE IF EXISTS naaccr_data_points_tmp;  
 
-IF OBJECT_ID('condition_occurrence_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	DROP TABLE condition_occurrence_temp;  
+DROP TABLE IF EXISTS condition_occurrence_temp;  
 
-IF OBJECT_ID('measurement_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	DROP TABLE measurement_temp;  
+DROP TABLE IF EXISTS measurement_temp;  
 
-IF OBJECT_ID('episode_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	DROP TABLE episode_temp;  
+DROP TABLE IF EXISTS episode_temp;  
 
-IF OBJECT_ID('episode_event_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	DROP TABLE episode_event_temp;  
+DROP TABLE IF EXISTS episode_event_temp;  
 
-IF OBJECT_ID('procedure_occurrence_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	DROP TABLE procedure_occurrence_temp;  
+DROP TABLE IF EXISTS procedure_occurrence_temp;  
 
-IF OBJECT_ID('drug_exposure_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	DROP TABLE drug_exposure_temp;  
+DROP TABLE IF EXISTS drug_exposure_temp;  
 
 
 COMMIT;
