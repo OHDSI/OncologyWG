@@ -23,8 +23,8 @@ COPY command and Amazon S3 to load data into the vocabulary tables.
         #VOCABULARY_DELIMITER#  -> with a delimiter for example '\t' a tab delimiter. Most of the vocobulary data is "tab" delimited
    
    The files are:
-   OMOP CDM redshift vocab load copy concept_3_1.sql
-   OMOP CDM redshift vocab load copy concept_ancestor_3_2.sql
+   a- OMOP CDM redshift vocab load copy concept_3_1.sql
+   b- OMOP CDM redshift vocab load copy concept_ancestor_3_2.sql
    OMOP CDM redshift vocab load copy concept_class_3_3.sql
    OMOP CDM redshift vocab load copy concept_relationship_3_4.sql
    OMOP CDM redshift vocab load copy concept_synonym_3_5.sql
