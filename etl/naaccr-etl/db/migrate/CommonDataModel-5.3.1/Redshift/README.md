@@ -25,14 +25,14 @@ COPY command and Amazon S3 to load data into the vocabulary tables.
    The files are:
    1. OMOP CDM redshift vocab load copy concept_3_1.sql
    2. OMOP CDM redshift vocab load copy concept_ancestor_3_2.sql
-   OMOP CDM redshift vocab load copy concept_class_3_3.sql
-   OMOP CDM redshift vocab load copy concept_relationship_3_4.sql
-   OMOP CDM redshift vocab load copy concept_synonym_3_5.sql
-   OMOP CDM redshift vocab load copy concept_domain_3_6.sql
-   OMOP CDM redshift vocab load copy drug_strength_3_7.sql
-   OMOP CDM redshift vocab load copy relationship_3_8.sql
-   OMOP CDM redshift vocab load copy vocabulary_3_9.sql
-   OMOP CDM redshift vocab load copy concept_numeric_3_10.sql 
+   3. OMOP CDM redshift vocab load copy concept_class_3_3.sql
+   4. OMOP CDM redshift vocab load copy concept_relationship_3_4.sql
+   5. OMOP CDM redshift vocab load copy concept_synonym_3_5.sql
+   6. OMOP CDM redshift vocab load copy concept_domain_3_6.sql
+   7. OMOP CDM redshift vocab load copy drug_strength_3_7.sql
+   8. OMOP CDM redshift vocab load copy relationship_3_8.sql
+   9. OMOP CDM redshift vocab load copy vocabulary_3_9.sql
+   10. OMOP CDM redshift vocab load copy concept_numeric_3_10.sql 
    ***Note the source data file CONCEPT_NUMERIC.csv is located with this directory.
    
    
