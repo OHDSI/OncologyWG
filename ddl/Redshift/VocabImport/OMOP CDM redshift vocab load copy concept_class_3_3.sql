@@ -1,5 +1,5 @@
 -- *******************************************************************
--- NAME: copy_concept_class.sql
+-- NAME: OMOP CDM redshift load copy concept_class_3_3.sql
 -- DESC: Load Concept Table
 -- *******************************************************************
 -- CHANGE LOG:

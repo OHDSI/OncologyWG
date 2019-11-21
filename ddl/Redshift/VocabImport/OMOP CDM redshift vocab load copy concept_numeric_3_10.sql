@@ -1,6 +1,6 @@
 -- *******************************************************************
--- NAME: OMOP CDM redshift load copy concept_3_1.sql
--- DESC: Load Concept Table
+-- NAME: OMOP CDM redshift load copy concept_numeric_3_10.sql
+-- DESC: Load concept_numeric
 -- *******************************************************************
 -- CHANGE LOG:
 -- DATE         VERS  INITIAL  CHANGE DESCRIPTION
@@ -10,37 +10,30 @@
 -- *******************************************************************
 
 -- -------------------------------------------------------------------
--- Truncate table:   concept
+-- Truncate table:   concept_numeric
 -- -------------------------------------------------------------------
 
-    TRUNCATE TABLE #ETL_SCHEMA_NAME#.concept;
+    TRUNCATE TABLE #ETL_SCHEMA_NAME#.concept_numeric;
 
     COMMIT;
 
 -- -------------------------------------------------------------------
--- Load Table:   concept
+-- Load Table: concept_numeric
 -- -------------------------------------------------------------------
 
-    COPY #ETL_SCHEMA_NAME#.concept
-    (
-        concept_id,
-        concept_name,
-        domain_id,
-        vocabulary_id,
-        concept_class_id,
-        standard_concept,
-        concept_code,
-        valid_start_date,
-        valid_end_date,
-        invalid_reason
+    COPY #ETL_SCHEMA_NAME#.concept_numeric
+    (    concept_id
+       , value_as_number
+       , unit_concept_id
+       , operator_concept_id
     )
-    FROM 's3://#S3_BUCKET_NAME#/CONCEPT.csv.gz'
-    CREDENTIALS 'aws_access_key_id=#S3_ACCESS_KEY#;aws_secret_access_key=#S3_SECRET_ACCESS_KEY#'
-    DELIMITER '#VOCABULARY_DELIMITER#'  ACCEPTINVCHARS GZIP emptyasnull dateformat 'auto' IGNOREHEADER 1 ;
+    FROM '#S3_BUCKET_NAME#/vocabulary/CONCEPT_NUMERIC.csv'
+        CREDENTIALS 'aws_access_key_id=#S3_ACCESS_KEY#;aws_secret_access_key=#S3_SECRET_ACCESS_KEY#'
+        DELIMITER ','  ACCEPTINVCHARS GZIP emptyasnull dateformat 'auto' IGNOREHEADER 1;
 
     COMMIT;
 
-    ANALYSE #ETL_SCHEMA_NAME#.concept;
+    ANALYSE #ETL_SCHEMA_NAME#.concept_numeric;
 
     COMMIT;
 

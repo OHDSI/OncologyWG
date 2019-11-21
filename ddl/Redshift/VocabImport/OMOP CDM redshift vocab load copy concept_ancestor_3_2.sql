@@ -1,5 +1,5 @@
 -- *******************************************************************
--- NAME: copy_concept_ancestor.sql
+-- NAME: OMOP CDM redshift load copy concept_ancestor_3_2.sql
 -- DESC: Load concept_ancestor
 -- *******************************************************************
 -- CHANGE LOG:
