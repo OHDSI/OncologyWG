@@ -16,11 +16,11 @@ In order to create your instance of the Common Data Model, we recommend followin
 5. Load the vocabulary data into the schema using COPY commands from Amazon S3 (Found in the VocabImport directory). These files use the COPY command and Amazon S3 to load data into the vocabulary tables.
   
   These parts of the file must be replaced:
-        #ETL_SCHEMA_NAME#       -> with the name of the schema created above.
-        #S3_BUCKET_NAME#        -> with the directory path where the vocabulary data is stored.
-        #S3_ACCESS_KEY#         -> with your S3 access key code
-        #S3_SECRET_ACCESS_KEY#' -> with your S3 secret access key 
-        #VOCABULARY_DELIMITER#  -> with a delimiter for example '\t' a tab delimiter. Most of the vocobulary data is "tab" delimited
+      1.#ETL_SCHEMA_NAME#       -> with the name of the schema created above.
+      2.#S3_BUCKET_NAME#        -> with the directory path where the vocabulary data is stored.
+      3.#S3_ACCESS_KEY#         -> with your S3 access key code
+      4.#S3_SECRET_ACCESS_KEY#' -> with your S3 secret access key 
+      5.#VOCABULARY_DELIMITER#  -> with a delimiter for example '\t' a tab delimiter. Most of the vocobulary data is "tab" delimited
    
    The files are:
    1. OMOP CDM redshift vocab load copy concept_3_1.sql
