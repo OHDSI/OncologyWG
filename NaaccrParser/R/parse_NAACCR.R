@@ -298,7 +298,7 @@ NAACCR_to_db <- function(file_path
     }
 
   }
-
+  disconnect(conn)
   print("done-zo")
 }
 
