@@ -13,9 +13,9 @@ In order to create your instance of the Common Data Model, we recommend followin
 
 4. Execute the script `OMOP CDM redshift ddl Oncology Module_2.sql` to create the oncology tables and fields.
 
-5. Load the vocabulary data into the schema using COPY commands from Amazon S3. Please run these load files below. These files use the 
-COPY command and Amazon S3 to load data into the vocabulary tables.
-      The parts of the file must replace:
+5. Load the vocabulary data into the schema using COPY commands from Amazon S3 (Found in the VocabImport directory). These files use the COPY command and Amazon S3 to load data into the vocabulary tables.
+  
+  These parts of the file must be replaced:
         #ETL_SCHEMA_NAME#       -> with the name of the schema created above.
         #S3_BUCKET_NAME#        -> with the directory path where the vocabulary data is stored.
         #S3_ACCESS_KEY#         -> with your S3 access key code
