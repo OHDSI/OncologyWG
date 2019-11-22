@@ -148,8 +148,7 @@ CREATE TABLE episode_temp (
   episode_source_value        VARCHAR(50)   NULL,
   episode_source_concept_id   INTEGER       NULL,
   record_id                   VARCHAR(255)  NULL
-)
-;
+);
 
 IF OBJECT_ID('episode_event_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
   DROP TABLE episode_event_temp;  
@@ -163,7 +162,7 @@ CREATE TABLE episode_event_temp (
 IF OBJECT_ID('procedure_occurrence_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
   DROP TABLE procedure_occurrence_temp;  
 
- CREATE TABLE procedure_occurrence_temp
+CREATE TABLE procedure_occurrence_temp
  (
   procedure_occurrence_id     BIGINT        NOT NULL ,
   person_id                    BIGINT        NOT NULL ,
@@ -181,8 +180,7 @@ IF OBJECT_ID('procedure_occurrence_temp', 'U') IS NOT NULL           -- Drop tem
   modifier_source_value       VARCHAR(50)    NULL,
   episode_id                  BIGINT        NOT NULL,
   record_id                   VARCHAR(255)  NULL
- )
- ;
+ );
 
  IF OBJECT_ID('drug_exposure_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
   DROP TABLE drug_exposure_temp;  
@@ -213,7 +211,7 @@ CREATE TABLE drug_exposure_temp
   route_source_value            VARCHAR(50)   NULL ,
   dose_unit_source_value        VARCHAR(50)   NULL,
   record_id                     VARCHAR(255)    NULL
-)
+);
 
  
  -- Create ambiguous schema discriminator mapping tables
@@ -277,9 +275,8 @@ CREATE TABLE naaccr_data_points_tmp
 	variable_concept_code VARCHAR(255) NULL,
 	value_concept_id BIGINT NULL,
 	value_concept_code VARCHAR(max) NULL,
-	type_concept_id BIGINT NULL,
-)
-;
+	type_concept_id BIGINT NULL
+);
 
 
 
@@ -305,16 +302,18 @@ CREATE TABLE naaccr_data_points_tmp
 
 
 	-- Format dates
-	-- TODO: Replace with item number list
-  -- UPDATE naaccr_data_points_tmp
-  -- SET naaccr_item_value = TRY_PARSE(SUBSTRING(naaccr_item_value, 1,4) + '-' + SUBSTRING(naaccr_item_value, 5,2)+ '-' + SUBSTRING(naaccr_item_value, 7,2) as date)
-  -- WHERE naaccr_item_name like '%date%'
-  -- AND naaccr_item_name NOT LIKE '%flag%'
-  -- ;
-
-
   UPDATE naaccr_data_points_tmp
-  SET naaccr_item_value = NULL
+  SET naaccr_item_value = 
+		CASE
+			WHEN LEN(naaccr_item_value) != 8 THEN NULL
+			WHEN ISNUMERIC(naaccr_item_value) <> 1 THEN NULL
+			ELSE CASE
+				WHEN CONVERT(int, SUBSTRING(naaccr_item_value, 1,4)) NOT BETWEEN 1800 AND 2099 THEN NULL
+				WHEN CONVERT(int, SUBSTRING(naaccr_item_value, 5,2)) NOT BETWEEN 1 AND 12 THEN NULL
+				WHEN CONVERT(int, SUBSTRING(naaccr_item_value, 7,2)) NOT BETWEEN 1 AND 31 THEN NULL
+				ELSE CONCAT(SUBSTRING(naaccr_item_value, 1,4),'-' ,SUBSTRING(naaccr_item_value, 5,2),'-',SUBSTRING(naaccr_item_value, 7,2))
+				END
+		END
   WHERE naaccr_item_number IN(-- todo: verify this list
      '390'
   , '1200'
@@ -323,17 +322,8 @@ CREATE TABLE naaccr_data_points_tmp
   , '1230'
   , '1240'
   ,'3220'
-  )
-  AND (
-    LEN(naaccr_item_value) != 8
-	or
-	SUBSTRING(naaccr_item_value, 1,4) NOT BETWEEN '1800' AND '2099' -- year
-	or
-	SUBSTRING(naaccr_item_value, 5,2) NOT BETWEEN '1' AND '12' -- mo
-	or 
-	SUBSTRING(naaccr_item_value, 7,2) NOT BETWEEN '1' AND '31' -- day
   );
-
+ 
 
 	-- Trim values just in case leading or trailing spaces
 	UPDATE naaccr_data_points_tmp
@@ -378,124 +368,7 @@ CREATE TABLE naaccr_data_points_tmp
     ) schm
     WHERE record_id = schm.rec_id;
 
-  /**
-     MERGE naaccr_data_points_tmp ndp
-    USING
-    (
-      SELECT DISTINCT record_id, asd.schema_concept_id, asd.schema_concept_code
-      FROM
-      (
-        SELECT DISTINCT
-              record_id
-              ,  histology_site
-              , naaccr_item_number
-              , naaccr_item_value
-        FROM naaccr_data_points_tmp
-        WHERE schema_concept_id IS NULL
-        --AND naaccr_item_number in (SELECT DISTINCT discrim_item_num FROM .ambig_schema_discrim)
-        AND naaccr_item_number in ('220', '2879')
-      ) x
-      INNER JOIN
-      (
-      SELECT DISTINCT conc.concept_code, cr.concept_id_2
-      FROM concept conc
-      INNER JOIN concept_relationship cr
-      ON conc. vocabulary_id = 'ICDO3'
-      AND cr.concept_id_1 = conc.concept_id
-      AND relationship_id = 'ICDO to Schema'
-      -- Theres a ton of duplicated schemas here that arent in the mapping file... Item/value must be identical between schemas?
-      AND cr.concept_id_2 IN (SELECT DISTINCT schema_concept_id FROM ambig_schema_discrim)
-      ) ambig_cond
-      ON x.histology_site = ambig_cond.concept_code
-      INNER JOIN ambig_schema_discrim asd
-      ON ambig_cond.concept_id_2 = asd.schema_concept_id
-      AND x.naaccr_item_number = asd.discrim_item_num
-      AND x.naaccr_item_value = asd.discrim_item_value
-    ) schm
-    ON ndp.record_id = schm.record_id
-    WHEN MATCHED THEN
-    UPDATE
-      SET ndp.schema_concept_id = schm.schema_concept_id,
-       ndp.schema_concept_code = schm.schema_concept_code
-    ;
-    **/
-    -- Append standard schemas - uses histology_site
-
-    -- UPDATE naaccr_data_points_tmp
-    -- SET schema_concept_id   = schm.concept_id,
-    --     schema_concept_code = schm.concept_code
-    -- FROM naaccr_data_points_tmp ndp JOIN concept c1               ON ndp.histology_site = c1.concept_code
-    --                                 JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'ICDO to Schema' AND c1.vocabulary_id = 'ICDO3'
-    --                                 JOIN concept schm             ON cr1.concept_id_2 = schm.concept_id AND schm.vocabulary_id = 'NAACCR'
-    -- WHERE ndp.schema_concept_id IS NULL;
-
-    -- UPDATE naaccr_data_points_tmp
-    -- SET schema_concept_id = schm.schema_concept_id,
-    -- schema_concept_code = schm.schema_concept_code
-    -- FROM naaccr_data_points_tmp ndp
-    -- INNER JOIN
-    -- (
-    -- SELECT DISTINCT x.concept_code
-    -- , c2.concept_id schema_concept_id
-    -- , c2.concept_code schema_concept_code
-    -- FROM
-    -- (
-    -- SELECT c1.concept_code
-    -- , cr.concept_id_2
-    -- -- arbitrary selection of schema, assuming they are identical
-    -- -- , ROW_NUMBER() OVER (PARTITION BY c1.concept_id ORDER BY cr.concept_id_2) rn
-    -- FROM concept c1
-    -- INNER JOIN concept_relationship cr
-    -- ON c1.vocabulary_id='ICDO3'
-    -- AND c1.concept_id = cr.concept_id_1
-    -- AND relationship_id = 'ICDO to Schema'
-    -- -- Schema isn't listed as ambiguous
-    -- -- AND cr.concept_id_2 NOT IN (SELECT DISTINCT schema_concept_id FROM ambig_schema_discrim)
-    -- ) x
-    -- INNER JOIN concept c2
-    -- ON x.concept_id_2 = c2.concept_id
-    -- -- WHERE rn = 1
-    -- ) schm
-    -- ON ndp.histology_site = schm.concept_code
-    -- -- ignore if already mapped
-    -- WHERE ndp.schema_concept_id IS NULL
-    -- AND schm.schema_concept_id IS NOT NULL
-    -- AND naaccr_data_points_tmp.record_id = ndp.record_id;
-
-   /**
-   MERGE naaccr_data_points_tmp ndp
-   USING
-   (
-		SELECT DISTINCT x.concept_code
-					, c2.concept_id schema_concept_id
-					, c2.concept_code schema_concept_code
-		FROM
-		(
-			SELECT  c1.concept_code
-				, cr.concept_id_2
-				-- arbitrary selection of schema, assuming they are identical
-				, ROW_NUMBER() OVER (PARTITION BY c1.concept_id ORDER BY cr.concept_id_2) rn
-			FROM concept c1
-			INNER JOIN concept_relationship cr
-			ON c1.vocabulary_id='ICDO3'
-			AND c1.concept_id = cr.concept_id_1
-			AND relationship_id = 'ICDO to Schema'
-			-- Schema isn't listed as ambiguous
-			AND cr.concept_id_2 NOT IN (SELECT DISTINCT schema_concept_id FROM ambig_schema_discrim)
-		) x
-		INNER JOIN concept c2
-		ON x.concept_id_2 = c2.concept_id
-		WHERE rn = 1
-   ) schm
-   ON ndp.histology_site = schm.concept_code
-   -- ignore if already mapped
-   AND ndp.schema_concept_id IS NULL
-   WHEN MATCHED
-		THEN UPDATE
-			set ndp.schema_concept_id = schm.schema_concept_id,
-						 ndp.schema_concept_code = schm.schema_concept_code
-   ;
-   **/
+ 
     -- Append standard schemas - uses histology_site
     UPDATE naaccr_data_points_tmp
     SET schema_concept_id   = schm.concept_id,
@@ -505,42 +378,6 @@ CREATE TABLE naaccr_data_points_tmp
     WHERE naaccr_data_points_tmp.histology_site = c1.concept_code
     AND naaccr_data_points_tmp.schema_concept_id IS NULL;
 
-	-- Variables
-
-  -- schema-independent
-  -- UPDATE naaccr_data_points_tmp
-  -- SET variable_concept_code = conc.concept_code
-  --       ,variable_concept_id = conc.concept_id
-  -- FROM naaccr_data_points_tmp ndp
-  -- INNER JOIN
-  -- (
-  --   SELECT concept_id, concept_code
-  --   FROM concept
-  --   WHERE vocabulary_id = 'NAACCR'
-  --   AND concept_class_id = 'NAACCR Variable'
-  -- ) conc
-  -- ON variable_concept_id IS NULL
-  -- AND conc.concept_id IS NOT NULL
-  -- AND ndp.naaccr_item_number = conc.concept_code
-  -- WHERE naaccr_data_points_tmp.record_id = ndp.record_id
-  -- AND naaccr_data_points_tmp.naaccr_item_number = ndp.naaccr_item_number
-  -- ;
-	/**
-	MERGE naaccr_data_points_tmp ndp
-	USING
-	(
-		SELECT concept_id, concept_code
-		FROM concept
-		WHERE vocabulary_id = 'NAACCR'
-		AND concept_class_id = 'NAACCR Variable'
-	) conc
-	ON ndp.naaccr_item_number = conc.concept_code
-	WHEN MATCHED
-		THEN UPDATE
-			SET ndp.variable_concept_code = conc.concept_code
-				,ndp.variable_concept_id = conc.concept_id
-	;
-	**/
 
   -- schema-independent
   UPDATE naaccr_data_points_tmp
@@ -553,24 +390,8 @@ CREATE TABLE naaccr_data_points_tmp
   AND c1.concept_id IS NOT NULL
   AND naaccr_data_points_tmp.naaccr_item_number = c1.concept_code;
 
-  --   schema dependent
-  -- UPDATE naaccr_data_points_tmp
-  -- SET variable_concept_code = conc.concept_code
-  --       ,variable_concept_id = conc.concept_id
-  -- FROM naaccr_data_points_tmp ndp
-  -- INNER JOIN
-  -- (
-  --   SELECT concept_id, concept_code
-  --   FROM concept
-  --   WHERE vocabulary_id = 'NAACCR'
-  --   AND concept_class_id = 'NAACCR Variable'
-  -- ) conc
-  -- ON ndp.variable_concept_id IS NULL
-  -- AND conc.concept_id IS NOT NULL
-  -- AND CONCAT(ndp.schema_concept_code,'@', ndp.naaccr_item_number) = conc.concept_code
-  -- WHERE naaccr_data_points_tmp.record_id = ndp.record_id
-  -- AND naaccr_data_points_tmp.naaccr_item_number = ndp.naaccr_item_number
-  -- ;
+
+
   --   schema dependent
   UPDATE naaccr_data_points_tmp
   SET variable_concept_code = c1.concept_code
@@ -583,26 +404,7 @@ CREATE TABLE naaccr_data_points_tmp
   AND CONCAT(naaccr_data_points_tmp.schema_concept_code,'@', naaccr_data_points_tmp.naaccr_item_number) = c1.concept_code;
 
   -- -- Values
-  -- UPDATE naaccr_data_points_tmp
-  -- SET value_concept_code = conc.concept_code
-  --     ,value_concept_id = conc.concept_id
-  -- FROM naaccr_data_points_tmp ndp
-  -- INNER JOIN
-  -- (
-  --   SELECT concept_id, concept_code
-  --   FROM concept
-  --   WHERE vocabulary_id = 'NAACCR'
-  --   AND concept_class_id = 'NAACCR Value'
-  -- ) conc
-  -- ON ndp.value_concept_id IS NULL
-  -- AND conc.concept_id IS NOT NULL
-  -- -- placeholder for better approach
-  -- AND LEN(ndp.naaccr_item_value) < 10
-  -- AND CONCAT(ndp.variable_concept_code,'@', ndp.naaccr_item_value) = conc.concept_code
-  -- WHERE naaccr_data_points_tmp.record_id = ndp.record_id
-  -- AND naaccr_data_points_tmp.naaccr_item_number = ndp.naaccr_item_number
-  -- ;
-  -- Values
+
   UPDATE naaccr_data_points_tmp
   SET   value_concept_code = c1.concept_code
       , value_concept_id   = c1.concept_id
@@ -615,20 +417,7 @@ CREATE TABLE naaccr_data_points_tmp
   AND CONCAT(naaccr_data_points_tmp.variable_concept_code,'@', naaccr_data_points_tmp.naaccr_item_value) = c1.concept_code;
 
   -- Type
-  -- UPDATE naaccr_data_points_tmp
-  -- SET type_concept_id = cr.concept_id_2
-  -- FROM naaccr_data_points_tmp ndp
-  -- INNER JOIN
-  -- (
-  --   SELECT *
-  --   FROM concept_relationship
-  --   WHERE relationship_id = 'Has type'
-  -- ) cr
-  -- ON ndp.variable_concept_id = cr.concept_id_1
-  -- WHERE naaccr_data_points_tmp.record_id = ndp.record_id
-  -- AND naaccr_data_points_tmp.naaccr_item_number = ndp.naaccr_item_number
-  -- ;
-  -- Type
+ 
   UPDATE naaccr_data_points_tmp
   SET type_concept_id = cr1.concept_id_2
   FROM concept_relationship cr1
@@ -676,8 +465,8 @@ CREATE TABLE naaccr_data_points_tmp
       ) AS condition_occurrence_id
       , s.person_id                                                                                           AS person_id
       , c2.concept_id                                                                                         AS condition_concept_id
-      , CONVERT(date, s.naaccr_item_value,112)  		                                                          AS condition_start_date
-      , CONVERT(date, s.naaccr_item_value,112)																	  AS condition_start_datetime
+      , CONVERT(date, s.naaccr_item_value)  		                                                          AS condition_start_date
+      , CONVERT(date, s.naaccr_item_value)																	  AS condition_start_datetime
       , NULL                                                                                                  AS condition_end_date
       , NULL                                                                                                  AS condition_end_datetime
       , 32534                                                                                                 AS condition_type_concept_id -- ‘Tumor registry’ concept
@@ -975,15 +764,7 @@ CREATE TABLE naaccr_data_points_tmp
   ;
 --
 --
---
---
---
---
---
---
---
---
---
+
 -- Treatment Episodes
 
   -- populate episode_temp
@@ -1009,7 +790,7 @@ CREATE TABLE naaccr_data_points_tmp
       (SELECT MAX(episode_id) FROM episode_temp) END + row_number() over(order by ndp.record_id))                 AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
-      , CONVERT(date,ndp_dates.naaccr_item_value, 112)  		                                                          AS episode_start_datetime        --?
+      , CONVERT(date,ndp_dates.naaccr_item_value)  		                                                          AS episode_start_datetime        --?
       , NULL                                                                                                                                                    AS episode_end_datetime          --?
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
@@ -1056,7 +837,7 @@ CREATE TABLE naaccr_data_points_tmp
       (SELECT MAX(episode_id) FROM episode_temp) END + row_number() over(order by ndp.record_id))                 AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
-      , CONVERT(date,ndp_dates.naaccr_item_value,112)  		                                                          AS episode_start_datetime        --?
+      , CONVERT(date,ndp_dates.naaccr_item_value)  		                                                          AS episode_start_datetime        --?
       , NULL                                                                                                                                                    AS episode_end_datetime          --?
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
@@ -1107,7 +888,7 @@ CREATE TABLE naaccr_data_points_tmp
       (SELECT MAX(episode_id) FROM episode_temp) END + row_number() over(order by ndp.record_id))                 AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
-      , CONVERT(date,ndp_dates.naaccr_item_value,112)  		                                                          AS episode_start_datetime        --?
+      , CONVERT(date,ndp_dates.naaccr_item_value)  		                                                          AS episode_start_datetime        --?
       , NULL                                                                                                                                                    AS episode_end_datetime          --?
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
@@ -1406,10 +1187,7 @@ CREATE TABLE naaccr_data_points_tmp
   -- Get numeric value
   LEFT OUTER JOIN concept_numeric conc_num
     ON ndp.type_concept_id = 32676 --'Numeric'
-    AND ndp.value_concept_id = conc_num.concept_id
-
-
-  ;
+    AND ndp.value_concept_id = conc_num.concept_id ;
 
 
 
@@ -1471,10 +1249,6 @@ JOIN episode_temp et
 JOIN procedure_occurrence_temp pet
   ON et.record_id = pet.record_id
   AND et.episode_object_concept_id = pet.procedure_concept_id;
-
-
-
-
 
 
 
