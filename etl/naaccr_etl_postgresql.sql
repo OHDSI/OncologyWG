@@ -1255,7 +1255,7 @@ FROM
 	WHERE episode_concept_id          = 32528 --Disease First Occurrence
 ) det
 WHERE record_id        = det.rec_id
-AND episode_concept_id = 32531 --Treatment Regimen;
+AND episode_concept_id = 32531; --Treatment Regimen
 
 
 
