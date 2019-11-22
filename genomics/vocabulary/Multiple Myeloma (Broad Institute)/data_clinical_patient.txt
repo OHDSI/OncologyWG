@@ -1,0 +1,216 @@
+#Patient Identifier	Diagnosis Age	Sex	Race Category	Ethnicity Category	Diagnosis	Previous Treatment	Prior MGUS	Patient Death Reason
+#Identifier to uniquely specify a patient.	Age at which a condition or disease was first diagnosed.	Sex	The text for reporting information about race.	The text for reporting information about ethnicity.	Diagnosis.	Previous treatment.	Prior MGUS.	Text term to identify the cause of death for a patient.
+#STRING	NUMBER	STRING	STRING	STRING	STRING	STRING	STRING	STRING
+#1	1	1	1	1	1	1	1	1
+PATIENT_ID	AGE	SEX	RACE	ETHNICITY	DIAGNOSIS	PREVIOUS_TREATMENT	PRIOR_MGUS	PATIENT_DEATH_REASON
+MM-0004	36	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0028	44	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0038	67	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0191	56	Female	African American	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0214	59	Male	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0216	59	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0242	71	Male	Hispanic	Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0244	56	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0248	58	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0251	59	Female	African American	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0282	60	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0284	41	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0286	50	Female	Caucasian	NA	Multiple Myeloma	No	NA	Progression of disease
+MM-0307	62	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0308	55	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0309	61	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0312	69	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0318	24	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0319	55	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	NA	NA	NA
+MM-0322	69	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0329	37	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0332	66	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0335	56	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0337	66	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	NA	No	NA
+MM-0338	63	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0343	62	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	NA	Other
+MM-0344	69	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Other
+MM-0347	58	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	Other
+MM-0356	52	Male	Hispanic	Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0359	63	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	NA	NA
+MM-0363	55	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0364	59	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Other
+MM-0375	72	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0376	56	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0381	72	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	Progression of disease
+MM-0383	69	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0387	60	Female	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0389	37	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0390	71	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0392	59	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0406	59	Female	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0408	58	Male	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0411	NA	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	NA	NA
+MM-0412	49	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	Yes	Progression of disease
+MM-0421-FIX	45	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0423	NA	Male	African American	NA	Multiple Myeloma	Yes	No	NA
+MM-0424	NA	Male	Caucasian	NA	Multiple Myeloma	Yes	NA	NA
+MM-0425-FIX	65	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0429	66	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0433	65	Female	Hispanic	Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0435	51	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0438	54	Female	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0439_2	71	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	Yes	NA
+MM-442	53	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0447	NA	Male	African American	NA	Multiple Myeloma	Yes	No	NA
+MM-0449	70	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0450	NA	Male	Asian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0451	NA	Female	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0452	NA	Female	African American	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0454	NA	Male	Caucasian	Not Hispanic or Latino	NA	Yes	NA	Progression of disease
+MM-0455	67	Male	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0456-SWAP	NA	Male	NA	NA	NA	No	NA	NA
+MM-0457	NA	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	NA	NA	NA
+MM-0458	27	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	Yes	NA
+MM-0460	NA	NA	NA	NA	Multiple Myeloma	Yes	No	NA
+MM-0461	50	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	Yes	NA
+MM-0462	57	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0464	59	Male	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0465	NA	Female	NA	NA	Multiple Myeloma	No	NA	NA
+MM-0467	69	Female	NA	NA	Multiple Myeloma	Yes	No	NA
+MM-0468	NA	Male	NA	NA	Multiple Myeloma	Yes	No	NA
+MM-0469	NA	Female	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0470	NA	Male	African American	Not Hispanic or Latino	Multiple Myeloma	NA	NA	NA
+MM-0471	65	NA	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0472	69	NA	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0473	80	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0478	NA	Female	Hispanic	Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0480	NA	NA	Hispanic	Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0481	NA	Male	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0482	NA	Male	Asian	NA	Multiple Myeloma	Yes	No	NA
+MM-0484	68	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0485	78	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0486	NA	Female	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0487	47	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0488	NA	Male	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0489	NA	Female	Hispanic	Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0491	55	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0492	65	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	NA	NA
+MM-0493	54	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0496	62	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0497	69	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0499	70	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	NA	Progression of disease
+MM-0500	57	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	NA	NA
+MM-0501	NA	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0502	50	Male	Caucasian	Not Hispanic or Latino	Smoldering Myeloma	No	No	NA
+MM-0503	62	Female	Hispanic	Hispanic or Latino	Multiple Myeloma	No	No	Progression of disease
+MM-0504	45	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0505	75	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	Yes	NA
+MM-0507	69	Male	NA	NA	Multiple Myeloma	No	No	NA
+MM-0508	42	Female	Caucasian	NA	Multiple Myeloma	Yes	No	Progression of disease
+MM-0509	53	Female	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0510	NA	Female	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0512	NA	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	NA	No	NA
+MM-0514	57	Female	Caucasian	NA	Multiple Myeloma	Yes	Yes	NA
+MM-0515	33	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	Yes	NA
+MM-0516	61	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	Yes	NA
+MM-0521	49	Male	Hispanic	Hispanic or Latino	Multiple Myeloma	Yes	Yes	NA
+MM-0522	67	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	Yes	NA
+MM-0524	75	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0525	56	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	Yes	Progression of disease
+MM-0526	73	Female	Asian	NA	Multiple Myeloma	No	No	Progression of disease
+MM-0527	61	Female	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0528	75	Male	Caucasian	NA	Multiple Myeloma	No	No	Other
+MM-0529	63	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0530	70	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0531	78	Male	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0532	57	Male	NA	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0533	46	Male	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0535	76	Female	Caucasian	NA	Multiple Myeloma	Yes	No	Progression of disease
+MM-0538	74	Male	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0539	NA	Male	African American	NA	Multiple Myeloma	No	No	Other
+MM-0540	43	Male	African American	Not Hispanic or Latino	Multiple Myeloma	No	No	Progression of disease
+MM-0541	58	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0543	74	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	NA	NA
+MM-0544	72	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	NA	NA
+MM-0545	56	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	NA	NA
+MM-0546	52	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	NA	NA	NA
+MM-0547	68	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	Yes	NA
+MM-0548	48	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0550	65	Male	Asian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0551	65	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	Yes	NA
+MM-0553	55	Male	African American	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0554	NA	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	NA	NA
+MM-0557	71	Male	Hispanic	Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0558	60	Male	African American	NA	Multiple Myeloma	No	No	NA
+MM-0559	67	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0561	76	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0562	65	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0566	44	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	Yes	NA
+MM-0568	36	Female	Caucasian	NA	Multiple Myeloma	Yes	Yes	NA
+MM-0571	NA	Male	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0572	72	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0573	NA	Male	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0574	35	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0575	58	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0576	56	Male	African American	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0577	48	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0578	76	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0579	63	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0581	NA	Male	NA	NA	NA	NA	NA	NA
+MM-0582	63	NA	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0585	63	Male	Caucasian	NA	MGUS	No	NA	NA
+MM-0586	73	Female	NA	NA	Multiple Myeloma	Yes	NA	NA
+MM-0587	76	Male	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0588	68	Male	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0590	NA	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	NA	NA	NA
+MM-0591	63	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0592	52	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0593	56	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0594	72	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	Yes	NA
+MM-0595	68	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0596	NA	Female	Caucasian	Not Hispanic or Latino	MGUS	No	NA	NA
+MM-0597	64	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0598	52	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0599	63	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	Yes	NA
+MM-0600	81	Male	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0601	66	Female	NA	NA	Smoldering Myeloma	No	NA	Progression of disease
+MM-0602	61	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0603	57	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	Progression of disease
+MM-0604	61	Male	Hispanic	Hispanic or Latino	Multiple Myeloma	Yes	Yes	Progression of disease
+MM-0605	66	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0606	76	Male	Caucasian	NA	Multiple Myeloma	No	No	NA
+MM-0608	NA	Male	Caucasian	NA	Smoldering Myeloma	No	NA	NA
+MM-0609	NA	Female	Caucasian	NA	Multiple Myeloma	NA	NA	NA
+MM-0610	49	Male	NA	NA	Multiple Myeloma	Yes	No	NA
+MM-0611	82	NA	Caucasian	NA	Non-Myeloma diseases	No	NA	NA
+MM-0612	56	Female	Caucasian	NA	Multiple Myeloma	Yes	Yes	Progression of disease
+MM-0613	69	Male	Caucasian	NA	Multiple Myeloma	Yes	No	Progression of disease
+MM-0614	NA	Male	Caucasian	NA	Multiple Myeloma	No	NA	NA
+MM-0615	61	Male	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0618	75	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0619	65	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	Yes	NA
+MM-0620	52	Female	Caucasian	NA	Multiple Myeloma	Yes	Yes	NA
+MM-0621	58	Male	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0622	64	Male	Caucasian	NA	Multiple Myeloma	Yes	NA	NA
+MM-0623	80	Male	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0624	47	Female	Caucasian	NA	Multiple Myeloma	Yes	No	NA
+MM-0626	41	Male	Caucasian	NA	Multiple Myeloma	Yes	Yes	Progression of disease
+MM-0627	NA	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	NA	Progression of disease
+MM-0628	64	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0629	76	Male	NA	NA	Multiple Myeloma	No	No	NA
+MM-0633	61	Male	Caucasian	NA	Multiple Myeloma	Yes	Yes	NA
+MM-0634	60	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0635	NA	Male	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	NA	NA
+MM-0636	58	Male	Caucasian	Not Hispanic or Latino	MGUS	No	Yes	NA
+MM-0637	70	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	Yes	NA
+MM-0638	59	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	No	NA	NA
+MM-0639	62	Female	African American	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0641	NA	Male	African American	Not Hispanic or Latino	Multiple Myeloma	No	No	NA
+MM-0642	NA	Female	Caucasian	Not Hispanic or Latino	Multiple Myeloma	Yes	NA	NA
+MM-0644	53	Female	African American	Not Hispanic or Latino	Multiple Myeloma	Yes	NA	NA
+MM-0648	NA	Male	African American	Not Hispanic or Latino	Multiple Myeloma	Yes	No	NA
+MM-0649	NA	Male	NA	NA	NA	No	NA	NA
+MM-0297	NA	NA	NA	NA	NA	NA	NA	NA
+MM-0339	NA	NA	NA	NA	NA	NA	NA	NA
+MM-0426	NA	NA	NA	NA	NA	NA	NA	NA
+MM-0427	NA	NA	NA	NA	NA	NA	NA	NA
+MM-0483	NA	NA	NA	NA	NA	NA	NA	NA
+MM-0506	NA	NA	NA	NA	NA	NA	NA	NA
+MM-0520	NA	NA	NA	NA	NA	NA	NA	NA
+MM-0607	NA	NA	NA	NA	NA	NA	NA	NA
