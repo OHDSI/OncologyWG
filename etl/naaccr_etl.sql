@@ -1,7 +1,6 @@
 BEGIN TRANSACTION;
 
 /* Scripts assumes:
-	-using Sql Server
 	-input data exists on same database in specified format inside of 'naacr_data_points'
 	-histology_site is represented in ICDO3 concept_code format
 	-the 'person_id' column is already populated
@@ -1256,21 +1255,19 @@ JOIN procedure_occurrence_temp pet
 
 --Step 16: Connect 'Treatment Episodes' to 'Disease Episodes' via parent_id
 UPDATE episode_temp
-SET episode_parent_id = det.episode_id
-FROM episode_temp det
-WHERE record_id        = det.record_id
-AND episode_concept_id = 32531 --Treatment Regimen
-AND det.episode_concept_id          = 32528; --Disease First Occurrence
+SET episode_parent_id = det.ep_id
+FROM 
+(
+	SELECT DISTINCT record_id rec_id, episode_concept_id ep_id
+	FROM episode_temp
+	WHERE episode_concept_id          = 32528 --Disease First Occurrence
+) det
+WHERE record_id        = det.rec_id
+AND episode_concept_id = 32531 --Treatment Regimen;
 
 
 
---Step 16: Connect 'Treatment Episodes' to 'Disease Episodes' via parent_id
-UPDATE episode_temp
-SET episode_parent_id = det.episode_id
-FROM episode_temp det
-WHERE record_id        = det.record_id
-AND episode_concept_id = 32531 --Treatment Regimen
-AND det.episode_concept_id          = 32528; --Disease First Occurrence
+
 
 
 -- INSERT TEMP TABLES
