@@ -1,0 +1,435 @@
+tbl <- data.frame('AJOU'= c(102,37,42,34,13,27),
+'TCGA'= c(117,9,70,222,34,94))
+row.names(tbl) <- c('EGFR', 'AKT1', 'BRAF', 'KRAS', 'MET', 'PIK3CA')
+tbl
+for (i in 1:dim(tbl)[1]){
+AJOU_Pos <- tbl[i,1]
+AJOU_Neg <- 114-AJOU_Pos
+TCGA_Pos <- tbl[i,2]
+TCGA_Neg <- 1059-TCGA_Pos
+table <- data.frame('AJOU'=c(AJOU_Pos, AJOU_Neg), 'TCGA'=c(TCGA_Pos, TCGA_Neg), row.names = c('EGFR+', 'EGFR-'))
+result <- chisq.test(table)
+tbl[i,'p-value'] <- result$p.value
+}
+View(tbl)
+tbl <- data.frame('AJOU'= c(1,23,20,2,4,2),
+'TCGA'= c(3,22,23,2,3,2))
+row.names(tbl) <- c("Gly719X", "Exon19 Deletion", "Leu858Arg", "Leu861Gln", "Exon20 Insertion", "Thr790Met")
+tbl
+for (i in 1:dim(tbl)[1]){
+AJOU_Pos <- tbl[i,1]
+AJOU_Neg <- 91-AJOU_Pos
+TCGA_Pos <- tbl[i,2]
+TCGA_Neg <- 71-TCGA_Pos
+table <- data.frame('AJOU'=c(AJOU_Pos, AJOU_Neg), 'TCGA'=c(TCGA_Pos, TCGA_Neg), row.names = c('Mutation+', 'Mutation-'))
+result <- chisq.test(table)
+tbl[i,'p-value'] <- result$p.value
+}
+View(tbl)
+tbl <- data.frame('AJOU'= c(102,37,42,34,13,27),
+'TCGA'= c(117,9,70,222,34,94))
+row.names(tbl) <- c('EGFR', 'AKT1', 'BRAF', 'KRAS', 'MET', 'PIK3CA')
+tbl
+tbl <- data.frame('AJOU'= c(17422.5,6409.5,2742.5,57.5,72.5,41.5,922.5),
+'TCGA'= c(0.5,0.5,2111.5,301.5,207.5,81.5,199.5))
+row.names(tbl) <- c('Intron','Synonymous','Missense','Nonsense','Frameshit','Inframe','Splice')
+tbl
+dim(tbl)
+for (i in 1:dim(tbl)[1]){
+AJOU_Pos <- tbl[i,1]
+AJOU_Neg <- 27688.5-AJOU_Pos
+TCGA_Pos <- tbl[i,2]
+TCGA_Neg <- 2902.5-TCGA_Pos
+table <- data.frame('AJOU'=c(AJOU_Pos, AJOU_Neg), 'TCGA'=c(TCGA_Pos, TCGA_Neg), row.names = c('EGFR+', 'EGFR-'))
+result <- chisq.test(table)
+tbl[i,'p-value'] <- result$p.value
+}
+View(tbl)
+tbl <- data.frame('AJOU'= c(2742,57,72,41,922),
+'TCGA'= c(2111,301,207,81,199))
+row.names(tbl) <- c('Missense','Nonsense','Frameshit','Inframe','Splice')
+tbl
+TCGA_Neg <- 2899-TCGA_Pos
+for (i in 1:dim(tbl)[1]){
+AJOU_Pos <- tbl[i,1]
+AJOU_Neg <- 27685-AJOU_Pos
+TCGA_Pos <- tbl[i,2]
+TCGA_Neg <- 2899-TCGA_Pos
+table <- data.frame('AJOU'=c(AJOU_Pos, AJOU_Neg), 'TCGA'=c(TCGA_Pos, TCGA_Neg), row.names = c('EGFR+', 'EGFR-'))
+result <- chisq.test(table)
+tbl[i,'p-value'] <- result$p.value
+}
+View(tbl)
+tbl <- data.frame('AJOU'= c(114,114,113,113,113,
+110,109,105,102,88,
+48,28,13,13,7),
+'TCGA'= c(60,87,71,58,51,
+775,99,62,117,73,
+27,70,94,222,101))
+row.names(tbl) <- c('BRCA2,ATM,NOTCH1,APC,ALK,
+TP53,ERBB3,ROS1,EGFR,RB1,
+ERBB4,PDGFRA,PIK3CA,KRAS,CDKN2A')
+row.names(tbl) <- c('BRCA2','ATM','NOTCH1','APC','ALK',
+'TP53','ERBB3','ROS1','EGFR','RB1',
+'ERBB4','PDGFRA','PIK3CA','KRAS','CDKN2A')
+tbl
+for (i in 1:dim(tbl)[1]){
+AJOU_Pos <- tbl[i,1]
+AJOU_Neg <- 27685-AJOU_Pos
+TCGA_Pos <- tbl[i,2]
+TCGA_Neg <- 2899-TCGA_Pos
+table <- data.frame('AJOU'=c(AJOU_Pos, AJOU_Neg), 'TCGA'=c(TCGA_Pos, TCGA_Neg), row.names = c('EGFR+', 'EGFR-'))
+result <- chisq.test(table)
+tbl[i,'p-value'] <- result$p.value
+}
+View(tbl)
+install.packages("devtools")
+library(devtools)
+install_github("https://github.com/ABMI/G-CDM.git", ref="package_test")
+install_github("https://github.com/ABMI/G-CDM.git", ref="package_test")
+usethis::browse_github_pat()
+edit_r_environ()
+install_github("https://github.com/ABMI/G-CDM.git", ref="package_test")
+usethis::edit_r_environ()
+library(devtools)
+install_github("https://github.com/ABMI/G-CDM.git", ref="package_test", auth_token = "e18812db2690c332157ef46bf7e1a160ca68d3cf")
+library(genomic)
+genomic()
+genomic()
+library(shiny)
+library(xlsx)
+library(shinydashboard)
+library(SqlRender)
+library(DatabaseConnector)
+library(dplyr)
+library(GenVisR)
+library(devtools)
+install_github("https://github.com/ABMI/G-CDM.git", ref="package_test", auth_token = "e18812db2690c332157ef46bf7e1a160ca68d3cf")
+library(genomic)
+genomic()
+#install.packages("devtools")
+library(devtools)
+install_github("https://github.com/ABMI/G-CDM.git", ref="package_test", auth_token = "e18812db2690c332157ef46bf7e1a160ca68d3cf")
+library(genomic)
+genomic()
+#install.packages("devtools")
+library(devtools)
+install_github("https://github.com/ABMI/G-CDM.git", ref="package_test", auth_token = "e18812db2690c332157ef46bf7e1a160ca68d3cf")
+library(genomic)
+genomic()
+library(genomic)
+genomic()
+#install.packages("devtools")
+library(devtools)
+install_github("https://github.com/ABMI/G-CDM.git", ref="package_test", auth_token = "e18812db2690c332157ef46bf7e1a160ca68d3cf")
+library(genomic)
+genomic()
+setwd('C:/Users/ABMI/Desktop/R을 공부해보자')
+getwd()
+row3<-c('gender', 'both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female','both', 'male', 'female')
+devtools::install_github("https://github.com/ABMI/G-CDM.git")
+library(genomic)
+genomic::genomic()
+dbms = "sql server"
+server = "128.1.99.58"
+schema = "SSJ_GCDM_AJOU_v1.dbo"
+user="ssj"
+password="ssj1225"
+connectionDetails<-createConnectionDetails(dbms=dbms,
+server=server,
+schema=schema,
+user=user,
+password=password)
+connection<-connect(connectionDetails)
+Sys.setlocale(category = "LC_ALL", locale = "us")
+sql <- "select person_id from @schema.person"
+sql <- renderSql(sql, schema=connectionDetails$schema)$sql
+sql <- translateSql(sql, targetDialect=connectionDetails$dbms)$sql
+person_id <- querySql(connection, sql)
+person_id
+cohort <- data.frame(cohort_definition_id = 1,
+subject_id = person_id,
+cohort_start_date = '2019-01-01',
+cohort_end_date = '2019-04-01')
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = TRUE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+genomic::genomic()
+cohort <- data.frame(subject_id = person_id,
+cohort_start_date = '2019-01-01',
+cohort_end_date = '2019-04-01')
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+person_id
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+cohort <- data.frame(cohort_definition_id = 1,
+subject_id = person_id,
+cohort_start_date = '2019-01-01',
+cohort_end_date = '2019-04-01')
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+View(cohort)
+cohort <- data.frame(cohort_definition_id = 1,
+subject_id = person_id,
+cohort_start_date = '2019-01-01',
+cohort_end_date = '2019-04-01')
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+View(cohort)
+connection<-connect(connectionDetails)
+Sys.setlocale(category = "LC_ALL", locale = "us")
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+person_id
+person_id[1]
+typeof(person_id)
+length(person_id)
+person_id[1]
+person_id[1,1]
+typeof(person_id[1,1])
+typeof(as.character(person_id))
+as.character(person_id)
+cohort <- data.frame(cohort_definition_id = 1,
+subject_id = as.character(person_id),
+cohort_start_date = '2019-01-01',
+cohort_end_date = '2019-04-01')
+View(cohort)
+typeof(as.data.frame(person_id))
+cohort <- data.frame(cohort_definition_id = 1,
+subject_id = as.data.frame(person_id),
+cohort_start_date = '2019-01-01',
+cohort_end_date = '2019-04-01')
+View(cohort)
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+typeof(as.data.frame(person_id)[1,1])
+typeof(as.integer(person_id))
+typeof(person_id)
+length(person_id)
+length(as.data.frame(person_id))
+dim(person_id)
+typeof(as.list(person_id))
+dim(as.list(person_id))
+length(as.list(person_id))
+as.list(person_id)
+person_id
+cohort <- data.frame(cohort_definition_id = 1,
+subject_id = person_id$PERSON_ID,
+cohort_start_date = '2019-01-01',
+cohort_end_date = '2019-04-01')
+View(cohort)
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+as.integer(person_id$PERSON_ID)
+cohort <- data.frame(cohort_definition_id = 1,
+subject_id = as.integer(person_id$PERSON_ID),
+cohort_start_date = '2019-01-01',
+cohort_end_date = '2019-04-01')
+View(cohort)
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+View(cohort)
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+as.date('2019-01-01')
+as.Date('2019-01-01')
+cohort <- data.frame(cohort_definition_id = 1,
+subject_id = as.integer(person_id$PERSON_ID),
+cohort_start_date = as.Date('2019-01-01'),
+cohort_end_date = as.Date('2019-04-01'))
+View(cohort)
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+connection<-connect(connectionDetails)
+connection<-connect(connectionDetails)
+View(cohort)
+insertTable(connection, paste0(schema,".","cohort"), cohort,
+dropTableIfExists = FALSE,
+createTable = FALSE,
+tempTable = FALSE,
+oracleTempSchema = NULL)
+genomic::genomic()
+library(devtools)
+install_github("https://github.com/ABMI/G-CDM.git", ref = "package_test")
+install_github("https://github.com/ABMI/GeneProfiler.git", ref = "package_test")
+install_github("https://github.com/ABMI/GeneProfiler.git", ref = "package_test")
+install_github("https://github.com/ABMI/GeneProfiler.git", ref = "package_test", username = "lucid0921")
+install_github("https://github.com/ABMI/GeneProfiler.git", ref = "package_test", username = "ssj1225")
+install_github("https://github.com/ABMI/GeneProfiler.git", ref = "package_test", username = "ABMI")
+devtools::install_github("https://github.com/ABMI/GeneProfiler.git", ref = "package_test")
+install_github("https://github.com/ABMI/GeneProfiler.git", ref = "develop")
+genomic::genomic()
+library(genomic)
+genomic::genomic()
+genomic::genomic()
+library(devtools)
+devtools::install_github("https://github.com/ABMI/GeneProfiler.git")
+library(genomic)
+genomic::genomic()
+genomic::genomic()
+genomic::genomic()
+genomic::genomic()
+genomic::genomic()
+genomic::genomic()
+genomic::genomic()
+genomic::genomic()
+genomic::genomic()
+load("D:/Users/ssj/Downloads/estimation_study_6_export.zip")
+genomic::genomic()
+install_github("https://github.com/ABMI/GeneProfiler.git", ref = "develop")
+devtools::install_github("https://github.com/ABMI/GeneProfiler.git")
+install_github("https://github.com/ABMI/GeneProfiler.git", ref = "develop")
+library(devtools)
+install_github("https://github.com/ABMI/GeneProfiler.git", ref = "develop")
+Run genomic()
+genomic::genomic()
+library(genomic)
+genomic::genomic()
+genomic::genomic()
+getwd()
+setwd('D:/Users/ssj/Google 드라이브/ABMI_SSJ_Desktop/1. 개인연구/2. OHDSI Oncology WG/20191122_breast_msk_2018')
+list.files()
+list.files() %>% grepl('txt')
+data_clinical_patient <- read.table('./data_clinical_patient.txt')
+data_clinical_patient <- read.table('./data_clinical_patient.txt', header = TRUE, sep = '\t')
+dim(data_clinical_patient)
+head(data_clinical_patient)
+write.csv(data_clinical_patient, './Summary/data_clinical_patient.csv')
+data_clinical_sample <- read.table('./data_clinical_sample.txt', header=TRUE, sep='\t')
+dim(data_clinical_sample)
+head(data_clinical_sample)
+write.csv(data_clinical_sample, './Summary/data_clinical_sample.csv')
+list.files()
+txt_list <- c("data_clinical_patient", "data_clinical_sample", "data_CNA", "data_fusions", "data_mutations_extended",
+"data_mutations_mskcc", "meta_clinical_patient", "meta_clinical_sample", "meta_CNA",
+"meta_cna_hg19_seg", "meta_fusions", "meta_mutations_extended", "meta_study")
+length(txt_list)
+txt <- 'text'
+print(paste0('dim(', txt, ') # ', dim(read_path)) # 1918, 33
+print(paste0('dim(', txt, ') # ', dim(read_path))) # 1918, 33
+print(paste0('dim(', txt, ') # ', length(txt))) # 1918, 33
+for(txt in txt_list){
+read_path <- paste0('./', txt, '.txt')
+txt <- read.table(read_path, header=TRUE, sep='\t')
+print(paste0('dim(', txt, ') # ', dim(txt))) # 1918, 33
+head(read_path)
+write_path <- paste0('./Summary/', txt, '.csv')
+write.csv(txt, write_path)
+}
+txt_list
+txt="data_clinical_patient"
+read_path <- paste0('./', txt, '.txt')
+read_path
+txt_table <- read.table(read_path, header=TRUE, sep='\t')
+txt
+print(paste0('dim(', txt, ') # ', dim(txt_table))) # 1918, 33
+paste0('dim(', txt, ') # ', dim(txt_table))
+dim(txt_table)
+paste0('Dimension of ', txt, ': # ', dim(txt_table))
+dim <- dim(txt_table)
+dim
+as.character(dim(txt_table))
+as.character(dim(txt_table))[1]
+paste0(as.character(dim(txt_table))[1], ', ', as.character(dim(txt_table))[2])
+dim <- paste0(as.character(dim(txt_table))[1], ', ', as.character(dim(txt_table))[2])
+paste0('Dimension of ', txt, ': # ', dim)
+print(paste0('Dimension of ', txt, ': # ', dim))
+print(paste0('Dimension of ', txt, ': ', dim))
+head(read_path)
+head(txt_table)
+paste0('./Summary/', txt, '.csv')
+for(txt in txt_list){
+read_path <- paste0('./', txt, '.txt')
+txt_table <- read.table(read_path, header=TRUE, sep='\t')
+dim <- paste0(as.character(dim(txt_table))[1], ', ', as.character(dim(txt_table))[2])
+print(paste0('Dimension of ', txt, ': ', dim))
+head(txt_table)
+write_path <- paste0('./Summary/', txt, '.csv')
+write.csv(txt_table, write_path)
+}
+txt_list <- c("data_clinical_patient", "data_clinical_sample",
+"data_CNA", "data_fusions", "data_mutations_extended", "data_mutations_mskcc")
+length(txt_list) # 13
+print(head(txt_table))
+txt="data_clinical_patient"
+read_path <- paste0('./', txt, '.txt')
+txt_table <- read.table(read_path, header=TRUE, sep='\t')
+dim <- paste0(as.character(dim(txt_table))[1], ', ', as.character(dim(txt_table))[2])
+print(paste0('Dimension of ', txt, ': ', dim))
+print(head(txt_table))
+for(txt in txt_list){
+read_path <- paste0('./', txt, '.txt')
+txt_table <- read.table(read_path, header=TRUE, sep='\t')
+dim <- paste0(as.character(dim(txt_table))[1], ', ', as.character(dim(txt_table))[2])
+print(paste0('Dimension of ', txt, ': ', dim))
+print(head(txt_table))
+write_path <- paste0('./Summary/', txt, '.csv')
+write.csv(txt_table, write_path)
+}
+for(txt in txt_list){
+read_path <- paste0('./', txt, '.txt')
+txt_table <- read.table(read_path, header=TRUE, sep='\t')
+dim <- paste0(as.character(dim(txt_table))[1], ', ', as.character(dim(txt_table))[2])
+print(paste0('Dimension of ', txt, ': ', dim))
+print(head(txt_table))
+write_path <- paste0('./Summary/', txt, '.csv')
+write.csv(txt_table, write_path)
+}
+length(txt_list) # 13
+for(txt in txt_list){
+read_path <- paste0('./', txt, '.txt')
+txt_table <- read.table(read_path, header=TRUE, sep='\t')
+dim <- paste0(as.character(dim(txt_table))[1], ', ', as.character(dim(txt_table))[2])
+print(paste0('Dimension of ', txt, ': ', dim))
+#print(head(txt_table))
+write_path <- paste0('./Summary/', txt, '.csv')
+write.csv(txt_table, write_path)
+}
