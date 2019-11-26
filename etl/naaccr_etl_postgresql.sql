@@ -259,13 +259,13 @@ CREATE TABLE naaccr_data_points_tmp
 	record_id VARCHAR(255) NULL,
 	histology_site VARCHAR(255) NULL,
 	naaccr_item_number VARCHAR(255) NULL,
-	naaccr_item_value TEXT NULL,
+	naaccr_item_value VARCHAR(255) NULL,
 	schema_concept_id BIGINT NULL,
 	schema_concept_code VARCHAR(255),
 	variable_concept_id BIGINT NULL,
 	variable_concept_code VARCHAR(255) NULL,
 	value_concept_id BIGINT NULL,
-	value_concept_code TEXT NULL,
+	value_concept_code VARCHAR(255) NULL,
 	type_concept_id BIGINT NULL
 );
 
