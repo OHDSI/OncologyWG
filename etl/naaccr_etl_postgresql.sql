@@ -280,7 +280,10 @@ CREATE TABLE naaccr_data_points_tmp
          , record_id
          , histology_site
          , naaccr_item_number
-         , naaccr_item_value
+         , CASE WHEN CHAR_LENGTH(naaccr_item_value) > 255 
+				THEN SUBSTRING(naaccr_item_value,1,255) 
+				ELSE naaccr_item_value
+			END
          , NULL
          , NULL
          , NULL
@@ -306,15 +309,18 @@ CREATE TABLE naaccr_data_points_tmp
 				END
 		END
   WHERE naaccr_item_number IN(-- todo: verify this list
-     '390'
-  , '1200'
-  , '1210'
-  , '1220'
-  , '1230'
-  , '1240'
-  ,'3220'
+      SELECT DISTINCT c.concept_code
+      FROM concept c
+      INNER JOIN concept_relationship cr
+        ON  cr.concept_id_1 = c.concept_id
+        AND cr.relationship_id IN ('Start date of', 'End date of')
+      WHERE c.vocabulary_id = 'NAACCR'
   );
  
+
+
+
+
 
 	-- Trim values just in case leading or trailing spaces
 	UPDATE naaccr_data_points_tmp
@@ -784,15 +790,15 @@ CREATE TABLE naaccr_data_points_tmp
     FROM naaccr_data_points_tmp
     WHERE naaccr_item_number IN ( '1390', '1400', '1410')
   ) ndp
+  -- Get start date
   INNER JOIN concept_relationship cr
     ON ndp.variable_concept_id = cr.concept_id_1
-    AND relationship_id = 'Variable has date'
+    AND cr.relationship_id = 'Has start date'
   INNER JOIN naaccr_data_points_tmp ndp_dates
     ON cr.concept_id_2 = ndp_dates.variable_concept_id
     AND ndp.record_id = ndp_dates.record_id
-  -- filter null dates
-  WHERE ndp_dates.naaccr_item_value IS NOT NULL
-  ;
+	-- filter null dates
+	AND ndp_dates.naaccr_item_value IS NOT NULL;
  
   -- insert procedure (all except surgeries)
   INSERT INTO episode_temp
@@ -816,7 +822,11 @@ CREATE TABLE naaccr_data_points_tmp
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
       , TO_DATE(ndp_dates.naaccr_item_value, 'yyyymmdd')  		                                                          AS episode_start_datetime        --?
-      , NULL                                                                                                                                                    AS episode_end_datetime          --?
+      -- Placeholder... TODO:better universal solution for isnull?
+	  , CASE WHEN CHAR_LENGTH(end_dates.naaccr_item_value) > 1
+			 THEN TO_DATE(end_dates.naaccr_item_value, 'yyyymmdd')  		                                                                                                                                                    
+			 ELSE NULL
+			 END AS episode_end_datetime 
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
       , ndp.value_concept_id                                                                                                                                           AS episode_object_concept_id
@@ -835,12 +845,22 @@ CREATE TABLE naaccr_data_points_tmp
     AND conc.domain_id = 'Procedure'
   INNER JOIN concept_relationship cr
     ON ndp.variable_concept_id = cr.concept_id_1
-    AND relationship_id = 'Variable has date'
+    AND relationship_id = 'Has start date'
   INNER JOIN naaccr_data_points_tmp ndp_dates
     ON cr.concept_id_2 = ndp_dates.variable_concept_id
+	-- filter null dates
+	AND ndp_dates.naaccr_item_value IS NOT NULL
     AND ndp.record_id = ndp_dates.record_id
-  -- filter null dates
-  WHERE ndp_dates.naaccr_item_value IS NOT NULL
+  -- Get end date
+  LEFT OUTER JOIN concept_relationship cr2
+    ON ndp.variable_concept_id = cr2.concept_id_1
+    AND cr2.relationship_id = 'Has end date'
+  LEFT OUTER JOIN naaccr_data_points_tmp end_dates
+    ON cr2.concept_id_2 = end_dates.variable_concept_id
+	--ON end_dates.naaccr_item_number = '3220'
+	-- filter null dates
+	AND end_dates.naaccr_item_value IS NOT NULL
+	AND ndp.record_id = end_dates.record_id
   ;
  
 
@@ -1091,8 +1111,8 @@ CREATE TABLE naaccr_data_points_tmp
       , ndp.person_id                                                                                                                                             AS person_id
       , conc.concept_id                                                                                                                                        AS measurement_concept_id
       , et.episode_start_datetime                                                                                                                           AS measurement_time
-      ,null
-    , et.episode_start_datetime
+      , NULL
+      , et.episode_start_datetime
       , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
       , conc_num.operator_concept_id                                                                                                                            AS operator_concept_id
       , CASE
