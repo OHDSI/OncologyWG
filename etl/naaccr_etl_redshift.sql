@@ -404,7 +404,6 @@ DISTKEY(person_id);
   AND c1.concept_id IS NOT NULL
   AND c1.vocabulary_id = 'NAACCR'
   AND c1.concept_class_id = 'NAACCR Value'
-  AND CHAR_LENGTH(naaccr_data_points_tmp.naaccr_item_value) < 10
   AND CONCAT(naaccr_data_points_tmp.variable_concept_code,CONCAT('@',naaccr_data_points_tmp.naaccr_item_value)) = c1.concept_code;
 
   -- Type
@@ -474,7 +473,7 @@ DISTKEY(person_id);
 
     (
       SELECT *
-      FROM naaccr_data_points
+      FROM naaccr_data_points_tmp
       WHERE naaccr_item_number = '390'  -- Date of diag
       AND naaccr_item_value IS NOT NULL
       AND person_id IS NOT NULL
@@ -598,20 +597,9 @@ DISTKEY(person_id);
     (
       SELECT *
       FROM naaccr_data_points_tmp
-      WHERE person_id IS NOT NULL
+  
       -- concept is modifier of a diagnosis item (child of site/hist)
-      /**
-      AND variable_concept_id IN ( SELECT DISTINCT concept_id_1
-                       FROM concept_relationship
-                       WHERE relationship_id = 'Has parent item'
-                       AND concept_id_2 in (35918588 -- primary site
-                                  ,35918916 -- histology
-                                  )
-                       GROUP BY concept_id_1
-                       HAVING COUNT(DISTINCT concept_id_2) > 1
-                      )
-                      **/
-      AND variable_concept_id IN (  SELECT DISTINCT concept_id_1
+      WHERE variable_concept_id IN (  SELECT DISTINCT concept_id_1
                       FROM concept_relationship
                       WHERE relationship_id = 'Has parent item'
                       AND concept_id_2 in (35918588 -- primary site
@@ -804,7 +792,6 @@ DISTKEY(person_id);
     AND ndp.record_id = ndp_dates.record_id
   -- filter null dates
   WHERE ndp_dates.naaccr_item_value IS NOT NULL
-  AND ndp_dates.naaccr_item_value NOT IN('99999999', '0')
   ;
  
   -- insert procedure (all except surgeries)
