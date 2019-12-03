@@ -77,67 +77,67 @@ DELETE FROM episode_event;
 
 
 IF OBJECT_ID('condition_occurrence_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE condition_occurrence_temp;  
+  DROP TABLE condition_occurrence_temp;
 
 CREATE TABLE condition_occurrence_temp
 (
   condition_occurrence_id        BIGINT        NOT NULL ,
   person_id                     BIGINT        NOT NULL ,
-  condition_concept_id          BIGINT        NOT NULL ,
+  condition_concept_id          INT        NOT NULL ,
   condition_start_date          DATE          NOT NULL ,
   condition_start_datetime      DATETIME     NULL ,
   condition_end_date            DATE          NULL ,
   condition_end_datetime        DATETIME     NULL ,
-  condition_type_concept_id     BIGINT        NOT NULL ,
+  condition_type_concept_id     INT        NOT NULL ,
   stop_reason                   VARCHAR(20)    NULL ,
   provider_id                   BIGINT        NULL ,
   visit_occurrence_id           BIGINT        NULL ,
   --1/23/2019 Removing because we are trying to match the EDW's OMOP instance.
   -- visit_detail_id               BIGINT     NULL ,
   condition_source_value        VARCHAR(50)    NULL ,
-  condition_source_concept_id   BIGINT        NULL ,
+  condition_source_concept_id   INT        NULL ,
   condition_status_source_value  VARCHAR(50)   NULL ,
-  condition_status_concept_id    BIGINT        NULL,
+  condition_status_concept_id    INT        NULL,
   record_id                     varchar(255)  NULL
 );
 
 IF OBJECT_ID('measurement_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE measurement_temp;  
+  DROP TABLE measurement_temp;
 
 CREATE TABLE measurement_temp
 (
   measurement_id                BIGINT       NOT NULL ,
   person_id                     BIGINT       NOT NULL ,
-  measurement_concept_id        BIGINT       NOT NULL ,
+  measurement_concept_id        INT       NOT NULL ,
   measurement_date              DATE         NOT NULL ,
   measurement_time              VARCHAR(10)  NULL ,
   measurement_datetime          DATETIME    NULL ,
-  measurement_type_concept_id   BIGINT       NOT NULL ,
-  operator_concept_id           BIGINT       NULL ,
+  measurement_type_concept_id   INT       NOT NULL ,
+  operator_concept_id           INT       NULL ,
   value_as_number               NUMERIC      NULL ,
-  value_as_concept_id           BIGINT       NULL ,
-  unit_concept_id               BIGINT       NULL ,
+  value_as_concept_id           INT       NULL ,
+  unit_concept_id               INT       NULL ,
   range_low                     NUMERIC      NULL ,
   range_high                    NUMERIC      NULL ,
   provider_id                   BIGINT       NULL ,
   visit_occurrence_id           BIGINT       NULL ,
   visit_detail_id               BIGINT       NULL ,
   measurement_source_value      VARCHAR(50)   NULL ,
-  measurement_source_concept_id  BIGINT       NULL ,
+  measurement_source_concept_id INT       NULL ,
   unit_source_value             VARCHAR(50)  NULL ,
   value_source_value            VARCHAR(50)  NULL ,
   modifier_of_event_id          BIGINT       NULL ,
-  modifier_of_field_concept_id  BIGINT       NULL,
+  modifier_of_field_concept_id  INT       NULL,
   record_id                     VARCHAR(255) NULL
 );
 
 IF OBJECT_ID('episode_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE episode_temp;  
+  DROP TABLE episode_temp;
 
 CREATE TABLE episode_temp (
   episode_id                  BIGINT        NOT NULL,
   person_id                   BIGINT        NOT NULL,
-  episode_concept_id          INTEGER       NOT NULL,
+  episode_concept_id          INT       NOT NULL,
   episode_start_datetime      DATETIME     NULL,       --Fix me
   episode_end_datetime        DATETIME     NULL,
   episode_parent_id           BIGINT        NULL,
@@ -150,77 +150,77 @@ CREATE TABLE episode_temp (
 );
 
 IF OBJECT_ID('episode_event_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE episode_event_temp;  
+  DROP TABLE episode_event_temp;
 
 CREATE TABLE episode_event_temp (
   episode_id                      BIGINT   NOT NULL,
   event_id                         BIGINT   NOT NULL,
-  episode_event_field_concept_id  INTEGER NOT NULL
+  episode_event_field_concept_id  INT NOT NULL
 );
 
 IF OBJECT_ID('procedure_occurrence_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE procedure_occurrence_temp;  
+  DROP TABLE procedure_occurrence_temp;
 
 CREATE TABLE procedure_occurrence_temp
  (
   procedure_occurrence_id     BIGINT        NOT NULL ,
   person_id                    BIGINT        NOT NULL ,
-  procedure_concept_id        BIGINT        NOT NULL ,
+  procedure_concept_id        INT        NOT NULL ,
   procedure_date              DATE          NOT NULL ,
   procedure_datetime          DATETIME     NULL ,
-  procedure_type_concept_id   BIGINT        NOT NULL ,
-  modifier_concept_id         BIGINT        NULL ,
+  procedure_type_concept_id   INT        NOT NULL ,
+  modifier_concept_id         INT        NULL ,
   quantity                    BIGINT        NULL ,
   provider_id                 BIGINT        NULL ,
   visit_occurrence_id         BIGINT        NULL ,
   visit_detail_id             BIGINT        NULL ,
   procedure_source_value      VARCHAR(50)    NULL ,
-  procedure_source_concept_id  BIGINT        NULL ,
+  procedure_source_concept_id  INT        NULL ,
   modifier_source_value       VARCHAR(50)    NULL,
   episode_id                  BIGINT        NOT NULL,
   record_id                   VARCHAR(255)  NULL
  );
 
  IF OBJECT_ID('drug_exposure_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE drug_exposure_temp;  
+  DROP TABLE drug_exposure_temp;
 
 CREATE TABLE drug_exposure_temp
 (
   drug_exposure_id              BIGINT        NOT NULL ,
   person_id                     BIGINT        NOT NULL ,
-  drug_concept_id               BIGINT        NOT NULL ,
+  drug_concept_id               INT        NOT NULL ,
   drug_exposure_start_date      DATE          NOT NULL ,
   drug_exposure_start_datetime  DATETIME      NULL ,
   drug_exposure_end_date        DATE          NULL ,
   drug_exposure_end_datetime    DATETIME      NULL ,
   verbatim_end_date             DATE          NULL ,
-  drug_type_concept_id          BIGINT        NOT NULL ,
+  drug_type_concept_id          INT        NOT NULL ,
   stop_reason                   VARCHAR(20)   NULL ,
   refills                       BIGINT        NULL ,
   quantity                      NUMERIC       NULL ,
   days_supply                   BIGINT        NULL ,
   sig                           TEXT          NULL ,
-  route_concept_id              BIGINT        NULL ,
+  route_concept_id              INT        NULL ,
   lot_number                    VARCHAR(50)   NULL ,
   provider_id                   BIGINT        NULL ,
   visit_occurrence_id           BIGINT        NULL ,
   visit_detail_id               BIGINT        NULL ,
   drug_source_value             VARCHAR(50)   NULL ,
-  drug_source_concept_id        BIGINT        NULL ,
+  drug_source_concept_id        INT        NULL ,
   route_source_value            VARCHAR(50)   NULL ,
   dose_unit_source_value        VARCHAR(50)   NULL,
   record_id                     VARCHAR(255)    NULL
 );
 
- 
+
  -- Create ambiguous schema discriminator mapping tables
- 
+
  IF OBJECT_ID('ambig_schema_discrim', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE ambig_schema_discrim;  
+  DROP TABLE ambig_schema_discrim;
 
  CREATE TABLE ambig_schema_discrim(
 	schema_concept_code varchar(50) NULL,
-	schema_concept_id bigint NULL,
+	schema_concept_id INT NULL,
 	discrim_item_num varchar(50) NULL,
 	discrim_item_value varchar(50) NULL
 );
@@ -259,7 +259,7 @@ CREATE TABLE drug_exposure_temp
 
 
 IF OBJECT_ID('naaccr_data_points_tmp', 'U') IS NOT NULL           -- Drop temp table if it exists
-  DROP TABLE naaccr_data_points_tmp;  
+  DROP TABLE naaccr_data_points_tmp;
 
 CREATE TABLE naaccr_data_points_tmp
 (
@@ -268,13 +268,13 @@ CREATE TABLE naaccr_data_points_tmp
 	histology_site VARCHAR(255) NULL,
 	naaccr_item_number VARCHAR(255) NULL,
 	naaccr_item_value VARCHAR(255) NULL,
-	schema_concept_id BIGINT NULL,
+	schema_concept_id INT NULL,
 	schema_concept_code VARCHAR(255),
-	variable_concept_id BIGINT NULL,
+	variable_concept_id INT NULL,
 	variable_concept_code VARCHAR(255) NULL,
-	value_concept_id BIGINT NULL,
+	value_concept_id INT NULL,
 	value_concept_code VARCHAR(255) NULL,
-	type_concept_id BIGINT NULL
+	type_concept_id INT NULL
 );
 
 
@@ -288,8 +288,8 @@ CREATE TABLE naaccr_data_points_tmp
          , record_id
          , histology_site
          , naaccr_item_number
-         , CASE WHEN LEN(naaccr_item_value) > 255 
-				THEN SUBSTRING(naaccr_item_value,1,255) 
+         , CASE WHEN LEN(naaccr_item_value) > 255
+				THEN SUBSTRING(naaccr_item_value,1,255)
 				ELSE naaccr_item_value
 			END
          , NULL
@@ -300,12 +300,17 @@ CREATE TABLE naaccr_data_points_tmp
          , NULL
          , NULL
 	 FROM naaccr_data_points
-	 WHERE person_id IS NOT NULL;
+	 WHERE person_id IS NOT NULL
+   AND naaccr_data_points.naaccr_item_value IS NOT NULL
+   AND naaccr_data_points.naaccr_item_value != ''
+   AND naaccr_data_points.naaccr_item_number NOT IN(
+     '1810' --ADDR CURRENT--CITY
+   );
 
 
 	-- Format dates
   UPDATE naaccr_data_points_tmp
-  SET naaccr_item_value = 
+  SET naaccr_item_value =
 		CASE
 			WHEN LEN(naaccr_item_value) != 8 THEN NULL
 			WHEN ISNUMERIC(naaccr_item_value) <> 1 THEN NULL
@@ -324,7 +329,7 @@ CREATE TABLE naaccr_data_points_tmp
         AND cr.relationship_id IN ('Start date of', 'End date of')
       WHERE c.vocabulary_id = 'NAACCR'
   );
- 
+
 
 
 
@@ -339,7 +344,7 @@ CREATE TABLE naaccr_data_points_tmp
     UPDATE naaccr_data_points_tmp
     SET schema_concept_id = schm.schema_concept_id,
       schema_concept_code = schm.schema_concept_code
-    FROM 
+    FROM
     (
       SELECT DISTINCT record_id rec_id, asd.schema_concept_id, asd.schema_concept_code
       FROM
@@ -373,7 +378,7 @@ CREATE TABLE naaccr_data_points_tmp
     ) schm
     WHERE record_id = schm.rec_id;
 
- 
+
     -- Append standard schemas - uses histology_site
     UPDATE naaccr_data_points_tmp
     SET schema_concept_id   = schm.concept_id,
@@ -418,10 +423,18 @@ CREATE TABLE naaccr_data_points_tmp
   AND c1.concept_id IS NOT NULL
   AND c1.vocabulary_id = 'NAACCR'
   AND c1.concept_class_id = 'NAACCR Value'
-  AND CONCAT(naaccr_data_points_tmp.variable_concept_code,'@', naaccr_data_points_tmp.naaccr_item_value) = c1.concept_code;
+  AND CONCAT(naaccr_data_points_tmp.variable_concept_code,'@', naaccr_data_points_tmp.naaccr_item_value) = c1.concept_code
+  AND naaccr_data_points_tmp.naaccr_item_number NOT IN(-- todo: verify this list
+      SELECT DISTINCT c.concept_code
+      FROM concept c
+      INNER JOIN concept_relationship cr
+        ON  cr.concept_id_1 = c.concept_id
+        AND cr.relationship_id IN ('Start date of', 'End date of')
+      WHERE c.vocabulary_id = 'NAACCR'
+  );
 
   -- Type
- 
+
   UPDATE naaccr_data_points_tmp
   SET type_concept_id = cr1.concept_id_2
   FROM concept_relationship cr1
@@ -611,7 +624,7 @@ CREATE TABLE naaccr_data_points_tmp
     (
       SELECT *
       FROM naaccr_data_points_tmp
-  
+
       -- concept is modifier of a diagnosis item (child of site/hist)
       WHERE variable_concept_id IN (  SELECT DISTINCT concept_id_1
                       FROM concept_relationship
@@ -807,7 +820,7 @@ CREATE TABLE naaccr_data_points_tmp
     AND ndp.record_id = ndp_dates.record_id
 	-- filter null dates
 	AND ndp_dates.naaccr_item_value IS NOT NULL;
- 
+
   -- insert procedure (all except surgeries)
   INSERT INTO episode_temp
   (
@@ -832,9 +845,9 @@ CREATE TABLE naaccr_data_points_tmp
       , CONVERT(date,ndp_dates.naaccr_item_value)  		                                                          AS episode_start_datetime        --?
       -- Placeholder... TODO:better universal solution for isnull?
 	  , CASE WHEN LEN(end_dates.naaccr_item_value) > 1
-			 THEN CONVERT(date,end_dates.naaccr_item_value)  		                                                                                                                                                    
+			 THEN CONVERT(date,end_dates.naaccr_item_value)
 			 ELSE NULL
-			 END AS episode_end_datetime 
+			 END AS episode_end_datetime
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
       , ndp.value_concept_id                                                                                                                                           AS episode_object_concept_id
@@ -870,7 +883,7 @@ CREATE TABLE naaccr_data_points_tmp
 	AND end_dates.naaccr_item_value IS NOT NULL
 	AND ndp.record_id = end_dates.record_id
   ;
- 
+
 
   -- insert surgery procedures
   -- this requires its own schema mapping (ICDO to Proc Schema)
@@ -1263,7 +1276,7 @@ JOIN procedure_occurrence_temp pet
 --Step 16: Connect 'Treatment Episodes' to 'Disease Episodes' via parent_id
 UPDATE episode_temp
 SET episode_parent_id = det.ep_id
-FROM 
+FROM
 (
 	SELECT DISTINCT record_id rec_id, episode_concept_id ep_id
 	FROM episode_temp
@@ -1540,25 +1553,25 @@ Insert new:
 --Delete temp tables
 
 IF OBJECT_ID('naaccr_data_points_tmp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	  DROP TABLE naaccr_data_points_tmp;  
+	  DROP TABLE naaccr_data_points_tmp;
 
 IF OBJECT_ID('condition_occurrence_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	DROP TABLE condition_occurrence_temp;  
+	DROP TABLE condition_occurrence_temp;
 
 IF OBJECT_ID('measurement_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	DROP TABLE measurement_temp;  
+	DROP TABLE measurement_temp;
 
 IF OBJECT_ID('episode_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	DROP TABLE episode_temp;  
+	DROP TABLE episode_temp;
 
 IF OBJECT_ID('episode_event_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	DROP TABLE episode_event_temp;  
+	DROP TABLE episode_event_temp;
 
 IF OBJECT_ID('procedure_occurrence_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	DROP TABLE procedure_occurrence_temp;  
+	DROP TABLE procedure_occurrence_temp;
 
 IF OBJECT_ID('drug_exposure_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
-	DROP TABLE drug_exposure_temp;  
+	DROP TABLE drug_exposure_temp;
 
 
 COMMIT;
