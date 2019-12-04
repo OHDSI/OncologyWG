@@ -70,11 +70,16 @@ module NaaccrEtl
       `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} -U #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{file}"`
     end
 
-    def self.execute_naaccr_etl
+    def self.execute_naaccr_etl(legacy=false)
       ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
       file = Dir.pwd
       file.gsub!('naaccr-etl', '')
-      file = "#{file}naaccr_etl.sql"
+
+      if legacy
+        file = "#{file}naaccr_etl_postgresql_legacy.sql"
+      else
+        file = "#{file}naaccr_etl_postgresql.sql"
+      end
 
       `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} -U #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{file}"`
     end
