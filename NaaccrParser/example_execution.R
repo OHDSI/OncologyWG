@@ -10,30 +10,27 @@ library(SqlRender)
 file_path <- ""
 record_id_prefix <- ""
 
-# Translate to EAV structure
-# record_id | mrn | histology_site | item_num | item_name | item_value
-df <- NAACCR_to_df(file_path
-                   , record_id_prefix)
-
-
-
-# Append person_id (requires DB connection)
-
 connectionDetails <- createConnectionDetails(
   dbms="sql server",
   server="",
   user="",
   password="",
-  schema =""
+  schema ="NAACCR.dbo"
 )
 
-# Import data directly into database
+
+# Import data  into database
 NAACCR_to_db(file_path
              , record_id_prefix
              , connectionDetails)
 
 
 
+# Assign person_id to naaccr_data_points
+# requires a table with person_id and mrn which connection can access
+# if mrn field has a different name in mapping table, specify in third parameter
+assign_person_id(connectionDetails
+                 , "thisdb.dbo.person_map_table")
 
 
 
