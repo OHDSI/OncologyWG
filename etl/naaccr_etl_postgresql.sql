@@ -80,8 +80,8 @@ DROP TABLE IF EXISTS condition_occurrence_temp;
 
 CREATE TABLE condition_occurrence_temp
 (
-  condition_occurrence_id        BIGINT        NOT NULL ,
-  person_id                     BIGINT        NOT NULL ,
+  condition_occurrence_id        INTEGER        NOT NULL ,
+  person_id                     INTEGER        NOT NULL ,
   condition_concept_id          INT        NOT NULL ,
   condition_start_date          DATE          NOT NULL ,
   condition_start_datetime      TIMESTAMP     NULL ,
@@ -89,10 +89,10 @@ CREATE TABLE condition_occurrence_temp
   condition_end_datetime        TIMESTAMP     NULL ,
   condition_type_concept_id     INT        NOT NULL ,
   stop_reason                   VARCHAR(20)    NULL ,
-  provider_id                   BIGINT        NULL ,
-  visit_occurrence_id           BIGINT        NULL ,
+  provider_id                   INTEGER        NULL ,
+  visit_occurrence_id           INTEGER        NULL ,
   --1/23/2019 Removing because we are trying to match the EDW's OMOP instance.
-  -- visit_detail_id               BIGINT     NULL ,
+  -- visit_detail_id               INTEGER     NULL ,
   condition_source_value        VARCHAR(50)    NULL ,
   condition_source_concept_id   INT        NULL ,
   condition_status_source_value  VARCHAR(50)   NULL ,
@@ -104,8 +104,8 @@ DROP TABLE IF EXISTS measurement_temp;
 
 CREATE TABLE measurement_temp
 (
-  measurement_id                BIGINT       NOT NULL ,
-  person_id                     BIGINT       NOT NULL ,
+  measurement_id                INTEGER       NOT NULL ,
+  person_id                     INTEGER       NOT NULL ,
   measurement_concept_id        INT       NOT NULL ,
   measurement_date              DATE         NOT NULL ,
   measurement_time              VARCHAR(10)  NULL ,
@@ -117,14 +117,14 @@ CREATE TABLE measurement_temp
   unit_concept_id               INT       NULL ,
   range_low                     NUMERIC      NULL ,
   range_high                    NUMERIC      NULL ,
-  provider_id                   BIGINT       NULL ,
-  visit_occurrence_id           BIGINT       NULL ,
-  visit_detail_id               BIGINT       NULL ,
+  provider_id                   INTEGER       NULL ,
+  visit_occurrence_id           INTEGER       NULL ,
+  visit_detail_id               INTEGER       NULL ,
   measurement_source_value      VARCHAR(50)   NULL ,
   measurement_source_concept_id INT       NULL ,
   unit_source_value             VARCHAR(50)  NULL ,
   value_source_value            VARCHAR(50)  NULL ,
-  modifier_of_event_id          BIGINT       NULL ,
+  modifier_of_event_id          INTEGER       NULL ,
   modifier_of_field_concept_id  INT       NULL,
   record_id                     VARCHAR(255) NULL
 );
@@ -132,12 +132,12 @@ CREATE TABLE measurement_temp
 DROP TABLE IF EXISTS episode_temp;
 
 CREATE TABLE episode_temp (
-  episode_id                  BIGINT        NOT NULL,
-  person_id                   BIGINT        NOT NULL,
+  episode_id                  INTEGER        NOT NULL,
+  person_id                   INTEGER        NOT NULL,
   episode_concept_id          INT           NOT NULL,
   episode_start_datetime      TIMESTAMP     NULL,       --Fix me
   episode_end_datetime        TIMESTAMP     NULL,
-  episode_parent_id           BIGINT        NULL,
+  episode_parent_id           INTEGER        NULL,
   episode_number              INTEGER       NULL,
   episode_object_concept_id   INTEGER       NOT NULL,
   episode_type_concept_id     INTEGER       NOT NULL,
@@ -149,8 +149,8 @@ CREATE TABLE episode_temp (
 DROP TABLE IF EXISTS episode_event_temp;
 
 CREATE TABLE episode_event_temp (
-  episode_id                      BIGINT   NOT NULL,
-  event_id                         BIGINT   NOT NULL,
+  episode_id                      INTEGER   NOT NULL,
+  event_id                         INTEGER   NOT NULL,
   episode_event_field_concept_id  INT NOT NULL
 );
 
@@ -158,21 +158,21 @@ DROP TABLE IF EXISTS procedure_occurrence_temp;
 
 CREATE TABLE procedure_occurrence_temp
  (
-  procedure_occurrence_id     BIGINT        NOT NULL ,
-  person_id                   BIGINT        NOT NULL ,
+  procedure_occurrence_id     INTEGER        NOT NULL ,
+  person_id                   INTEGER        NOT NULL ,
   procedure_concept_id        INT        NOT NULL ,
   procedure_date              DATE          NOT NULL ,
   procedure_datetime          TIMESTAMP     NULL ,
   procedure_type_concept_id   INT        NOT NULL ,
   modifier_concept_id         INT        NULL ,
-  quantity                    BIGINT        NULL ,
-  provider_id                 BIGINT        NULL ,
-  visit_occurrence_id         BIGINT        NULL ,
-  visit_detail_id             BIGINT        NULL ,
+  quantity                    INTEGER        NULL ,
+  provider_id                 INTEGER        NULL ,
+  visit_occurrence_id         INTEGER        NULL ,
+  visit_detail_id             INTEGER        NULL ,
   procedure_source_value      VARCHAR(50)    NULL ,
-  procedure_source_concept_id  BIGINT        NULL ,
+  procedure_source_concept_id  INTEGER        NULL ,
   modifier_source_value       VARCHAR(50)    NULL,
-  episode_id                  BIGINT        NOT NULL,
+  episode_id                  INTEGER        NOT NULL,
   record_id                   VARCHAR(255)  NULL
  );
 
@@ -180,8 +180,8 @@ CREATE TABLE procedure_occurrence_temp
 
 CREATE TABLE drug_exposure_temp
 (
-  drug_exposure_id              BIGINT        NOT NULL ,
-  person_id                     BIGINT        NOT NULL ,
+  drug_exposure_id              INTEGER        NOT NULL ,
+  person_id                     INTEGER        NOT NULL ,
   drug_concept_id               INT        NOT NULL ,
   drug_exposure_start_date      DATE          NOT NULL ,
   drug_exposure_start_datetime  TIMESTAMP      NULL ,
@@ -190,15 +190,15 @@ CREATE TABLE drug_exposure_temp
   verbatim_end_date             DATE          NULL ,
   drug_type_concept_id          INT        NOT NULL ,
   stop_reason                   VARCHAR(20)   NULL ,
-  refills                       BIGINT        NULL ,
+  refills                       INTEGER        NULL ,
   quantity                      NUMERIC       NULL ,
-  days_supply                   BIGINT        NULL ,
+  days_supply                   INTEGER        NULL ,
   sig                           TEXT          NULL ,
   route_concept_id              INT        NULL ,
   lot_number                    VARCHAR(50)   NULL ,
-  provider_id                   BIGINT        NULL ,
-  visit_occurrence_id           BIGINT        NULL ,
-  visit_detail_id               BIGINT        NULL ,
+  provider_id                   INTEGER        NULL ,
+  visit_occurrence_id           INTEGER        NULL ,
+  visit_detail_id               INTEGER        NULL ,
   drug_source_value             VARCHAR(50)   NULL ,
   drug_source_concept_id        INT        NULL ,
   route_source_value            VARCHAR(50)   NULL ,
@@ -255,7 +255,7 @@ DROP TABLE IF EXISTS naaccr_data_points_tmp;
 
 CREATE TABLE naaccr_data_points_tmp
 (
-	person_id BIGINT NOT NULL,
+	person_id INTEGER NOT NULL,
 	record_id VARCHAR(255) NULL,
 	histology_site VARCHAR(255) NULL,
 	naaccr_item_number VARCHAR(255) NULL,

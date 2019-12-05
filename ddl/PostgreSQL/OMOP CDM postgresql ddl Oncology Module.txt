@@ -20,12 +20,12 @@ Standardized clinical data
 
 --HINT DISTRIBUTE_ON_KEY(person_id)
 CREATE TABLE episode (
-	episode_id                  BIGINT      NOT NULL,
-	person_id                   BIGINT      NOT NULL,
+	episode_id                  INTEGER      NOT NULL,
+	person_id                   INTEGER      NOT NULL,
 	episode_concept_id          INTEGER     NOT NULL,
 	episode_start_datetime      TIMESTAMP 	NOT NULL,
 	episode_end_datetime        TIMESTAMP 	NULL,
-	episode_parent_id           BIGINT      NULL,
+	episode_parent_id           INTEGER      NULL,
 	episode_number              INTEGER     NULL,
 	episode_object_concept_id   INTEGER     NOT NULL,
 	episode_type_concept_id     INTEGER     NOT NULL,
@@ -36,8 +36,8 @@ CREATE TABLE episode (
 
 --HINT DISTRIBUTE ON RANDOM
 CREATE TABLE episode_event (
-  episode_id                      BIGINT 	NOT NULL,
-  event_id 		                    BIGINT 	NOT NULL,
+  episode_id                      INTEGER 	NOT NULL,
+  event_id 		                    INTEGER 	NOT NULL,
   episode_event_field_concept_id  INTEGER NOT NULL
 )
 ;
@@ -46,8 +46,8 @@ CREATE TABLE episode_event (
 --HINT DISTRIBUTE_ON_KEY(person_id)
 CREATE TABLE measurement
 (
-  measurement_id                BIGINT        NOT NULL ,
-  person_id                     BIGINT        NOT NULL ,
+  measurement_id                INTEGER        NOT NULL ,
+  person_id                     INTEGER        NOT NULL ,
   measurement_concept_id        INTEGER       NOT NULL ,
   measurement_date              DATE          NULL ,
   measurement_datetime          TIMESTAMP     NOT NULL ,
@@ -59,18 +59,18 @@ CREATE TABLE measurement
   unit_concept_id               INTEGER       NULL ,
   range_low                     NUMERIC       NULL ,
   range_high                    NUMERIC       NULL ,
-  provider_id                   BIGINT        NULL ,
-  visit_occurrence_id           BIGINT        NULL ,
-  visit_detail_id               BIGINT        NULL ,
+  provider_id                   INTEGER        NULL ,
+  visit_occurrence_id           INTEGER        NULL ,
+  visit_detail_id               INTEGER        NULL ,
   measurement_source_value      VARCHAR(50)   NULL ,
   measurement_source_concept_id  INTEGER       NOT NULL ,
   unit_source_value             VARCHAR(50)    NULL ,
   value_source_value            VARCHAR(50)    NULL,
-  modifier_of_event_id          BIGINT         NULL,
+  modifier_of_event_id          INTEGER         NULL,
   modifier_of_field_concept_id  INTEGER       NULL
 )
 ;
 */
 
 -- Measurement ALTER statement.  When you are not starting from scratch.
-ALTER TABLE measurement ADD COLUMN modifier_of_event_id BIGINT NULL, ADD COLUMN modifier_of_field_concept_id INTEGER NULL;
+ALTER TABLE measurement ADD COLUMN modifier_of_event_id INTEGER NULL, ADD COLUMN modifier_of_field_concept_id INTEGER NULL;
