@@ -1,6 +1,6 @@
 # Example execution
-
-
+library(DatabaseConnector)
+library(SqlRender)
 
 
 
@@ -8,64 +8,29 @@
 
 # config
 file_path <- ""
-record_id_prefix <- "tmc2016"
-
-# Translate to EAV structure
-# record_id | mrn | histology_site | item_num | item_name | item_value
-df <- NAACCR_to_df(file_path
-                   , record_id_prefix)
-
-
-# write to file
-write.csv(df,
-          file = "",
-          row.names = FALSE
-          )
-
-
-
-
-# --- Add ons ----
-
-
-# Append schema
-
-df <- append_schema(df)
-
-
-# Append person_id (requires DB connection)
+record_id_prefix <- ""
 
 connectionDetails <- createConnectionDetails(
   dbms="sql server",
   server="",
   user="",
-  password=""
+  password="",
+  schema ="NAACCR.dbo"
 )
 
-# append person_id
-# assumes you have a table in database that maps mrn to person_id
 
-df <- append_person_id(df = df
-                       ,connectionDetails = connectionDetails
-                       ,person_map_table = ""
-                       ,person_map_field = "")
+# Import data  into database
+NAACCR_to_db(file_path
+             , record_id_prefix
+             , connectionDetails)
 
 
 
-# Append ICDO condition concept
-
-df <- append_condition_concept(df = df
-                               ,connectionDetails = connectionDetails
-                               ,vocabSchema = "")
-
-
-
-
-
-
-
-
-
+# Assign person_id to naaccr_data_points
+# requires a table with person_id and mrn which connection can access
+# if mrn field has a different name in mapping table, specify in third parameter
+assign_person_id(connectionDetails
+                 , "thisdb.dbo.person_map_table")
 
 
 
