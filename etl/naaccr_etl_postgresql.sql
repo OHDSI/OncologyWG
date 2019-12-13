@@ -134,7 +134,7 @@ DROP TABLE IF EXISTS episode_temp;
 CREATE TABLE episode_temp (
   episode_id                  BIGINT        NOT NULL,
   person_id                   BIGINT        NOT NULL,
-  episode_concept_id          INT           NOT NULL,
+  episode_concept_id          INT       NOT NULL,
   episode_start_datetime      TIMESTAMP     NULL,       --Fix me
   episode_end_datetime        TIMESTAMP     NULL,
   episode_parent_id           BIGINT        NULL,
@@ -159,7 +159,7 @@ DROP TABLE IF EXISTS procedure_occurrence_temp;
 CREATE TABLE procedure_occurrence_temp
  (
   procedure_occurrence_id     BIGINT        NOT NULL ,
-  person_id                   BIGINT        NOT NULL ,
+  person_id                    BIGINT        NOT NULL ,
   procedure_concept_id        INT        NOT NULL ,
   procedure_date              DATE          NOT NULL ,
   procedure_datetime          TIMESTAMP     NULL ,
@@ -170,7 +170,7 @@ CREATE TABLE procedure_occurrence_temp
   visit_occurrence_id         BIGINT        NULL ,
   visit_detail_id             BIGINT        NULL ,
   procedure_source_value      VARCHAR(50)    NULL ,
-  procedure_source_concept_id  BIGINT        NULL ,
+  procedure_source_concept_id  INT        NULL ,
   modifier_source_value       VARCHAR(50)    NULL,
   episode_id                  BIGINT        NOT NULL,
   record_id                   VARCHAR(255)  NULL
@@ -213,7 +213,7 @@ CREATE TABLE drug_exposure_temp
 
  CREATE TABLE ambig_schema_discrim(
 	schema_concept_code varchar(50) NULL,
-	schema_concept_id int NULL,
+	schema_concept_id INT NULL,
 	discrim_item_num varchar(50) NULL,
 	discrim_item_value varchar(50) NULL
 );
@@ -272,6 +272,8 @@ CREATE TABLE naaccr_data_points_tmp
 
 
 -- DATA PREP
+
+
 	 -- Initial data insert
 	 INSERT INTO naaccr_data_points_tmp
 	 SELECT  person_id
@@ -369,7 +371,6 @@ CREATE TABLE naaccr_data_points_tmp
     WHERE record_id = schm.rec_id;
 
 
-
     -- Append standard schemas - uses histology_site
     UPDATE naaccr_data_points_tmp
     SET schema_concept_id   = schm.concept_id,
@@ -380,7 +381,7 @@ CREATE TABLE naaccr_data_points_tmp
     AND naaccr_data_points_tmp.schema_concept_id IS NULL;
 
 
-  -- Variable schema-independent
+  -- schema-independent
   UPDATE naaccr_data_points_tmp
   SET variable_concept_code = c1.concept_code
     , variable_concept_id   = c1.concept_id
@@ -391,7 +392,9 @@ CREATE TABLE naaccr_data_points_tmp
   AND c1.concept_id IS NOT NULL
   AND naaccr_data_points_tmp.naaccr_item_number = c1.concept_code;
 
-  -- Variable schema-dependent
+
+
+  --   schema dependent
   UPDATE naaccr_data_points_tmp
   SET variable_concept_code = c1.concept_code
     , variable_concept_id   = c1.concept_id
@@ -402,7 +405,8 @@ CREATE TABLE naaccr_data_points_tmp
   AND c1.concept_id IS NOT NULL
   AND CONCAT(naaccr_data_points_tmp.schema_concept_code,'@', naaccr_data_points_tmp.naaccr_item_number) = c1.concept_code;
 
-  -- Values schema-independent
+  -- -- Values
+
   UPDATE naaccr_data_points_tmp
   SET   value_concept_code = c1.concept_code
       , value_concept_id   = c1.concept_id
@@ -421,7 +425,7 @@ CREATE TABLE naaccr_data_points_tmp
       WHERE c.vocabulary_id = 'NAACCR'
   );
 
-  -- Values schema-dependent
+   -- Values schema-dependent
   UPDATE naaccr_data_points_tmp
   SET   value_concept_code = c1.concept_code
       , value_concept_id   = c1.concept_id
@@ -441,13 +445,12 @@ CREATE TABLE naaccr_data_points_tmp
   );
 
   -- Type
+
   UPDATE naaccr_data_points_tmp
   SET type_concept_id = cr1.concept_id_2
   FROM concept_relationship cr1
   WHERE cr1.relationship_id = 'Has type'
   AND naaccr_data_points_tmp.variable_concept_id = cr1.concept_id_1;
-
-
 
 
 
@@ -490,8 +493,8 @@ CREATE TABLE naaccr_data_points_tmp
       ) AS condition_occurrence_id
       , s.person_id                                                                                           AS person_id
       , c2.concept_id                                                                                         AS condition_concept_id
-      , TO_DATE(s.naaccr_item_value, 'yyyy-mm-dd')  		                                                          AS condition_start_date
-      , TO_DATE(s.naaccr_item_value, 'yyyy-mm-dd')																	  AS condition_start_datetime
+      , CAST(s.naaccr_item_value as date)  		                                                          AS condition_start_date
+      , CAST(s.naaccr_item_value as date)																  AS condition_start_datetime
       , NULL                                                                                                  AS condition_end_date
       , NULL                                                                                                  AS condition_end_datetime
       , 32534                                                                                                 AS condition_type_concept_id -- ‘Tumor registry’ concept
@@ -626,7 +629,7 @@ CREATE TABLE naaccr_data_points_tmp
         , NULL                                                                                                                                                    AS unit_source_value
         , naaccr_item_value                                                                                                                                         AS value_source_value
         , cot.condition_occurrence_id                                                                                                                             AS modifier_of_event_id
-        , 1147127                                                                                                                                                 AS modifier_of_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
+        , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
         , ndp.record_id                                                                                                                                             AS record_id
     FROM
     (
@@ -770,7 +773,7 @@ CREATE TABLE naaccr_data_points_tmp
       , mt.unit_source_value                                                                                                                                              AS unit_source_value
       , mt.value_source_value                                                                                                                                             AS value_source_value
       , et.episode_id                                                                                                                                                     AS modifier_of_event_id
-      , 1000000003                                                                                                                                                        AS modifier_of_field_concept_id -- ‘episode.episode_id’ concept
+      , 1000000003                                                                                                                                                        AS modifier_field_concept_id -- ‘episode.episode_id’ concept
       , mt.record_id                                                                                                                                                     AS record_id
   FROM measurement_temp mt
   JOIN episode_temp et
@@ -804,7 +807,7 @@ CREATE TABLE naaccr_data_points_tmp
       (SELECT MAX(episode_id) FROM episode_temp) END + row_number() over(order by ndp.record_id))                 AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
-      , TO_DATE(ndp_dates.naaccr_item_value, 'yyyy-mm-dd')  		                                                          AS episode_start_datetime        --?
+      , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
       , NULL                                                                                                                                                    AS episode_end_datetime          --?
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
@@ -850,10 +853,10 @@ CREATE TABLE naaccr_data_points_tmp
       (SELECT MAX(episode_id) FROM episode_temp) END + row_number() over(order by ndp.record_id))                 AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
-      , TO_DATE(ndp_dates.naaccr_item_value, 'yyyy-mm-dd')  		                                                          AS episode_start_datetime        --?
+      , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
       -- Placeholder... TODO:better universal solution for isnull?
 	  , CASE WHEN CHAR_LENGTH(end_dates.naaccr_item_value) > 1
-			 THEN TO_DATE(end_dates.naaccr_item_value, 'yyyy-mm-dd')
+			 THEN CAST(end_dates.naaccr_item_value as date)
 			 ELSE NULL
 			 END AS episode_end_datetime
       , NULL                                                                                                                                                    AS episode_parent_id
@@ -915,7 +918,7 @@ CREATE TABLE naaccr_data_points_tmp
       (SELECT MAX(episode_id) FROM episode_temp) END + row_number() over(order by ndp.record_id))                 AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
-      , TO_DATE(ndp_dates.naaccr_item_value, 'yyyy-mm-dd')  		                                                          AS episode_start_datetime        --?
+      , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
       , NULL                                                                                                                                                    AS episode_end_datetime          --?
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
@@ -1163,7 +1166,7 @@ CREATE TABLE naaccr_data_points_tmp
       , NULL                                                                                                                                                    AS unit_source_value
       , naaccr_item_value                                                                                                                                         AS value_source_value
       , et.episode_id                                                                                                                             AS modifier_of_event_id
-      , 1000000003 -- TODO: Need vocab update                                                                                                                  AS modifier_of_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
+      , 1000000003 -- TODO: Need vocab update                                                                                                                  AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
       , ndp.record_id                                                                                                                                             AS record_id
   FROM
   (
@@ -1267,7 +1270,7 @@ SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL T
       , mt.unit_source_value                                                                                                                                              AS unit_source_value
       , mt.value_source_value                                                                                                                                             AS value_source_value
       , pet.procedure_occurrence_id                                                                                                                                       AS modifier_of_event_id
-      , 1147084                                                                                                                                                        AS modifier_of_field_concept_id -- ‘procedure_occurrence.procedure_concept_id’ concept
+      , 1147084                                                                                                                                                        AS modifier_field_concept_id -- ‘procedure_occurrence.procedure_concept_id’ concept
       , mt.record_id                                                                                                                                                     AS record_id
 FROM measurement_temp mt
 JOIN episode_temp et
