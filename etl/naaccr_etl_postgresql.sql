@@ -310,7 +310,7 @@ CREATE TABLE naaccr_data_points_tmp
 				WHEN CAST(SUBSTRING(naaccr_item_value, 1,4) as int) NOT BETWEEN 1800 AND 2099 THEN NULL
 				WHEN CAST(SUBSTRING(naaccr_item_value, 5,2) as int) NOT BETWEEN 1 AND 12 THEN NULL
 				WHEN CAST(SUBSTRING(naaccr_item_value, 7,2) as int) NOT BETWEEN 1 AND 31 THEN NULL
-				ELSE CONCAT(SUBSTRING(naaccr_item_value, 1,4),'-' ,SUBSTRING(naaccr_item_value, 5,2),'-',SUBSTRING(naaccr_item_value, 7,2))
+				ELSE naaccr_item_value
 				END
 		END
   WHERE naaccr_item_number IN(-- todo: verify this list
