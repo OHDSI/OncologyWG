@@ -1,4 +1,3 @@
-BEGIN TRANSACTION
 /* Scripts assumes:
 	-input data exists on same database in specified format inside of 'naacr_data_points'
 	-histology_site is represented in ICDO3 concept_code format
