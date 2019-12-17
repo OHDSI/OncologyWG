@@ -1,4 +1,4 @@
-
+BEGIN TRANSACTION
 /* Scripts assumes:
 	-input data exists on same database in specified format inside of 'naacr_data_points'
 	-histology_site is represented in ICDO3 concept_code format
@@ -731,7 +731,7 @@ MERGE INTO   naaccr_data_points_tmp
       , TO_DATE(s.naaccr_item_value, 'YYYYMMDD')																	  AS condition_start_datetime
       , NULL                                                                                                  AS condition_end_date
       , NULL                                                                                                  AS condition_end_datetime
-      , 32534                                                                                                 AS condition_type_concept_id -- ‘Tumor registry’ concept
+      , 32534                                                                                                 AS condition_type_concept_id -- Â‘Tumor registryÂ’ concept
       , NULL                                                                                                  AS stop_reason
       , NULL                                                                                                  AS provider_id
       , NULL                                                                                                  AS visit_occurrence_id
@@ -839,7 +839,7 @@ MERGE INTO   naaccr_data_points_tmp
         , cot.condition_start_date                                                                                                                                AS measurement_date
         , NULL                                                                                                                                                    AS measurement_time
         , cot.condition_start_datetime                                                                                                                            AS measurement_datetime
-        , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
+        , 32534                                                                                                                                                   AS measurement_type_concept_id -- Â‘Tumor registryÂ’ concept
         , conc_num.operator_concept_id                                                                                                                            AS operator_concept_id
         , CASE
         WHEN ndp.value_concept_id IS NULL
@@ -860,7 +860,7 @@ MERGE INTO   naaccr_data_points_tmp
         , NULL                                                                                                                                                    AS unit_source_value
         , naaccr_item_value                                                                                                                                         AS value_source_value
         , cot.condition_occurrence_id                                                                                                                             AS modifier_of_event_id
-        , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
+        , 1147127                                                                                                                                                 AS modifier_field_concept_id -- Â‘condition_occurrence.condition_occurrence_idÂ’ concept
         , ndp.record_id                                                                                                                                             AS record_id
     FROM (SELECT *
       FROM naaccr_data_points_tmp
@@ -1002,7 +1002,7 @@ MERGE INTO   naaccr_data_points_tmp
       , mt.unit_source_value                                                                                                                                              AS unit_source_value
       , mt.value_source_value                                                                                                                                             AS value_source_value
       , et.episode_id                                                                                                                                                     AS modifier_of_event_id
-      , 1000000003                                                                                                                                                        AS modifier_field_concept_id -- ‘episode.episode_id’ concept
+      , 1000000003                                                                                                                                                        AS modifier_field_concept_id -- Â‘episode.episode_idÂ’ concept
       , mt.record_id                                                                                                                                                     AS record_id
   FROM measurement_temp mt
   JOIN episode_temp et
@@ -1218,7 +1218,7 @@ MERGE INTO   naaccr_data_points_tmp
     , et.episode_start_datetime                                                                                                                                                             AS drug_exposure_end_date
     , et.episode_start_datetime                                                                                                                                                                     AS drug_exposure_end_datetime
     , NULL                                                                                                                                                                                          AS verbatim_end_date
-    , 32534                                                                                                                                                                                          AS drug_type_concept_id -- ‘Tumor registry’ concept. Fix me.
+    , 32534                                                                                                                                                                                          AS drug_type_concept_id -- Â‘Tumor registryÂ’ concept. Fix me.
     , NULL                                                                                                                                                                                          AS stop_reason
     , NULL                                                                                                                                                                                          AS refills
     , NULL                                                                                                                                                                                          AS quantity
@@ -1267,7 +1267,7 @@ MERGE INTO   naaccr_data_points_tmp
     , et.episode_object_concept_id                                                                                                                                                                   AS procedure_concept_id
     , et.episode_start_datetime                                                                                                                                                           AS procedure_date
     , et.episode_start_datetime                                                                                                                                                                      AS procedure_datetime
-    , 32534                                                                                                                                                                                          AS procedure_type_concept_id -- ‘Tumor registry’ concept. Fix me.
+    , 32534                                                                                                                                                                                          AS procedure_type_concept_id -- Â‘Tumor registryÂ’ concept. Fix me.
     , NULL                                                                                                                                                                                           AS modifier_concept_id
     , 1                                                                                                                                                                                              AS quantity --Is this OK to hardcode?
     , NULL                                                                                                                                                                                           AS provider_id
@@ -1368,7 +1368,7 @@ MERGE INTO   naaccr_data_points_tmp
       , et.episode_start_datetime                                                                                                                           AS measurement_time
       , NULL
       , et.episode_start_datetime
-      , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
+      , 32534                                                                                                                                                   AS measurement_type_concept_id -- Â‘Tumor registryÂ’ concept
       , conc_num.operator_concept_id                                                                                                                            AS operator_concept_id
       , CASE
       WHEN ndp.value_concept_id IS NULL
@@ -1389,7 +1389,7 @@ MERGE INTO   naaccr_data_points_tmp
       , NULL                                                                                                                                                    AS unit_source_value
       , naaccr_item_value                                                                                                                                         AS value_source_value
       , et.episode_id                                                                                                                             AS modifier_of_event_id
-      , 1000000003 -- TODO: Need vocab update                                                                                                                  AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
+      , 1000000003 -- TODO: Need vocab update                                                                                                                  AS modifier_field_concept_id -- Â‘condition_occurrence.condition_occurrence_idÂ’ concept
       , ndp.record_id                                                                                                                                             AS record_id
   FROM (SELECT *
     FROM naaccr_data_points_tmp
@@ -1491,7 +1491,7 @@ SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp ) IS NULL 
       , mt.unit_source_value                                                                                                                                              AS unit_source_value
       , mt.value_source_value                                                                                                                                             AS value_source_value
       , pet.procedure_occurrence_id                                                                                                                                       AS modifier_of_event_id
-      , 1147084                                                                                                                                                        AS modifier_field_concept_id -- ‘procedure_occurrence.procedure_concept_id’ concept
+      , 1147084                                                                                                                                                        AS modifier_field_concept_id -- Â‘procedure_occurrence.procedure_concept_idÂ’ concept
       , mt.record_id                                                                                                                                                     AS record_id
 FROM measurement_temp mt
 JOIN episode_temp et
