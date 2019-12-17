@@ -398,8 +398,22 @@ CREATE TABLE naaccr_data_points_tmp
   AND c1.concept_class_id = 'NAACCR Variable'
   AND naaccr_data_points_tmp.variable_concept_id IS NULL
   AND c1.concept_id IS NOT NULL
+	AND c1.standard_concept = 'S'
   AND naaccr_data_points_tmp.naaccr_item_number = c1.concept_code;
 
+  -- schema-independent non-standard
+  UPDATE naaccr_data_points_tmp
+  SET variable_concept_code = c2.concept_code
+    , variable_concept_id   = c2.concept_id
+  FROM concept c1 JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Maps to'
+								  JOIN concept c2 							ON cr1.concept_id_2 = c2.concept_id
+  WHERE c1.vocabulary_id = 'NAACCR'
+  AND c1.concept_class_id = 'NAACCR Variable'
+  AND naaccr_data_points_tmp.variable_concept_id IS NULL
+  AND c1.concept_id IS NOT NULL
+	AND c1.standard_concept IS NULL
+	AND c2.standard_concept = 'S'
+  AND naaccr_data_points_tmp.naaccr_item_number = c1.concept_code;
 
 
   --   schema dependent

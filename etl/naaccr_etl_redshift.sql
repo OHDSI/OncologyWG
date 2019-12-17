@@ -310,7 +310,7 @@ DISTKEY(person_id);
 				WHEN CAST(SUBSTRING(naaccr_item_value, 1,4) as int) NOT BETWEEN 1800 AND 2099 THEN NULL
 				WHEN CAST(SUBSTRING(naaccr_item_value, 5,2) as int) NOT BETWEEN 1 AND 12 THEN NULL
 				WHEN CAST(SUBSTRING(naaccr_item_value, 7,2) as int) NOT BETWEEN 1 AND 31 THEN NULL
-				ELSE CONCAT(SUBSTRING(naaccr_item_value, 1,4),CONCAT('-' ,CONCAT(SUBSTRING(naaccr_item_value, 5,2),CONCAT('-',SUBSTRING(naaccr_item_value, 7,2)))))
+				ELSE naaccr_item_value
 				END
 		END
   WHERE naaccr_item_number IN(-- todo: verify this list
@@ -390,8 +390,22 @@ DISTKEY(person_id);
   AND c1.concept_class_id = 'NAACCR Variable'
   AND naaccr_data_points_tmp.variable_concept_id IS NULL
   AND c1.concept_id IS NOT NULL
+	AND c1.standard_concept = 'S'
   AND naaccr_data_points_tmp.naaccr_item_number = c1.concept_code;
 
+  -- schema-independent non-standard
+  UPDATE naaccr_data_points_tmp
+  SET variable_concept_code = c2.concept_code
+    , variable_concept_id   = c2.concept_id
+  FROM concept c1 JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Maps to'
+								  JOIN concept c2 							ON cr1.concept_id_2 = c2.concept_id
+  WHERE c1.vocabulary_id = 'NAACCR'
+  AND c1.concept_class_id = 'NAACCR Variable'
+  AND naaccr_data_points_tmp.variable_concept_id IS NULL
+  AND c1.concept_id IS NOT NULL
+	AND c1.standard_concept IS NULL
+	AND c2.standard_concept = 'S'
+  AND naaccr_data_points_tmp.naaccr_item_number = c1.concept_code;
 
 
   --   schema dependent
@@ -416,6 +430,25 @@ DISTKEY(person_id);
   AND c1.vocabulary_id = 'NAACCR'
   AND c1.concept_class_id = 'NAACCR Value'
   AND CONCAT(naaccr_data_points_tmp.variable_concept_code,CONCAT('@',naaccr_data_points_tmp.naaccr_item_value)) = c1.concept_code
+  AND naaccr_data_points_tmp.naaccr_item_number NOT IN(-- todo: verify this list
+      SELECT DISTINCT c.concept_code
+      FROM concept c
+      INNER JOIN concept_relationship cr
+        ON  cr.concept_id_1 = c.concept_id
+        AND cr.relationship_id IN ('Start date of', 'End date of')
+      WHERE c.vocabulary_id = 'NAACCR'
+  );
+
+   -- Values schema-dependent
+  UPDATE naaccr_data_points_tmp
+  SET   value_concept_code = c1.concept_code
+      , value_concept_id   = c1.concept_id
+  FROM concept c1
+  WHERE naaccr_data_points_tmp.value_concept_id IS NULL
+  AND c1.concept_id IS NOT NULL
+  AND c1.vocabulary_id = 'NAACCR'
+  AND c1.concept_class_id = 'NAACCR Value'
+  AND CONCAT(naaccr_data_points_tmp.schema_concept_code,CONCAT('@',CONCAT(naaccr_data_points_tmp.variable_concept_code,CONCAT('@',naaccr_data_points_tmp.naaccr_item_value)))) = c1.concept_code
   AND naaccr_data_points_tmp.naaccr_item_number NOT IN(-- todo: verify this list
       SELECT DISTINCT c.concept_code
       FROM concept c
@@ -474,8 +507,8 @@ DISTKEY(person_id);
       ) AS condition_occurrence_id
       , s.person_id                                                                                           AS person_id
       , c2.concept_id                                                                                         AS condition_concept_id
-      , CAST(s.naaccr_item_value as DATE)  		                                                          AS condition_start_date
-      , CAST(s.naaccr_item_value as DATE)																	  AS condition_start_datetime
+      , CAST(s.naaccr_item_value as date)  		                                                          AS condition_start_date
+      , CAST(s.naaccr_item_value as date)																  AS condition_start_datetime
       , NULL                                                                                                  AS condition_end_date
       , NULL                                                                                                  AS condition_end_datetime
       , 32534                                                                                                 AS condition_type_concept_id -- ‘Tumor registry’ concept
@@ -788,7 +821,7 @@ DISTKEY(person_id);
       (SELECT MAX(episode_id) FROM episode_temp) END + ROW_NUMBER() OVER (ORDER BY ndp.record_id ))                 AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
-      , CAST(ndp_dates.naaccr_item_value as DATE)  		                                                          AS episode_start_datetime        --?
+      , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
       , NULL                                                                                                                                                    AS episode_end_datetime          --?
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
@@ -834,10 +867,10 @@ DISTKEY(person_id);
       (SELECT MAX(episode_id) FROM episode_temp) END + ROW_NUMBER() OVER (ORDER BY ndp.record_id ))                 AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
-      , CAST(ndp_dates.naaccr_item_value as DATE)  		                                                          AS episode_start_datetime        --?
+      , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
       -- Placeholder... TODO:better universal solution for isnull?
 	  , CASE WHEN CHAR_LENGTH(end_dates.naaccr_item_value) > 1
-			 THEN CAST(end_dates.naaccr_item_value as DATE)
+			 THEN CAST(end_dates.naaccr_item_value as date)
 			 ELSE NULL
 			 END AS episode_end_datetime
       , NULL                                                                                                                                                    AS episode_parent_id
@@ -899,7 +932,7 @@ DISTKEY(person_id);
       (SELECT MAX(episode_id) FROM episode_temp) END + ROW_NUMBER() OVER (ORDER BY ndp.record_id ))                 AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
-      , CAST(ndp_dates.naaccr_item_value as DATE)  		                                                          AS episode_start_datetime        --?
+      , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
       , NULL                                                                                                                                                    AS episode_end_datetime          --?
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
@@ -1081,11 +1114,11 @@ DISTKEY(person_id);
   -- Drug Treatment Episodes:   Update to standard 'Regimen' concepts.
   UPDATE episode_temp
   SET episode_object_concept_id = CASE
-                    WHEN episode_source_value = '1390' THEN 35803401 --Hemonc Chemotherapy Modality
-                    WHEN episode_source_value = '1390' THEN 35803401
-                    WHEN episode_source_value = '1390' THEN 35803401
-                    WHEN episode_source_value = '1400' THEN 35803407
-                    WHEN episode_source_value = '1410' THEN 35803410
+                    WHEN episode_source_value = '1390@01' THEN 35803401 --Hemonc Chemotherapy Modality
+                    WHEN episode_source_value = '1390@02' THEN 35803401
+                    WHEN episode_source_value = '1390@03' THEN 35803401
+                    WHEN episode_source_value = '1400@01' THEN 35803407
+                    WHEN episode_source_value = '1410@01' THEN 35803410
                   ELSE episode_object_concept_id
                   END;
 

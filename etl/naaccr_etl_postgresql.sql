@@ -1,3 +1,4 @@
+SET search_path TO omop, public;
 BEGIN TRANSACTION;
 
 /* Scripts assumes:
@@ -305,7 +306,7 @@ CREATE TABLE naaccr_data_points_tmp
   SET naaccr_item_value =
 		CASE
 			WHEN CHAR_LENGTH(naaccr_item_value) != 8 THEN NULL
-			WHEN CASE WHEN (naaccr_item_value ~ '^([0-9]+\.?[0-9]*|\.[0-9]+)$') THEN 1 ELSE 0 END <> 1 THEN NULL
+			WHEN CASE WHEN (CAST(naaccr_item_value AS VARCHAR) ~ '^([0-9]+\.?[0-9]*|\.[0-9]+)$') THEN 1 ELSE 0 END <> 1 THEN NULL
 			ELSE CASE
 				WHEN CAST(SUBSTRING(naaccr_item_value, 1,4) as int) NOT BETWEEN 1800 AND 2099 THEN NULL
 				WHEN CAST(SUBSTRING(naaccr_item_value, 5,2) as int) NOT BETWEEN 1 AND 12 THEN NULL
@@ -390,8 +391,22 @@ CREATE TABLE naaccr_data_points_tmp
   AND c1.concept_class_id = 'NAACCR Variable'
   AND naaccr_data_points_tmp.variable_concept_id IS NULL
   AND c1.concept_id IS NOT NULL
+	AND c1.standard_concept = 'S'
   AND naaccr_data_points_tmp.naaccr_item_number = c1.concept_code;
 
+  -- schema-independent non-standard
+  UPDATE naaccr_data_points_tmp
+  SET variable_concept_code = c2.concept_code
+    , variable_concept_id   = c2.concept_id
+  FROM concept c1 JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Maps to'
+								  JOIN concept c2 							ON cr1.concept_id_2 = c2.concept_id
+  WHERE c1.vocabulary_id = 'NAACCR'
+  AND c1.concept_class_id = 'NAACCR Variable'
+  AND naaccr_data_points_tmp.variable_concept_id IS NULL
+  AND c1.concept_id IS NOT NULL
+	AND c1.standard_concept IS NULL
+	AND c2.standard_concept = 'S'
+  AND naaccr_data_points_tmp.naaccr_item_number = c1.concept_code;
 
 
   --   schema dependent
@@ -1100,11 +1115,11 @@ CREATE TABLE naaccr_data_points_tmp
   -- Drug Treatment Episodes:   Update to standard 'Regimen' concepts.
   UPDATE episode_temp
   SET episode_object_concept_id = CASE
-                    WHEN episode_source_value = '1390' THEN 35803401 --Hemonc Chemotherapy Modality
-                    WHEN episode_source_value = '1390' THEN 35803401
-                    WHEN episode_source_value = '1390' THEN 35803401
-                    WHEN episode_source_value = '1400' THEN 35803407
-                    WHEN episode_source_value = '1410' THEN 35803410
+                    WHEN episode_source_value = '1390@01' THEN 35803401 --Hemonc Chemotherapy Modality
+                    WHEN episode_source_value = '1390@02' THEN 35803401
+                    WHEN episode_source_value = '1390@03' THEN 35803401
+                    WHEN episode_source_value = '1400@01' THEN 35803407
+                    WHEN episode_source_value = '1410@01' THEN 35803410
                   ELSE episode_object_concept_id
                   END;
 
