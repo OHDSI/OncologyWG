@@ -14,7 +14,6 @@ describe NaaccrEtl do
   describe "For an 'ICDO Condition' that maps to itself" do
     before(:each) do
       @diagnosis_date = '19981022'
-      # @diagnosis_date = '20170630'
       @histology_site = '8140/3-C61.9'
       #390=Date of Diagnosis
       FactoryBot.create(:naaccr_data_point \
@@ -53,6 +52,10 @@ describe NaaccrEtl do
       expect(episode.episode_type_concept_id).to eq(32546)
       expect(episode.episode_source_value).to eq(@histology_site)
       expect(episode.episode_source_concept_id).to eq(@condition_concept.concept_id)
+      expect(ConditionOccurrence.count).to eq(1)
+      condition_occurrence = ConditionOccurrence.first
+      #1147127 = ‘condition_occurrence.condition_occurrence_id’ concept
+      expect(EpisodeEvent.where(episode_id: episode.episode_id, event_id: condition_occurrence.condition_occurrence_id, episode_event_field_concept_id: 1147127).count).to eq(1)
     end
   end
 
@@ -174,7 +177,6 @@ describe NaaccrEtl do
     end
   end
 
-
   describe 'Creating entries in MEASUREMENT table for a non-standard categorical schema-independent diagnosis modifier' do
     before(:each) do
       @diagnosis_date = '20170630'
@@ -248,6 +250,251 @@ describe NaaccrEtl do
       episode = Episode.first
       expect(measurement.modifier_of_event_id).to eq(episode.episode_id)
       expect(measurement.modifier_of_field_concept_id).to eq(1000000003) #‘‘episode.episode_id’ concept
+    end
+  end
+
+  describe 'Creating entries in MEASUREMENT table for a numeric schema-independent diagnosis modifier for a numeric value' do
+    before(:each) do
+      @diagnosis_date = '20170630'
+      @histology_site = '8140/3-C61.9'
+      @naaccr_item_number = '754'           #Tumor Size Pathologic
+      @naaccr_item_value = '002'            #2
+
+      #390=Date of Diagnosis.
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: '390' \
+        , naaccr_item_value: @diagnosis_date \
+        , histology: '8140/3' \
+        , site: 'C61.9' \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number \
+        , naaccr_item_value: @naaccr_item_value  \
+        , histology: '8140/3' \
+        , site: 'C61.9' \
+        , histology_site: @histology_site \
+      )
+      @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      @unit_concept = NaaccrEtl::SpecSetup.unit_concept(@measurement_concept.concept_id)
+      @measurement_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      @condition_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
+
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+    end
+
+    it 'pointing to CONDITION_OCCURRENCE', focus: false do
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
+      measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
+      expect(measurement.person_id).to eq(@person_1.person_id)
+      expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
+      expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_time).to be_nil
+      expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement.value_as_concept_id).to be_nil
+      expect(measurement.value_as_number).to eq(@naaccr_item_value.to_f)
+      expect(measurement.unit_concept_id).to eq(@unit_concept.concept_id)
+      expect(measurement.measurement_source_value).to eq(@naaccr_item_number)
+      expect(measurement.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
+      expect(measurement.value_source_value).to eq(@naaccr_item_value)
+      expect(ConditionOccurrence.count).to eq(1)
+      condition_occurrence = ConditionOccurrence.first
+      expect(measurement.modifier_of_event_id).to eq(condition_occurrence.condition_occurrence_id)
+      expect(measurement.modifier_of_field_concept_id).to eq(1147127) #‘condition_occurrence.condition_occurrence_id’ concept
+    end
+
+    it 'pointing to EPISODE', focus: false do
+      expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(1)
+      measurement = Measurement.where(modifier_of_field_concept_id: 1000000003).first
+      expect(measurement.person_id).to eq(@person_1.person_id)
+      expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
+      expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_time).to be_nil
+      expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement.value_as_number).to eq(@naaccr_item_value.to_f)
+      expect(measurement.unit_concept_id).to eq(@unit_concept.concept_id)
+      expect(measurement.measurement_source_value).to eq(@naaccr_item_number)
+      expect(measurement.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
+      expect(measurement.value_source_value).to eq(@naaccr_item_value)
+      expect(Episode.count).to eq(1)
+      episode = Episode.first
+      expect(measurement.modifier_of_event_id).to eq(episode.episode_id)
+      expect(measurement.modifier_of_field_concept_id).to eq(1000000003) #‘‘episode.episode_id’ concept
+    end
+  end
+
+  describe 'Creating entries in MEASUREMENT table for a numeric schema-independent diagnosis modifier for a categorical value' do
+    before(:each) do
+      @diagnosis_date = '20170630'
+      @histology_site = '8140/3-C61.9'
+      @naaccr_item_number = '754'           #Tumor Size Pathologic
+      @naaccr_item_value = '990'            #Microscopic focus or foci only and no size of focus is given
+
+      #390=Date of Diagnosis.
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: '390' \
+        , naaccr_item_value: @diagnosis_date \
+        , histology: '8140/3' \
+        , site: 'C61.9' \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number \
+        , naaccr_item_value: @naaccr_item_value  \
+        , histology: '8140/3' \
+        , site: 'C61.9' \
+        , histology_site: @histology_site \
+      )
+      @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      @unit_concept = NaaccrEtl::SpecSetup.unit_concept(@measurement_concept.concept_id)
+      @measurement_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      @measurement_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number}@#{@naaccr_item_value}")
+      @condition_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+    end
+
+    it 'pointing to CONDITION_OCCURRENCE', focus: false do
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
+      measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
+      expect(measurement.person_id).to eq(@person_1.person_id)
+      expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
+      expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_time).to be_nil
+      expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement.value_as_concept_id).to eq(@measurement_value_as_concept.concept_id)
+      expect(measurement.value_as_number).to be_nil
+      expect(measurement.unit_concept_id).to eq(@unit_concept.concept_id)
+      expect(measurement.measurement_source_value).to eq(@naaccr_item_number)
+      expect(measurement.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
+      expect(measurement.value_source_value).to eq(@naaccr_item_value)
+      expect(ConditionOccurrence.count).to eq(1)
+      condition_occurrence = ConditionOccurrence.first
+      expect(measurement.modifier_of_event_id).to eq(condition_occurrence.condition_occurrence_id)
+      expect(measurement.modifier_of_field_concept_id).to eq(1147127) #‘condition_occurrence.condition_occurrence_id’ concept
+    end
+
+    it 'pointing to EPISODE', focus: false do
+      expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(1)
+      measurement = Measurement.where(modifier_of_field_concept_id: 1000000003).first
+      expect(measurement.person_id).to eq(@person_1.person_id)
+      expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
+      expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_time).to be_nil
+      expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement.value_as_concept_id).to eq(@measurement_value_as_concept.concept_id)
+      expect(measurement.value_as_number).to be_nil
+      expect(measurement.unit_concept_id).to eq(@unit_concept.concept_id)
+      expect(measurement.measurement_source_value).to eq(@naaccr_item_number)
+      expect(measurement.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
+      expect(measurement.value_source_value).to eq(@naaccr_item_value)
+      expect(Episode.count).to eq(1)
+      episode = Episode.first
+      expect(measurement.modifier_of_event_id).to eq(episode.episode_id)
+      expect(measurement.modifier_of_field_concept_id).to eq(1000000003) #‘‘episode.episode_id’ concept
+    end
+  end
+
+  describe 'Creating entries in MEASUREMENT table for a numeric schema-independent diagnosis modifier for a numeric value derived from the CONCEPT_NUMERIC table' do
+    before(:each) do
+      @diagnosis_date = '20170630'
+      @histology = '8507/3'
+      @site = 'C50.9'
+      @histology_site = "#{@histology}-#{@site}"
+      @naaccr_item_number = '3914'          #Progesterone Receptor Percent Positive or Range
+      @naaccr_item_value = 'R50'            #Stated as 41-50%
+
+      #390=Date of Diagnosis.
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: '390' \
+        , naaccr_item_value: @diagnosis_date \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number \
+        , naaccr_item_value: @naaccr_item_value  \
+        , histology: '8140/3' \
+        , site: 'C61.9' \
+        , histology_site: @histology_site \
+      )
+      @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      @unit_concept = NaaccrEtl::SpecSetup.unit_concept(@measurement_concept.concept_id)
+      @measurement_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      @measurement_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number}@#{@naaccr_item_value}")
+      @concept_numerics = NaaccrEtl::SpecSetup.concept_numerics(@measurement_value_as_concept.concept_id)
+      @condition_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+    end
+
+    it 'pointing to CONDITION_OCCURRENCE', focus: false do
+      expect(@concept_numerics.size).to eq(2)
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(@concept_numerics.size)       #1147127 = 'condition_occurrence.condition_occurrence_id'
+      expect(ConditionOccurrence.count).to eq(1)
+      condition_occurrence = ConditionOccurrence.first
+
+      @concept_numerics.each do |concept_numeric|
+        measurement = Measurement.where(modifier_of_field_concept_id: 1147127, value_as_number: concept_numeric.value_as_number).first
+        expect(measurement.person_id).to eq(@person_1.person_id)
+        expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
+        expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
+        expect(measurement.measurement_time).to be_nil
+        expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
+        expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+        expect(measurement.operator_concept_id).to eq(concept_numeric.operator_concept_id)
+        expect(measurement.value_as_concept_id).to eq(@measurement_value_as_concept.concept_id)
+        expect(measurement.value_as_number).to eq(concept_numeric.value_as_number)
+        expect(measurement.unit_concept_id).to eq(@unit_concept.concept_id)
+        expect(measurement.measurement_source_value).to eq(@naaccr_item_number)
+        expect(measurement.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
+        expect(measurement.value_source_value).to eq(@naaccr_item_value)
+        expect(measurement.modifier_of_event_id).to eq(condition_occurrence.condition_occurrence_id)
+        expect(measurement.modifier_of_field_concept_id).to eq(1147127) #‘condition_occurrence.condition_occurrence_id’ concept
+      end
+    end
+
+    it 'pointing to EPISODE', focus: false do
+      expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(2)
+      expect(Episode.count).to eq(1)
+      episode = Episode.first
+
+      @concept_numerics.each do |concept_numeric|
+        measurement = Measurement.where(modifier_of_field_concept_id: 1000000003, value_as_number: concept_numeric.value_as_number).first
+        expect(measurement.person_id).to eq(@person_1.person_id)
+        expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
+        expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
+        expect(measurement.measurement_time).to be_nil
+        expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
+        expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+        expect(measurement.operator_concept_id).to eq(concept_numeric.operator_concept_id)
+        expect(measurement.value_as_concept_id).to eq(@measurement_value_as_concept.concept_id)
+        expect(measurement.value_as_number).to eq(concept_numeric.value_as_number)
+        expect(measurement.unit_concept_id).to eq(@unit_concept.concept_id)
+        expect(measurement.measurement_source_value).to eq(@naaccr_item_number)
+        expect(measurement.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
+        expect(measurement.value_source_value).to eq(@naaccr_item_value)
+        expect(measurement.modifier_of_event_id).to eq(episode.episode_id)
+        expect(measurement.modifier_of_field_concept_id).to eq(1000000003) #‘‘episode.episode_id’ concept
+      end
     end
   end
 
@@ -771,6 +1018,200 @@ describe NaaccrEtl do
         expect(measurement_4.measurement_source_concept_id).to eq(@measurement_discriminator_source_concept_2.concept_id)
         expect(measurement_4.value_source_value).to eq(@naaccr_item_value_discriminator_2)
       end
+    end
+  end
+
+
+  describe "For 'Drug' treatments" do
+    before(:each) do
+      @naaccr_item_number_diagnosis_date = '390' #Date of Diagnosis
+      @diagnosis_date = '19981022'
+      @histology = '8140/3'
+      @site = 'C61.9'
+      @histology_site = "#{@histology}-#{@site}"
+
+      @naaccr_item_number_chemo = '1390'           #RX Summ--Chemo
+      @naaccr_item_value_chemo = '01'              #Chemotherapy, NOS.
+
+      @naaccr_item_number_chemo_date = '1220'      #RX Summ--Chemo
+      @naaccr_item_value_chemo_date = '20120701'
+
+      @naaccr_item_number_hormone = '1400'         #RX Summ--Hormone
+      @naaccr_item_value_hormone = '01'            #Hormone therapy administered as first course therapy.
+
+      @naaccr_item_number_hormone_date = '1230'    #RX Date Hormone
+      @naaccr_item_value_hormone_date = '20130701'
+
+      @naaccr_item_number_brm = '1410'             #RX Summ--BRM
+      @naaccr_item_value_brm = '01'                #Immunotherapy administered as first course therapy.
+
+      @naaccr_item_number_brm_date = '1240'        #RX Date BRM
+      @naaccr_item_value_brm_date = '20140701'
+
+      #Person 1
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_diagnosis_date \
+        , naaccr_item_value: @diagnosis_date \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_chemo \
+        , naaccr_item_value: @naaccr_item_value_chemo  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_chemo_date \
+        , naaccr_item_value: @naaccr_item_value_chemo_date  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_hormone \
+        , naaccr_item_value: @naaccr_item_value_hormone  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_hormone_date \
+        , naaccr_item_value: @naaccr_item_value_hormone_date  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_brm \
+        , naaccr_item_value: @naaccr_item_value_brm  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_brm_date \
+        , naaccr_item_value: @naaccr_item_value_brm_date  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      @condition_concept = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
+      @episode_source_concept_chemo = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_item_number_chemo}@#{@naaccr_item_value_chemo}")
+      @episode_source_concept_hormone = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_item_number_hormone}@#{@naaccr_item_value_hormone}")
+      @episode_source_concept_brm = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_item_number_brm}@#{@naaccr_item_value_brm}")
+
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+    end
+
+    it "creates entries in the EPISODE table", focus: false do
+      #32531 = Treatment regimen
+      expect(Episode.where(episode_concept_id: 32531).count).to eq(3)
+      episode_chemo = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_source_concept_chemo.concept_id).first
+      expect(episode_chemo.person_id).to eq(@person_1.person_id)
+      expect(episode_chemo.episode_concept_id).to eq(32531) #32531 = Treatment regimen
+      expect(episode_chemo.episode_start_datetime).to eq(Date.parse(@naaccr_item_value_chemo_date))
+      expect(episode_chemo.episode_end_datetime).to be_nil
+      expect(episode_chemo.episode_object_concept_id).to eq(35803401) #35803401 = HemOnc Chemotherapy
+      expect(episode_chemo.episode_type_concept_id).to eq(32546) #32546 = Episode derived from registry
+      expect(episode_chemo.episode_source_value).to eq(@episode_source_concept_chemo.concept_code)
+      expect(episode_chemo.episode_source_concept_id).to eq(@episode_source_concept_chemo.concept_id)
+
+      episode_hormone = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_source_concept_hormone.concept_id).first
+      expect(episode_hormone.person_id).to eq(@person_1.person_id)
+      expect(episode_hormone.episode_concept_id).to eq(32531) #32531 = Treatment regimen
+      expect(episode_hormone.episode_start_datetime).to eq(Date.parse(@naaccr_item_value_hormone_date))
+      expect(episode_hormone.episode_end_datetime).to be_nil
+      expect(episode_hormone.episode_object_concept_id).to eq(35803407) #35803407 = HemOnc Hormonotherapy
+      expect(episode_hormone.episode_type_concept_id).to eq(32546) #32546 = Episode derived from registry
+      expect(episode_hormone.episode_source_value).to eq(@episode_source_concept_hormone.concept_code)
+      expect(episode_hormone.episode_source_concept_id).to eq(@episode_source_concept_hormone.concept_id)
+
+      episode_brm = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_source_concept_brm.concept_id).first
+      expect(episode_brm.person_id).to eq(@person_1.person_id)
+      expect(episode_brm.episode_concept_id).to eq(32531) #32531 = Treatment regimen
+      expect(episode_brm.episode_start_datetime).to eq(Date.parse(@naaccr_item_value_brm_date))
+      expect(episode_brm.episode_end_datetime).to be_nil
+      expect(episode_brm.episode_object_concept_id).to eq(35803410) #35803407 = HemOncImmunotherapy
+      expect(episode_brm.episode_type_concept_id).to eq(32546) #32546 = Episode derived from registry
+      expect(episode_brm.episode_source_value).to eq(@episode_source_concept_brm.concept_code)
+      expect(episode_brm.episode_source_concept_id).to eq(@episode_source_concept_brm.concept_id)
+    end
+
+    it "creates entries in the DRUG_EXPOSURE table", focus: false do
+      expect(DrugExposure.count).to eq(3)
+      drug_exposure_chemo = DrugExposure.where(drug_source_concept_id: @episode_source_concept_chemo.concept_id).first
+      expect(drug_exposure_chemo.drug_concept_id).to eq(0)
+      expect(drug_exposure_chemo.person_id).to eq(@person_1.person_id)
+      expect(drug_exposure_chemo.drug_exposure_start_date).to eq(Date.parse(@naaccr_item_value_chemo_date))
+      expect(drug_exposure_chemo.drug_exposure_start_datetime).to eq(Date.parse(@naaccr_item_value_chemo_date))
+      expect(drug_exposure_chemo.drug_exposure_end_date).to eq(Date.parse(@naaccr_item_value_chemo_date))
+      expect(drug_exposure_chemo.drug_exposure_end_datetime).to eq(Date.parse(@naaccr_item_value_chemo_date))
+      expect(drug_exposure_chemo.drug_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
+      expect(drug_exposure_chemo.drug_source_value).to eq(@episode_source_concept_chemo.concept_code)
+      expect(drug_exposure_chemo.drug_source_concept_id).to eq(@episode_source_concept_chemo.concept_id)
+
+      drug_exposure_hormone = DrugExposure.where(drug_source_concept_id: @episode_source_concept_hormone.concept_id).first
+      expect(drug_exposure_hormone.drug_concept_id).to eq(0)
+      expect(drug_exposure_hormone.person_id).to eq(@person_1.person_id)
+      expect(drug_exposure_hormone.drug_exposure_start_date).to eq(Date.parse(@naaccr_item_value_hormone_date))
+      expect(drug_exposure_hormone.drug_exposure_start_datetime).to eq(Date.parse(@naaccr_item_value_hormone_date))
+      expect(drug_exposure_hormone.drug_exposure_end_date).to eq(Date.parse(@naaccr_item_value_hormone_date))
+      expect(drug_exposure_hormone.drug_exposure_end_datetime).to eq(Date.parse(@naaccr_item_value_hormone_date))
+      expect(drug_exposure_hormone.drug_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
+      expect(drug_exposure_hormone.drug_source_value).to eq(@episode_source_concept_hormone.concept_code)
+      expect(drug_exposure_hormone.drug_source_concept_id).to eq(@episode_source_concept_hormone.concept_id)
+
+      drug_exposure_brm = DrugExposure.where(drug_source_concept_id: @episode_source_concept_brm.concept_id).first
+      expect(drug_exposure_brm.drug_concept_id).to eq(0)
+      expect(drug_exposure_brm.person_id).to eq(@person_1.person_id)
+      expect(drug_exposure_brm.drug_exposure_start_date).to eq(Date.parse(@naaccr_item_value_brm_date))
+      expect(drug_exposure_brm.drug_exposure_start_datetime).to eq(Date.parse(@naaccr_item_value_brm_date))
+      expect(drug_exposure_brm.drug_exposure_end_date).to eq(Date.parse(@naaccr_item_value_brm_date))
+      expect(drug_exposure_brm.drug_exposure_end_datetime).to eq(Date.parse(@naaccr_item_value_brm_date))
+      expect(drug_exposure_brm.drug_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
+      expect(drug_exposure_brm.drug_source_value).to eq(@episode_source_concept_brm.concept_code)
+      expect(drug_exposure_brm.drug_source_concept_id).to eq(@episode_source_concept_brm.concept_id)
+    end
+
+    it 'creates entries in EPISODE_EVENT pointing entries in DRUG_EXPOSURE to the corresponding entry in EPISODE', focus: false do
+      episode_chemo = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_source_concept_chemo.concept_id).first
+      drug_exposure_chemo = DrugExposure.where(drug_source_concept_id: @episode_source_concept_chemo.concept_id).first
+      #1147094 = drug_exposure.drug_exposure_id
+      expect(EpisodeEvent.where(episode_id: episode_chemo.episode_id, event_id: drug_exposure_chemo.drug_exposure_id, episode_event_field_concept_id: 1147094).count).to eq(1)
+
+      episode_hormone = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_source_concept_hormone.concept_id).first
+      drug_exposure_hormone = DrugExposure.where(drug_source_concept_id: @episode_source_concept_hormone.concept_id).first
+      #1147094 = drug_exposure.drug_exposure_id
+      expect(EpisodeEvent.where(episode_id: episode_hormone.episode_id, event_id: drug_exposure_hormone.drug_exposure_id, episode_event_field_concept_id: 1147094).count).to eq(1)
+
+      episode_brm = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_source_concept_brm.concept_id).first
+      drug_exposure_brm = DrugExposure.where(drug_source_concept_id: @episode_source_concept_brm.concept_id).first
+      #1147094 = drug_exposure.drug_exposure_id
+      expect(EpisodeEvent.where(episode_id: episode_brm.episode_id, event_id: drug_exposure_brm.drug_exposure_id, episode_event_field_concept_id: 1147094).count).to eq(1)
     end
   end
 end

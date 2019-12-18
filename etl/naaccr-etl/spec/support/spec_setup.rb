@@ -22,5 +22,13 @@ module NaaccrEtl
     def self.naaccr_value_concept(options={})
       Concept.where(concept_class_id: 'NAACCR Value', concept_code: options[:concept_code]).first
     end
+
+    def self.unit_concept(concept_id)
+      Concept.where('c2.concept_id = ?', concept_id).joins("JOIN concept_relationship ON concept.concept_id = concept_relationship.concept_id_2 AND concept_relationship.relationship_id = 'Has unit' JOIN concept c2 ON concept_relationship.concept_id_1 = c2.concept_id").first
+    end
+
+    def self.concept_numerics(concept_id)
+      ConceptNumeric.where(concept_id: concept_id)
+    end
   end
 end
