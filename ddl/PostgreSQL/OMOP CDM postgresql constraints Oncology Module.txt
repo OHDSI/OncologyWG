@@ -31,8 +31,6 @@ ALTER TABLE episode ADD CONSTRAINT fpk_episode_person FOREIGN KEY (person_id) RE
 
 ALTER TABLE episode ADD CONSTRAINT fpk_episode_concept FOREIGN KEY (episode_concept_id) REFERENCES concept (concept_id);
 
-ALTER TABLE episode ADD CONSTRAINT fpk_episode_parent FOREIGN KEY (episode_parent_id) REFERENCES episode (episode_id);
-
 ALTER TABLE episode ADD CONSTRAINT fpk_episode_object_concept FOREIGN KEY (episode_object_concept_id) REFERENCES concept (concept_id);
 
 ALTER TABLE episode ADD CONSTRAINT fpk_episode_type_concept FOREIGN KEY (episode_type_concept_id)  REFERENCES concept (concept_id);
