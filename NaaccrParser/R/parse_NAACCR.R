@@ -86,8 +86,8 @@ NAACCR_to_db <- function(file_path
     for(j in 1:nrow(record_layout)){
       curr_item <- record_layout[j,]
 
-      tmp_df$naaccr_item_number[j] <- curr_item$naaccr_item_number
-      tmp_df$naaccr_item_name[j] <- curr_item$naaccr_item_name
+      tmp_df$naaccr_item_number[j] <- curr_item$Item_Num
+      tmp_df$naaccr_item_name[j] <- curr_item$Item_Name
       tmp_df$naaccr_item_value[j] <- trimws(substr(curr_row$raw, curr_item$col_start, curr_item$col_end))
     }
 
