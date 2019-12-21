@@ -887,19 +887,19 @@ CREATE TABLE naaccr_data_points_temp
   SELECT ( CASE WHEN  (SELECT MAX(episode_id) FROM episode_temp) IS NULL THEN 0 ELSE
       (SELECT MAX(episode_id) FROM episode_temp) END + row_number() over(order by ndp.record_id))                 AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
-      , 32531 -- Treatment regimen
+      , ndp.variable_concept_id  -- 32531 Treatment regimen
       , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
       -- Placeholder... TODO:better universal solution for isnull?
-	  , CASE WHEN CHAR_LENGTH(end_dates.naaccr_item_value) > 1
+	    , CASE WHEN CHAR_LENGTH(end_dates.naaccr_item_value) > 1
 			 THEN CAST(end_dates.naaccr_item_value as date)
 			 ELSE NULL
 			 END AS episode_end_datetime
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
-      , ndp.value_concept_id                                                                                                                                           AS episode_object_concept_id
+      , c2.concept_id                                                                                                                                           AS episode_object_concept_id
       , 32546                                                                                                                                                   AS episode_type_concept_id --Episode derived from registry
-      , ndp.variable_concept_code                                                                                                     AS episode_source_value
-      , ndp.variable_concept_id
+      , c2.concept_code                                                                                                     																		AS episode_source_value
+      , c2.concept_id
       , ndp.record_id                                                                                                                                             AS record_id
   FROM
   (
@@ -907,29 +907,28 @@ CREATE TABLE naaccr_data_points_temp
     FROM naaccr_data_points_temp
     WHERE naaccr_item_number NOT IN ( '1290' )
   ) ndp
-  INNER JOIN concept conc
-    ON ndp.value_concept_id = conc.concept_id
-    AND conc.domain_id = 'Procedure'
-  INNER JOIN concept_relationship cr
-    ON ndp.variable_concept_id = cr.concept_id_1
-    AND relationship_id = 'Has start date'
+  INNER JOIN concept c1 ON c1.concept_class_id = 'NAACCR Variable' AND ndp.naaccr_item_number = c1.concept_code
+	INNER JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Has Answer'
+	INNER JOIN concept c2 ON cr1.concept_id_2 = c2.concept_id AND CONCAT(c1.concept_code,'@', ndp.naaccr_item_value) = c2.concept_code AND c2.domain_id = 'Procedure'
+  INNER JOIN concept_relationship cr2
+    ON c1.concept_id = cr2.concept_id_1
+    AND cr2.relationship_id = 'Has start date'
   INNER JOIN naaccr_data_points_temp ndp_dates
-    ON cr.concept_id_2 = ndp_dates.variable_concept_id
+    ON cr2.concept_id_2 = ndp_dates.variable_concept_id
 	-- filter null dates
 	AND ndp_dates.naaccr_item_value IS NOT NULL
     AND ndp.record_id = ndp_dates.record_id
   -- Get end date
-  LEFT OUTER JOIN concept_relationship cr2
-    ON ndp.variable_concept_id = cr2.concept_id_1
-    AND cr2.relationship_id = 'Has end date'
+  LEFT OUTER JOIN concept_relationship cr3
+    ON c1.concept_id = cr3.concept_id_1
+    AND cr3.relationship_id = 'Has end date'
   LEFT OUTER JOIN naaccr_data_points_temp end_dates
-    ON cr2.concept_id_2 = end_dates.variable_concept_id
+    ON cr3.concept_id_2 = end_dates.variable_concept_id
 	--ON end_dates.naaccr_item_number = '3220'
 	-- filter null dates
 	AND end_dates.naaccr_item_value IS NOT NULL
 	AND ndp.record_id = end_dates.record_id
   ;
-
 
   -- insert surgery procedures
   -- this requires its own schema mapping (ICDO to Proc Schema)
@@ -1143,199 +1142,189 @@ CREATE TABLE naaccr_data_points_temp
                   ELSE episode_object_concept_id
                   END;
 
--- Treatment Episode Modifiers
+	-- Treatment Episode Modifiers
 
-  INSERT INTO measurement_temp
-  (
-    measurement_id
-    , person_id
-    , measurement_concept_id
-    , measurement_date
-    , measurement_time
-    , measurement_datetime
-    , measurement_type_concept_id
-    , operator_concept_id
-    , value_as_number
-    , value_as_concept_id
-    , unit_concept_id
-    , range_low
-    , range_high
-    , provider_id
-    , visit_occurrence_id
-    , visit_detail_id
-    , measurement_source_value
-    , measurement_source_concept_id
-    , unit_source_value
-    , value_source_value
-    , modifier_of_event_id
-    , modifier_of_field_concept_id
-    , record_id
-  )
+	  INSERT INTO measurement_temp
+	  (
+	    measurement_id
+	    , person_id
+	    , measurement_concept_id
+	    , measurement_date
+	    , measurement_time
+	    , measurement_datetime
+	    , measurement_type_concept_id
+	    , operator_concept_id
+	    , value_as_number
+	    , value_as_concept_id
+	    , unit_concept_id
+	    , range_low
+	    , range_high
+	    , provider_id
+	    , visit_occurrence_id
+	    , visit_detail_id
+	    , measurement_source_value
+	    , measurement_source_concept_id
+	    , unit_source_value
+	    , value_source_value
+	    , modifier_of_event_id
+	    , modifier_of_field_concept_id
+	    , record_id
+	  )
 
 
-  SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL
-  THEN 0 ELSE  (SELECT MAX(measurement_id) FROM measurement_temp) END + row_number() over(order by ndp.record_id)) AS measurement_id
-      , ndp.person_id                                                                                                                                             AS person_id
-      , conc.concept_id                                                                                                                                        AS measurement_concept_id
-      , et.episode_start_datetime                                                                                                                           AS measurement_time
-      , NULL
-      , et.episode_start_datetime
-      , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
-      , conc_num.operator_concept_id                                                                                                                            AS operator_concept_id
-      , CASE
-			  WHEN ndp.type_concept_id = 32676 --'Numeric'
-					THEN
-						CASE
-						WHEN ndp.value_concept_id IS NULL
+	  SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL
+	  THEN 0 ELSE  (SELECT MAX(measurement_id) FROM measurement_temp) END + row_number() over(order by ndp.record_id)) AS measurement_id
+	      , ndp.person_id                                                                                                                                             AS person_id
+	      , conc.concept_id                                                                                                                                        AS measurement_concept_id
+	      , et.episode_start_datetime                                                                                                                           AS measurement_time
+	      , NULL
+	      , et.episode_start_datetime
+	      , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
+	      , conc_num.operator_concept_id                                                                                                                            AS operator_concept_id
+	      , CASE
+				  WHEN ndp.type_concept_id = 32676 --'Numeric'
 						THEN
-							CAST(ndp.naaccr_item_value AS NUMERIC)
-						ELSE
-							COALESCE(conc_num.value_as_number, NULL)
-						END
-				  ELSE
-					NULL
-				END as value_as_number
-      , ndp.value_concept_id                                                                                                                          AS value_as_concept_id
-      , COALESCE(unit_cr.concept_id_2, conc_num.unit_concept_id)                                                                                                  AS unit_concept_id
-      , NULL                                                                                                                                                    AS range_low
-      , NULL                                                                                                                                                    AS range_high
-      , NULL                                                                                                                                                    AS provider_id
-      , NULL                                                                                                                                                    AS visit_occurrence_id
-      , NULL                                                                                                                                                    AS visit_detail_id
-      , ndp.variable_concept_code                                                                                                                                         AS measurement_source_value
-      , ndp.variable_concept_id                                                                                                                                         AS measurement_source_concept_id
-      , NULL                                                                                                                                                    AS unit_source_value
-      , naaccr_item_value                                                                                                                                         AS value_source_value
-      , et.episode_id                                                                                                                             AS modifier_of_event_id
-      , 1000000003 -- TODO: Need vocab update                                                                                                                  AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
-      , ndp.record_id                                                                                                                                             AS record_id
-  FROM
-  (
-    SELECT *
-    FROM naaccr_data_points_temp
-    WHERE person_id IS NOT NULL
-    -- concept is modifier of a diagnosis item (child of site/hist)
-    AND variable_concept_id IN (  SELECT DISTINCT concept_id_1
-                    FROM concept_relationship
-                    WHERE relationship_id = 'Has parent item'
-                    AND concept_id_2 in (35918686  --Phase I Radiation Treatment Modality
-                              ,35918378  --Phase II Radiation Treatment Modality
-                              ,35918255  --Phase III Radiation Treatment Modality
-                              ,35918593  --RX Summ--Surg Prim Site
-                              )
-                    )
-    -- filter empty values
-    AND CHAR_LENGTH(naaccr_item_value) > 0
+							CASE
+							WHEN ndp.value_concept_id IS NULL
+							THEN
+								CAST(ndp.naaccr_item_value AS NUMERIC)
+							ELSE
+								COALESCE(conc_num.value_as_number, NULL)
+							END
+					  ELSE
+						NULL
+					END as value_as_number
+	      , ndp.value_concept_id                                                                                                                          AS value_as_concept_id
+	      , COALESCE(unit_cr.concept_id_2, conc_num.unit_concept_id)                                                                                                  AS unit_concept_id
+	      , NULL                                                                                                                                                    AS range_low
+	      , NULL                                                                                                                                                    AS range_high
+	      , NULL                                                                                                                                                    AS provider_id
+	      , NULL                                                                                                                                                    AS visit_occurrence_id
+	      , NULL                                                                                                                                                    AS visit_detail_id
+	      , ndp.variable_concept_code                                                                                                                                         AS measurement_source_value
+	      , ndp.variable_concept_id                                                                                                                                         AS measurement_source_concept_id
+	      , NULL                                                                                                                                                    AS unit_source_value
+	      , naaccr_item_value                                                                                                                                         AS value_source_value
+	      , et.episode_id                                                                                                                             AS modifier_of_event_id
+	      , 1000000003 -- TODO: Need vocab update                                                                                                                  AS modifier_field_concept_id -- ‘episode.episode_id’ concept
+	      , ndp.record_id                                                                                                                                             AS record_id
+	  FROM
+	  (
+	    SELECT *
+	    FROM naaccr_data_points_temp
+	    WHERE person_id IS NOT NULL
+	    AND CHAR_LENGTH(naaccr_item_value) > 0
 
-   ) ndp
+	   ) ndp
+		 INNER JOIN concept_relationship cr1 ON ndp.variable_concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Has parent item'
+	   AND cr1.concept_id_2 in (
+			 												  35918686  --Phase I Radiation Treatment Modality
+	            	 							, 35918378  --Phase II Radiation Treatment Modality
+	 													 	, 35918255  --Phase III Radiation Treatment Modality
+	 													 	, 35918593  --RX Summ--Surg Prim Site
+														 )
+	   -- Get episode_temp record
+	    INNER JOIN episode_temp et
+	    ON ndp.record_id = et.record_id
+	    -- restrict to treatment episodes
+	    	AND et.episode_concept_id = 32531
+			INNER JOIN concept_relationship cr2 ON et.episode_source_concept_id = cr2.concept_id_1 AND cr2.relationship_id = 'Answer of' AND cr1.concept_id_2 = cr2.concept_id_2
+	  -- Get standard concept
+	  INNER JOIN concept_relationship cr
+	    on ndp.variable_concept_id = cr.concept_id_1
+	    and cr.relationship_id = 'Maps to'
+	  INNER JOIN concept conc
+	    on cr.concept_id_2 = conc.concept_id
+	    AND conc.domain_id = 'Measurement'
 
-   -- Get episode_temp record
-    INNER JOIN episode_temp et
-    ON ndp.record_id = et.record_id
-    -- restrict to treatment episodes
-    AND et.episode_source_concept_id IN (
-                      35918686  --Phase I Radiation Treatment Modality
-                      ,35918378  --Phase II Radiation Treatment Modality
-                      ,35918255  --Phase III Radiation Treatment Modality
-                      ,35918593  --RX Summ--Surg Prim Site
-                      )
+	  -- Get Unit
+	  LEFT OUTER JOIN concept_relationship unit_cr
+	    ON ndp.variable_concept_id = unit_cr.concept_id_1
+	    and unit_cr.relationship_id = 'Has unit'
 
-
-  -- Get standard concept
-  INNER JOIN concept_relationship cr
-    on ndp.variable_concept_id = cr.concept_id_1
-    and cr.relationship_id = 'Maps to'
-  INNER JOIN concept conc
-    on cr.concept_id_2 = conc.concept_id
-    AND conc.domain_id = 'Measurement'
-    -- AND standard_concept = 'S'    -- Should we add this now or wait?
-
-  -- Get Unit
-  LEFT OUTER JOIN concept_relationship unit_cr
-    ON ndp.variable_concept_id = unit_cr.concept_id_1
-    and unit_cr.relationship_id = 'Has unit'
-
-  -- Get numeric value
-  LEFT OUTER JOIN concept_numeric conc_num
-    ON ndp.type_concept_id = 32676 --'Numeric'
-    AND ndp.value_concept_id = conc_num.concept_id ;
+	  -- Get numeric value
+	  LEFT OUTER JOIN concept_numeric conc_num
+	    ON ndp.type_concept_id = 32676 --'Numeric'
+	    AND ndp.value_concept_id = conc_num.concept_id ;
 
 
 
---Step 15: Copy Episode Measurements to Procedure Occurrence for Treatment Episodes
-INSERT INTO measurement_temp
-(
-    measurement_id
-  , person_id
-  , measurement_concept_id
-  , measurement_date
-  , measurement_time
-  , measurement_datetime
-  , measurement_type_concept_id
-  , operator_concept_id
-  , value_as_number
-  , value_as_concept_id
-  , unit_concept_id
-  , range_low
-  , range_high
-  , provider_id
-  , visit_occurrence_id
-  , visit_detail_id
-  , measurement_source_value
-  , measurement_source_concept_id
-  , unit_source_value
-  , value_source_value
-  , modifier_of_event_id
-  , modifier_of_field_concept_id
-  , record_id
-)
-SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL THEN 0 ELSE
-  (SELECT MAX(measurement_id) FROM measurement_temp) END + row_number() over(order by mt.record_id)) AS measurement_id
-      , mt.person_id                                                                                                                                                      AS person_id
-      , mt.measurement_concept_id                                                                                                                                         AS measurement_concept_id
-      , mt.measurement_date                                                                                                                                               AS measurement_date
-      , mt.measurement_time                                                                                                                                               AS measurement_time
-      , mt.measurement_datetime                                                                                                                                           AS measurement_datetime
-      , mt.measurement_type_concept_id                                                                                                                                    AS measurement_type_concept_id
-      , mt.operator_concept_id                                                                                                                                            AS operator_concept_id
-      , mt.value_as_number                                                                                                                                                AS value_as_number
-      , mt.value_as_concept_id                                                                                                                                            AS value_as_concept_id
-      , mt.unit_concept_id                                                                                                                                                AS unit_concept_id
-      , mt.range_low                                                                                                                                                      AS range_low
-      , mt.range_high                                                                                                                                                     AS range_high
-      , mt.provider_id                                                                                                                                                    AS provider_id
-      , mt.visit_occurrence_id                                                                                                                                            AS visit_occurrence_id
-      , mt.visit_detail_id                                                                                                                                                AS visit_detail_id
-      , mt.measurement_source_value                                                                                                                                       AS measurement_source_value
-      , mt.measurement_source_concept_id                                                                                                                                  AS measurement_source_concept_id
-      , mt.unit_source_value                                                                                                                                              AS unit_source_value
-      , mt.value_source_value                                                                                                                                             AS value_source_value
-      , pet.procedure_occurrence_id                                                                                                                                       AS modifier_of_event_id
-      , 1147084                                                                                                                                                        AS modifier_field_concept_id -- ‘procedure_occurrence.procedure_concept_id’ concept
-      , mt.record_id                                                                                                                                                     AS record_id
-FROM measurement_temp mt
-JOIN episode_temp et
-  ON mt.record_id = et.record_id
-  AND et.episode_concept_id = 32531 --Treatment Regimen
-JOIN procedure_occurrence_temp pet
-  ON et.record_id = pet.record_id
-  AND et.episode_object_concept_id = pet.procedure_concept_id;
+	--Step 15: Copy Episode Measurements to Procedure Occurrence for Treatment Episodes
+	INSERT INTO measurement_temp
+	(
+	    measurement_id
+	  , person_id
+	  , measurement_concept_id
+	  , measurement_date
+	  , measurement_time
+	  , measurement_datetime
+	  , measurement_type_concept_id
+	  , operator_concept_id
+	  , value_as_number
+	  , value_as_concept_id
+	  , unit_concept_id
+	  , range_low
+	  , range_high
+	  , provider_id
+	  , visit_occurrence_id
+	  , visit_detail_id
+	  , measurement_source_value
+	  , measurement_source_concept_id
+	  , unit_source_value
+	  , value_source_value
+	  , modifier_of_event_id
+	  , modifier_of_field_concept_id
+	  , record_id
+	)
+	SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL THEN 0 ELSE
+	  (SELECT MAX(measurement_id) FROM measurement_temp) END + row_number() over(order by mt.record_id)) AS measurement_id
+	      , mt.person_id                                                                                                                                                      AS person_id
+	      , mt.measurement_concept_id                                                                                                                                         AS measurement_concept_id
+	      , mt.measurement_date                                                                                                                                               AS measurement_date
+	      , mt.measurement_time                                                                                                                                               AS measurement_time
+	      , mt.measurement_datetime                                                                                                                                           AS measurement_datetime
+	      , mt.measurement_type_concept_id                                                                                                                                    AS measurement_type_concept_id
+	      , mt.operator_concept_id                                                                                                                                            AS operator_concept_id
+	      , mt.value_as_number                                                                                                                                                AS value_as_number
+	      , mt.value_as_concept_id                                                                                                                                            AS value_as_concept_id
+	      , mt.unit_concept_id                                                                                                                                                AS unit_concept_id
+	      , mt.range_low                                                                                                                                                      AS range_low
+	      , mt.range_high                                                                                                                                                     AS range_high
+	      , mt.provider_id                                                                                                                                                    AS provider_id
+	      , mt.visit_occurrence_id                                                                                                                                            AS visit_occurrence_id
+	      , mt.visit_detail_id                                                                                                                                                AS visit_detail_id
+	      , mt.measurement_source_value                                                                                                                                       AS measurement_source_value
+	      , mt.measurement_source_concept_id                                                                                                                                  AS measurement_source_concept_id
+	      , mt.unit_source_value                                                                                                                                              AS unit_source_value
+	      , mt.value_source_value                                                                                                                                             AS value_source_value
+	      , pet.procedure_occurrence_id                                                                                                                                       AS modifier_of_event_id
+	      , 1147084                                                                                                                                                        AS modifier_field_concept_id -- ‘procedure_occurrence.procedure_concept_id’ concept
+	      , mt.record_id                                                                                                                                                     AS record_id
+	FROM measurement_temp mt
+	JOIN episode_temp et
+	  ON mt.record_id = et.record_id
+	  AND et.episode_concept_id = 32531 --Treatment Regimen
+		AND mt.modifier_of_event_id = et.episode_id
+		  AND mt.modifier_of_field_concept_id = 1000000003
+	JOIN procedure_occurrence_temp pet
+	  ON et.record_id = pet.record_id
+	  AND et.episode_object_concept_id = pet.procedure_concept_id;
 
 
 
 
 
---Step 16: Connect 'Treatment Episodes' to 'Disease Episodes' via parent_id
-UPDATE episode_temp
-SET episode_parent_id = det.ep_id
-FROM
-(
-	SELECT DISTINCT record_id rec_id, episode_concept_id ep_id
-	FROM episode_temp
-	WHERE episode_concept_id          = 32528 --Disease First Occurrence
-) det
-WHERE record_id        = det.rec_id
-AND episode_concept_id = 32531; --Treatment Regimen
+	--Step 16: Connect 'Treatment Episodes' to 'Disease Episodes' via parent_id
+	UPDATE episode_temp
+	SET episode_parent_id = det.episode_id
+	FROM
+	(
+		SELECT DISTINCT record_id rec_id, episode_id
+		FROM episode_temp
+		WHERE episode_concept_id          = 32528 --Disease First Occurrence
+	) det
+	WHERE record_id        = det.rec_id
+	AND episode_concept_id = 32531; --Treatment Regimen
 
 
 
