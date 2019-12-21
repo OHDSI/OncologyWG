@@ -1021,7 +1021,6 @@ describe NaaccrEtl do
     end
   end
 
-
   describe "For 'Drug' treatments" do
     before(:each) do
       @naaccr_item_number_diagnosis_date = '390' #Date of Diagnosis
@@ -1212,6 +1211,845 @@ describe NaaccrEtl do
       drug_exposure_brm = DrugExposure.where(drug_source_concept_id: @episode_source_concept_brm.concept_id).first
       #1147094 = drug_exposure.drug_exposure_id
       expect(EpisodeEvent.where(episode_id: episode_brm.episode_id, event_id: drug_exposure_brm.drug_exposure_id, episode_event_field_concept_id: 1147094).count).to eq(1)
+    end
+
+    it "links back to the corresponding 'Disease episode", focus: true do
+      #32528='Disease First Occurrence'
+      episode_disease = Episode.where(episode_concept_id: 32528, episode_object_concept_id: @condition_concept.concept_id).first
+
+      episode_chemo = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_source_concept_chemo.concept_id).first
+      expect(episode_chemo.episode_parent_id).to eq(episode_disease.episode_id)
+
+      episode_hormone = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_source_concept_hormone.concept_id).first
+      expect(episode_hormone.episode_parent_id).to eq(episode_disease.episode_id)
+
+      episode_brm = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_source_concept_brm.concept_id).first
+      expect(episode_brm.episode_parent_id).to eq(episode_disease.episode_id)
+    end
+  end
+
+  describe "For 'Radiation' treatments" do
+    before(:each) do
+      @naaccr_item_number_diagnosis_date = '390' #Date of Diagnosis
+      @diagnosis_date = '19981022'
+      @histology = '8140/3'
+      @site = 'C61.9'
+      @histology_site = "#{@histology}-#{@site}"
+
+      @naaccr_item_number_phase_1_radiation = '1506'      #Phase I Radiation Treatment Modality
+      @naaccr_item_value_phase_1_radiation = '02'         #External beam, photons
+
+      @naaccr_item_number_radiation_date = '1210'         #RX Date Radiation
+      @naaccr_item_value_radiation_date = '20120701'
+
+      @naaccr_item_number_radiation_end_date = '3220'     #RX Date Rad Ended
+      @naaccr_item_value_radiation_end_date = '20120901'
+
+      @naaccr_item_number_phase_2_radiation = '1516'      #Phase II Radiation Treatment Modality
+      @naaccr_item_value_phase_2_radiation = '02'         #External beam, photons
+
+      @naaccr_item_number_phase_3_radiation = '1526'      #Phase III Radiation Treatment Modality
+      @naaccr_item_value_phase_3_radiation = '02'         #External beam, photons
+
+
+      #Person 1
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_diagnosis_date \
+        , naaccr_item_value: @diagnosis_date \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_phase_1_radiation \
+        , naaccr_item_value: @naaccr_item_value_phase_1_radiation  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_radiation_date \
+        , naaccr_item_value: @naaccr_item_value_radiation_date  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_radiation_end_date \
+        , naaccr_item_value: @naaccr_item_value_radiation_end_date  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_phase_2_radiation \
+        , naaccr_item_value: @naaccr_item_value_phase_2_radiation  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_phase_3_radiation \
+        , naaccr_item_value: @naaccr_item_value_phase_3_radiation  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      @condition_concept = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
+      @episode_object_concept_phase_1_radiation = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_item_number_phase_1_radiation}@#{@naaccr_item_value_phase_1_radiation}")
+      @episode_object_concept_phase_2_radiation = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_item_number_phase_2_radiation}@#{@naaccr_item_value_phase_2_radiation}")
+      @episode_object_concept_phase_3_radiation = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_item_number_phase_3_radiation}@#{@naaccr_item_value_phase_3_radiation}")
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+    end
+
+    it "creates entries in the EPISODE table", focus: false do
+      #32531 = Treatment regimen
+      expect(Episode.where(episode_concept_id: 32531).count).to eq(3)
+      episode_phase_1_radiation = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_phase_1_radiation.concept_id).first
+      expect(episode_phase_1_radiation.person_id).to eq(@person_1.person_id)
+      expect(episode_phase_1_radiation.episode_concept_id).to eq(32531) #32531 = Treatment regimen
+      expect(episode_phase_1_radiation.episode_start_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(episode_phase_1_radiation.episode_end_datetime).to eq(Date.parse(@naaccr_item_value_radiation_end_date))
+      expect(episode_phase_1_radiation.episode_object_concept_id).to eq(@episode_object_concept_phase_1_radiation.concept_id)
+      expect(episode_phase_1_radiation.episode_type_concept_id).to eq(32546) #32546 = Episode derived from registry
+      expect(episode_phase_1_radiation.episode_source_value).to eq(@episode_object_concept_phase_1_radiation.concept_code)
+      expect(episode_phase_1_radiation.episode_source_concept_id).to eq(@episode_object_concept_phase_1_radiation.concept_id)
+
+      episode_phase_2_radiation = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_phase_2_radiation.concept_id).first
+      expect(episode_phase_2_radiation.person_id).to eq(@person_1.person_id)
+      expect(episode_phase_2_radiation.episode_concept_id).to eq(32531) #32531 = Treatment regimen
+      expect(episode_phase_2_radiation.episode_start_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(episode_phase_2_radiation.episode_end_datetime).to eq(Date.parse(@naaccr_item_value_radiation_end_date))
+      expect(episode_phase_2_radiation.episode_object_concept_id).to eq(@episode_object_concept_phase_2_radiation.concept_id)
+      expect(episode_phase_2_radiation.episode_type_concept_id).to eq(32546) #32546 = Episode derived from registry
+      expect(episode_phase_2_radiation.episode_source_value).to eq(@episode_object_concept_phase_2_radiation.concept_code)
+      expect(episode_phase_2_radiation.episode_source_concept_id).to eq(@episode_object_concept_phase_2_radiation.concept_id)
+
+      episode_phase_3_radiation = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_phase_3_radiation.concept_id).first
+      expect(episode_phase_3_radiation.person_id).to eq(@person_1.person_id)
+      expect(episode_phase_3_radiation.episode_concept_id).to eq(32531) #32531 = Treatment regimen
+      expect(episode_phase_3_radiation.episode_start_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(episode_phase_3_radiation.episode_end_datetime).to eq(Date.parse(@naaccr_item_value_radiation_end_date))
+      expect(episode_phase_3_radiation.episode_object_concept_id).to eq(@episode_object_concept_phase_3_radiation.concept_id)
+      expect(episode_phase_3_radiation.episode_type_concept_id).to eq(32546) #32546 = Episode derived from registry
+      expect(episode_phase_3_radiation.episode_source_value).to eq(@episode_object_concept_phase_3_radiation.concept_code)
+      expect(episode_phase_3_radiation.episode_source_concept_id).to eq(@episode_object_concept_phase_3_radiation.concept_id)
+    end
+
+    it "creates entries in the PROCEDURE_OCCURRENCE table", focus: false do
+      expect(ProcedureOccurrence.count).to eq(3)
+      procedure_occurrence_phase_1_radiation = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_1_radiation.concept_id).first
+      expect(procedure_occurrence_phase_1_radiation.person_id).to eq(@person_1.person_id)
+      expect(procedure_occurrence_phase_1_radiation.procedure_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(procedure_occurrence_phase_1_radiation.procedure_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(procedure_occurrence_phase_1_radiation.procedure_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
+      expect(procedure_occurrence_phase_1_radiation.quantity).to eq(1)
+      expect(procedure_occurrence_phase_1_radiation.procedure_source_value).to eq(@episode_object_concept_phase_1_radiation.concept_code)
+      expect(procedure_occurrence_phase_1_radiation.procedure_source_concept_id).to eq(@episode_object_concept_phase_1_radiation.concept_id)
+
+      procedure_occurrence_phase_2_radiation = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_2_radiation.concept_id).first
+      expect(procedure_occurrence_phase_2_radiation.person_id).to eq(@person_1.person_id)
+      expect(procedure_occurrence_phase_2_radiation.procedure_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(procedure_occurrence_phase_2_radiation.procedure_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(procedure_occurrence_phase_2_radiation.procedure_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
+      expect(procedure_occurrence_phase_2_radiation.quantity).to eq(1)
+      expect(procedure_occurrence_phase_2_radiation.procedure_source_value).to eq(@episode_object_concept_phase_2_radiation.concept_code)
+      expect(procedure_occurrence_phase_2_radiation.procedure_source_concept_id).to eq(@episode_object_concept_phase_2_radiation.concept_id)
+
+      procedure_occurrence_phase_3_radiation = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_3_radiation.concept_id).first
+      expect(procedure_occurrence_phase_3_radiation.person_id).to eq(@person_1.person_id)
+      expect(procedure_occurrence_phase_3_radiation.procedure_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(procedure_occurrence_phase_3_radiation.procedure_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(procedure_occurrence_phase_3_radiation.procedure_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
+      expect(procedure_occurrence_phase_3_radiation.quantity).to eq(1)
+      expect(procedure_occurrence_phase_3_radiation.procedure_source_value).to eq(@episode_object_concept_phase_3_radiation.concept_code)
+      expect(procedure_occurrence_phase_3_radiation.procedure_source_concept_id).to eq(@episode_object_concept_phase_3_radiation.concept_id)
+    end
+
+    it 'creates entries in EPISODE_EVENT pointing entries in PROCEDURE_OCCURRENCE to the corresponding entry in EPISODE', focus: false do
+      episode_phase_1_radiation = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_phase_1_radiation.concept_id).first
+      procedure_occurrence_phase_1_radiation = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_1_radiation.concept_id).first
+      #1147082 = procedure_occurrence.procedure_occurrence_id
+      expect(EpisodeEvent.where(episode_id: episode_phase_1_radiation.episode_id, event_id: procedure_occurrence_phase_1_radiation.procedure_occurrence_id, episode_event_field_concept_id: 1147082).count).to eq(1)
+
+      episode_phase_2_radiation = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_phase_2_radiation.concept_id).first
+      procedure_occurrence_phase_2_radiation = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_2_radiation.concept_id).first
+      #1147082 = procedure_occurrence.procedure_occurrence_id
+      expect(EpisodeEvent.where(episode_id: episode_phase_2_radiation.episode_id, event_id: procedure_occurrence_phase_2_radiation.procedure_occurrence_id, episode_event_field_concept_id: 1147082).count).to eq(1)
+
+      episode_phase_3_radiation = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_phase_3_radiation.concept_id).first
+      procedure_occurrence_phase_3_radiation = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_3_radiation.concept_id).first
+      #1147082 = procedure_occurrence.procedure_occurrence_id
+      expect(EpisodeEvent.where(episode_id: episode_phase_3_radiation.episode_id, event_id: procedure_occurrence_phase_3_radiation.procedure_occurrence_id, episode_event_field_concept_id: 1147082).count).to eq(1)
+    end
+
+    it "links back to the corresponding 'Disease episode", focus: false do
+      #32528='Disease First Occurrence'
+      episode_disease = Episode.where(episode_concept_id: 32528, episode_object_concept_id: @condition_concept.concept_id).first
+
+      episode_phase_1_radiation = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_phase_1_radiation.concept_id).first
+      expect(episode_phase_1_radiation.episode_parent_id).to eq(episode_disease.episode_id)
+
+      episode_phase_2_radiation = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_phase_2_radiation.concept_id).first
+      expect(episode_phase_2_radiation.episode_parent_id).to eq(episode_disease.episode_id)
+
+      episode_phase_3_radiation = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_phase_3_radiation.concept_id).first
+      expect(episode_phase_2_radiation.episode_parent_id).to eq(episode_disease.episode_id)
+    end
+  end
+
+  describe "For 'Surgery' treatments" do
+    before(:each) do
+      @naaccr_item_number_diagnosis_date = '390' #Date of Diagnosis
+      @diagnosis_date_1 = '20051022'
+      @histology_1 = '8140/3'
+      @site_1 = 'C61.9'
+      @histology_site_1 = "#{@histology_1}-#{@site_1}"
+
+      @diagnosis_date_2 = '20100805'
+      @histology_2 = '8825/3'
+      @site_2 = 'C50.2'
+      @histology_site_2 = "#{@histology_2}-#{@site_2}"
+
+      @naaccr_item_number_surgery = '1290'                #RX Summ--Surg Prim Site
+      @naaccr_item_value_surgery_1 = '50'                 #Prostate@Radical prostatectomy, NOS; total prostatectomy, NOS
+      @naaccr_schema_concept_code_1 = 'Prostate'
+      @naaccr_item_value_surgery_2 = '50'                 #Breast@Modified radical mastectomy
+      @naaccr_schema_concept_code_2 = 'Breast'
+
+      @naaccr_item_number_surgery_date = '1200'         #RX Date Surgery
+      @naaccr_item_value_surgery_date_1 = '20120701'
+      @naaccr_item_value_surgery_date_2 = '20120701'
+
+      #Person 1
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_diagnosis_date \
+        , naaccr_item_value: @diagnosis_date_1 \
+        , histology: @histology_1 \
+        , site: @site_1 \
+        , histology_site: @histology_site_1 \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_surgery \
+        , naaccr_item_value: @naaccr_item_value_surgery_1  \
+        , histology: @histology_1 \
+        , site: @site_1 \
+        , histology_site: @histology_site_1 \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_surgery_date \
+        , naaccr_item_value: @naaccr_item_value_surgery_date_1  \
+        , histology: @histology_1 \
+        , site: @site_1 \
+        , histology_site: @histology_site_1 \
+      )
+
+      #Person 2
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_2.person_id \
+        , record_id: '2' \
+        , naaccr_item_number: @naaccr_item_number_diagnosis_date \
+        , naaccr_item_value: @diagnosis_date_1 \
+        , histology: @histology_2 \
+        , site: @site_2 \
+        , histology_site: @histology_site_2 \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_2.person_id \
+        , record_id: '2' \
+        , naaccr_item_number: @naaccr_item_number_surgery \
+        , naaccr_item_value: @naaccr_item_value_surgery_2  \
+        , histology: @histology_2 \
+        , site: @site_2 \
+        , histology_site: @histology_site_2 \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_2.person_id \
+        , record_id: '2' \
+        , naaccr_item_number: @naaccr_item_number_surgery_date \
+        , naaccr_item_value: @naaccr_item_value_surgery_date_2  \
+        , histology: @histology_2 \
+        , site: @site_2 \
+        , histology_site: @histology_site_2 \
+      )
+
+      @condition_concept_1 = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site_1)
+      @condition_concept_2 = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site_2)
+      @episode_object_concept_surgery_1 = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_schema_concept_code_1}@#{@naaccr_item_number_surgery}@#{@naaccr_item_value_surgery_1}")
+      @episode_object_concept_surgery_2 = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_schema_concept_code_2}@#{@naaccr_item_number_surgery}@#{@naaccr_item_value_surgery_2}")
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+    end
+
+    it "creates entries in the EPISODE table", focus: false do
+      #32531 = Treatment regimen
+      expect(Episode.where(episode_concept_id: 32531).count).to eq(2)
+      episode_surgery_1 = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_surgery_1.concept_id).first
+      expect(episode_surgery_1.person_id).to eq(@person_1.person_id)
+      expect(episode_surgery_1.episode_concept_id).to eq(32531) #32531 = Treatment regimen
+      expect(episode_surgery_1.episode_start_datetime).to eq(Date.parse(@naaccr_item_value_surgery_date_1))
+      expect(episode_surgery_1.episode_end_datetime).to be_nil
+      expect(episode_surgery_1.episode_object_concept_id).to eq(@episode_object_concept_surgery_1.concept_id)
+      expect(episode_surgery_1.episode_type_concept_id).to eq(32546) #32546 = Episode derived from registry
+      expect(episode_surgery_1.episode_source_value).to eq(@episode_object_concept_surgery_1.concept_code)
+      expect(episode_surgery_1.episode_source_concept_id).to eq(@episode_object_concept_surgery_1.concept_id)
+
+      #32531 = Treatment regimen
+      episode_surgery_2 = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_surgery_2.concept_id).first
+      expect(episode_surgery_2.person_id).to eq(@person_2.person_id)
+      expect(episode_surgery_2.episode_concept_id).to eq(32531) #32531 = Treatment regimen
+      expect(episode_surgery_2.episode_start_datetime).to eq(Date.parse(@naaccr_item_value_surgery_date_2))
+      expect(episode_surgery_2.episode_end_datetime).to be_nil
+      expect(episode_surgery_2.episode_object_concept_id).to eq(@episode_object_concept_surgery_2.concept_id)
+      expect(episode_surgery_2.episode_type_concept_id).to eq(32546) #32546 = Episode derived from registry
+      expect(episode_surgery_2.episode_source_value).to eq(@episode_object_concept_surgery_2.concept_code)
+      expect(episode_surgery_2.episode_source_concept_id).to eq(@episode_object_concept_surgery_2.concept_id)
+    end
+
+    it "creates entries in the PROCEDURE_OCCURRENCE table", focus: false do
+      expect(ProcedureOccurrence.count).to eq(2)
+      procedure_occurrence_surgery_1 = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_surgery_1.concept_id).first
+      expect(procedure_occurrence_surgery_1.person_id).to eq(@person_1.person_id)
+      expect(procedure_occurrence_surgery_1.procedure_date).to eq(Date.parse(@naaccr_item_value_surgery_date_1))
+      expect(procedure_occurrence_surgery_1.procedure_datetime).to eq(Date.parse(@naaccr_item_value_surgery_date_1))
+      expect(procedure_occurrence_surgery_1.procedure_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
+      expect(procedure_occurrence_surgery_1.quantity).to eq(1)
+      expect(procedure_occurrence_surgery_1.procedure_source_value).to eq(@episode_object_concept_surgery_1.concept_code)
+      expect(procedure_occurrence_surgery_1.procedure_source_concept_id).to eq(@episode_object_concept_surgery_1.concept_id)
+
+      procedure_occurrence_surgery_2 = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_surgery_2.concept_id).first
+      expect(procedure_occurrence_surgery_2.person_id).to eq(@person_2.person_id)
+      expect(procedure_occurrence_surgery_2.procedure_date).to eq(Date.parse(@naaccr_item_value_surgery_date_2))
+      expect(procedure_occurrence_surgery_2.procedure_datetime).to eq(Date.parse(@naaccr_item_value_surgery_date_2))
+      expect(procedure_occurrence_surgery_2.procedure_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
+      expect(procedure_occurrence_surgery_2.quantity).to eq(1)
+      expect(procedure_occurrence_surgery_2.procedure_source_value).to eq(@episode_object_concept_surgery_2.concept_code)
+      expect(procedure_occurrence_surgery_2.procedure_source_concept_id).to eq(@episode_object_concept_surgery_2.concept_id)
+    end
+
+    it 'creates entries in EPISODE_EVENT pointing entries in PROCEDURE_OCCURRENCE to the corresponding entry in EPISODE', focus: false do
+      episode_surgery_1 = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_surgery_1.concept_id).first
+      procedure_occurrence_surgery_1 = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_surgery_1.concept_id).first
+      #1147082 = procedure_occurrence.procedure_occurrence_id
+      expect(EpisodeEvent.where(episode_id: episode_surgery_1.episode_id, event_id: procedure_occurrence_surgery_1.procedure_occurrence_id, episode_event_field_concept_id: 1147082).count).to eq(1)
+
+      episode_surgery_2 = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_surgery_2.concept_id).first
+      procedure_occurrence_surgery_2 = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_surgery_2.concept_id).first
+      #1147082 = procedure_occurrence.procedure_occurrence_id
+      expect(EpisodeEvent.where(episode_id: episode_surgery_2.episode_id, event_id: procedure_occurrence_surgery_2.procedure_occurrence_id, episode_event_field_concept_id: 1147082).count).to eq(1)
+    end
+
+    it "links back to the corresponding 'Disease episode", focus: false do
+      #32528='Disease First Occurrence'
+      episode_disease_1 = Episode.where(episode_concept_id: 32528, episode_object_concept_id: @condition_concept_1.concept_id).first
+      episode_surgery_1 = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_surgery_1.concept_id).first
+      expect(episode_surgery_1.episode_parent_id).to eq(episode_disease_1.episode_id)
+      episode_disease_2 = Episode.where(episode_concept_id: 32528, episode_object_concept_id: @condition_concept_2.concept_id).first
+      episode_surgery_2 = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_surgery_2.concept_id).first
+      expect(episode_surgery_2.episode_parent_id).to eq(episode_disease_2.episode_id)
+    end
+  end
+
+  describe 'Creating entries in MEASUREMENT table for a standard categorical schema-independent treatment modifier' do
+    before(:each) do
+      @naaccr_item_number_diagnosis_date = '390' #Date of Diagnosis
+      @diagnosis_date = '20170630'
+      @histology = '8140/3'
+      @site = 'C61.9'
+      @histology_site = "#{@histology}-#{@site}"
+
+      @naaccr_item_number_surgery = '1290'                #RX Summ--Surg Prim Site
+      @naaccr_item_value_surgery = '50'                 #Prostate@Radical prostatectomy, NOS; total prostatectomy, NOS
+      @naaccr_schema_concept_code = 'Prostate'
+
+      @naaccr_item_number_surgery_date = '1200'         #RX Date Surgery
+      @naaccr_item_value_surgery_date = '20120701'
+
+      @naaccr_item_number_surgical_margins = '1320'          #RX Summ--Surgical Margins
+      @naaccr_item_value_surgical_margins  = '2'             #Microscopic residual tumor
+
+      #Person 1
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_diagnosis_date \
+        , naaccr_item_value: @diagnosis_date \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_surgery \
+        , naaccr_item_value: @naaccr_item_value_surgery  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_surgery_date \
+        , naaccr_item_value: @naaccr_item_value_surgery_date  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_surgical_margins \
+        , naaccr_item_value: @naaccr_item_value_surgical_margins  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      @naaccr_item_number_phase_1_radiation = '1506'      #Phase I Radiation Treatment Modality
+      @naaccr_item_value_phase_1_radiation = '02'         #External beam, photons
+
+      @naaccr_item_number_radiation_date = '1210'         #RX Date Radiation
+      @naaccr_item_value_radiation_date = '20120701'
+
+      @naaccr_item_number_radiation_end_date = '3220'     #RX Date Rad Ended
+      @naaccr_item_value_radiation_end_date = '20120901'
+
+      @naaccr_item_number_phase_2_radiation = '1516'      #Phase II Radiation Treatment Modality
+      @naaccr_item_value_phase_2_radiation = '02'         #External beam, photons
+
+      @naaccr_item_number_phase_3_radiation = '1526'      #Phase III Radiation Treatment Modality
+      @naaccr_item_value_phase_3_radiation = '02'         #External beam, photons
+
+      @naaccr_item_number_phase_1_radiation_external_beam_planning_tech = '1502'      #Phase I Radiation External Beam Planning Tech
+      #MGURLEY 12/20/2019 This should be '05'.  The OMOP vocabulary needs to be fixed.
+      @naaccr_item_value_phase_1_radiation_external_beam_planning_tech = '5'         #Intensity modulated therapy
+
+      @naaccr_item_number_phase_2_radiation_external_beam_planning_tech = '1512'      #Phase II Radiation External Beam Planning Tech
+      #MGURLEY 12/20/2019 This should be '05'.  The OMOP vocabulary needs to be fixed.
+      @naaccr_item_value_phase_2_radiation_external_beam_planning_tech = '5'          #Intensity modulated therapy
+
+      @naaccr_item_number_phase_3_radiation_external_beam_planning_tech = '1522'      #Phase III Radiation External Beam Planning Tech
+      #MGURLEY 12/20/2019 This should be '05'.  The OMOP vocabulary needs to be fixed.
+      @naaccr_item_value_phase_3_radiation_external_beam_planning_tech = '5'          #Intensity modulated therapy
+
+      #Person 1
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_phase_1_radiation \
+        , naaccr_item_value: @naaccr_item_value_phase_1_radiation  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_radiation_date \
+        , naaccr_item_value: @naaccr_item_value_radiation_date  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_radiation_end_date \
+        , naaccr_item_value: @naaccr_item_value_radiation_end_date  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_phase_2_radiation \
+        , naaccr_item_value: @naaccr_item_value_phase_2_radiation  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_phase_3_radiation \
+        , naaccr_item_value: @naaccr_item_value_phase_3_radiation  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_phase_1_radiation_external_beam_planning_tech \
+        , naaccr_item_value: @naaccr_item_value_phase_1_radiation_external_beam_planning_tech  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_phase_2_radiation_external_beam_planning_tech \
+        , naaccr_item_value: @naaccr_item_value_phase_2_radiation_external_beam_planning_tech  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_phase_3_radiation_external_beam_planning_tech \
+        , naaccr_item_value: @naaccr_item_value_phase_3_radiation_external_beam_planning_tech  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      @naaccr_item_number_phase_1_radiation_number_of_fractions = '1503'             #Phase I Number of Fractions
+      @naaccr_item_value_phase_1_radiation_number_of_fractions = '010'
+
+      @naaccr_item_number_phase_2_radiation_number_of_fractions = '1513'             #Phase II Number of Fractions
+      @naaccr_item_value_phase_2_radiation_number_of_fractions = '0'                 #Radiation therapy was not administered to the patient.
+
+      @naaccr_item_number_phase_3_radiation_number_of_fractions = '1523'             #Phase II Number of Fractions
+      @naaccr_item_value_phase_3_radiation_number_of_fractions = '020'
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_phase_1_radiation_number_of_fractions \
+        , naaccr_item_value: @naaccr_item_value_phase_1_radiation_number_of_fractions  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_phase_2_radiation_number_of_fractions \
+        , naaccr_item_value: @naaccr_item_value_phase_2_radiation_number_of_fractions  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_phase_3_radiation_number_of_fractions \
+        , naaccr_item_value: @naaccr_item_value_phase_3_radiation_number_of_fractions  \
+        , histology: @histology \
+        , site: @site \
+        , histology_site: @histology_site \
+      )
+
+      @condition_concept = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
+      @episode_object_concept_surgery = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_schema_concept_code}@#{@naaccr_item_number_surgery}@#{@naaccr_item_value_surgery}")
+      @measurement_surgical_margins_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_surgical_margins)
+      @measurement_surgical_margins_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_surgical_margins)
+      @measurement_surgical_margins_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number_surgical_margins}@#{@naaccr_item_value_surgical_margins}")
+
+      @episode_object_concept_phase_1_radiation = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_item_number_phase_1_radiation}@#{@naaccr_item_value_phase_1_radiation}")
+      @measurement_phase_1_radiation_external_beam_planning_tech_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_phase_1_radiation_external_beam_planning_tech)
+      @measurement_phase_1_radiation_external_beam_planning_tech_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_phase_1_radiation_external_beam_planning_tech)
+      @measurement_phase_1_radiation_external_beam_planning_tech_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number_phase_1_radiation_external_beam_planning_tech}@#{@naaccr_item_value_phase_1_radiation_external_beam_planning_tech}")
+      @measurement_phase_1_radiation_number_of_fractions_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_phase_1_radiation_number_of_fractions)
+      @measurement_phase_1_radiation_number_of_fraction_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_phase_1_radiation_number_of_fractions)
+
+      @episode_object_concept_phase_2_radiation = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_item_number_phase_2_radiation}@#{@naaccr_item_value_phase_2_radiation}")
+      @measurement_phase_2_radiation_external_beam_planning_tech_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_phase_2_radiation_external_beam_planning_tech)
+      @measurement_phase_2_radiation_external_beam_planning_tech_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_phase_2_radiation_external_beam_planning_tech)
+      @measurement_phase_2_radiation_external_beam_planning_tech_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number_phase_2_radiation_external_beam_planning_tech}@#{@naaccr_item_value_phase_2_radiation_external_beam_planning_tech}")
+      @measurement_phase_2_radiation_number_of_fractions_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_phase_2_radiation_number_of_fractions)
+      @measurement_phase_2_radiation_number_of_fractions_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_phase_2_radiation_number_of_fractions)
+      @measurement_phase_2_radiation_number_of_fractions_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number_phase_2_radiation_number_of_fractions}@#{@naaccr_item_value_phase_2_radiation_number_of_fractions}")
+
+      @episode_object_concept_phase_3_radiation = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_item_number_phase_3_radiation}@#{@naaccr_item_value_phase_3_radiation}")
+      @measurement_phase_3_radiation_external_beam_planning_tech_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_phase_3_radiation_external_beam_planning_tech)
+      @measurement_phase_3_radiation_external_beam_planning_tech_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_phase_3_radiation_external_beam_planning_tech)
+      @measurement_phase_3_radiation_external_beam_planning_tech_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number_phase_3_radiation_external_beam_planning_tech}@#{@naaccr_item_value_phase_3_radiation_external_beam_planning_tech}")
+      @measurement_phase_3_radiation_number_of_fractions_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_phase_3_radiation_number_of_fractions)
+      @measurement_phase_3_radiation_number_of_fraction_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_phase_3_radiation_number_of_fractions)
+
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+    end
+
+    it 'pointing to PROCEDURE_OCCURRENCE', focus: false do
+      expect(Measurement.where(modifier_of_field_concept_id: 1147084).count).to eq(7)       #1147084 = ‘procedure_occurrence.procedure_concept_id’
+      measurement_surgical_margins = Measurement.where(modifier_of_field_concept_id: 1147084, measurement_concept_id: @measurement_surgical_margins_concept.concept_id).first
+      expect(measurement_surgical_margins.person_id).to eq(@person_1.person_id)
+      expect(measurement_surgical_margins.measurement_concept_id).to eq(@measurement_surgical_margins_concept.concept_id)
+      expect(measurement_surgical_margins.measurement_date).to eq(Date.parse(@naaccr_item_value_surgery_date))
+      expect(measurement_surgical_margins.measurement_time).to be_nil
+      expect(measurement_surgical_margins.measurement_datetime).to eq(Date.parse(@naaccr_item_value_surgery_date))
+      expect(measurement_surgical_margins.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_surgical_margins.value_as_concept_id).to eq(@measurement_surgical_margins_value_as_concept.concept_id)
+      expect(measurement_surgical_margins.measurement_source_value).to eq(@naaccr_item_number_surgical_margins)
+      expect(measurement_surgical_margins.measurement_source_concept_id).to eq(@measurement_surgical_margins_source_concept.concept_id)
+      expect(measurement_surgical_margins.value_source_value).to eq(@naaccr_item_value_surgical_margins)
+      expect(ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_surgery.concept_id).count).to eq(1)
+      procedure_occurrence_surgery = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_surgery.concept_id).first
+      expect(measurement_surgical_margins.modifier_of_event_id).to eq(procedure_occurrence_surgery.procedure_occurrence_id)
+      expect(measurement_surgical_margins.modifier_of_field_concept_id).to eq(1147084) #‘procedure_occurrence.procedure_concept_id’ concept
+
+      measurement_phase_1_radiation_external_beam_planning_tech = Measurement.where(modifier_of_field_concept_id: 1147084, measurement_concept_id: @measurement_phase_1_radiation_external_beam_planning_tech_concept.concept_id).first
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.person_id).to eq(@person_1.person_id)
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_concept_id).to eq(@measurement_phase_1_radiation_external_beam_planning_tech_concept.concept_id)
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_time).to be_nil
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.value_as_concept_id).to eq(@measurement_phase_1_radiation_external_beam_planning_tech_value_as_concept.concept_id)
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_source_value).to eq(@naaccr_item_number_phase_1_radiation_external_beam_planning_tech)
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_source_concept_id).to eq(@measurement_phase_1_radiation_external_beam_planning_tech_concept.concept_id)
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.value_source_value).to eq(@naaccr_item_value_phase_1_radiation_external_beam_planning_tech)
+      expect(ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_1_radiation.concept_id).count).to eq(1)
+      procedure_occurrence_phase_1_radiation = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_1_radiation.concept_id).first
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.modifier_of_event_id).to eq(procedure_occurrence_phase_1_radiation.procedure_occurrence_id)
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.modifier_of_field_concept_id).to eq(1147084) #‘procedure_occurrence.procedure_concept_id’ concept
+
+      measurement_phase_2_radiation_external_beam_planning_tech = Measurement.where(modifier_of_field_concept_id: 1147084, measurement_concept_id: @measurement_phase_2_radiation_external_beam_planning_tech_concept.concept_id).first
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.person_id).to eq(@person_1.person_id)
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_concept_id).to eq(@measurement_phase_2_radiation_external_beam_planning_tech_concept.concept_id)
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_time).to be_nil
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.value_as_concept_id).to eq(@measurement_phase_2_radiation_external_beam_planning_tech_value_as_concept.concept_id)
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_source_value).to eq(@naaccr_item_number_phase_2_radiation_external_beam_planning_tech)
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_source_concept_id).to eq(@measurement_phase_2_radiation_external_beam_planning_tech_concept.concept_id)
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.value_source_value).to eq(@naaccr_item_value_phase_2_radiation_external_beam_planning_tech)
+      expect(ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_2_radiation.concept_id).count).to eq(1)
+      procedure_occurrence_phase_2_radiation = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_2_radiation.concept_id).first
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.modifier_of_event_id).to eq(procedure_occurrence_phase_2_radiation.procedure_occurrence_id)
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.modifier_of_field_concept_id).to eq(1147084) #‘procedure_occurrence.procedure_concept_id’ concept
+
+      measurement_phase_3_radiation_external_beam_planning_tech = Measurement.where(modifier_of_field_concept_id: 1147084, measurement_concept_id: @measurement_phase_3_radiation_external_beam_planning_tech_concept.concept_id).first
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.person_id).to eq(@person_1.person_id)
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_concept_id).to eq(@measurement_phase_3_radiation_external_beam_planning_tech_concept.concept_id)
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_time).to be_nil
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.value_as_concept_id).to eq(@measurement_phase_3_radiation_external_beam_planning_tech_value_as_concept.concept_id)
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_source_value).to eq(@naaccr_item_number_phase_3_radiation_external_beam_planning_tech)
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_source_concept_id).to eq(@measurement_phase_3_radiation_external_beam_planning_tech_concept.concept_id)
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.value_source_value).to eq(@naaccr_item_value_phase_3_radiation_external_beam_planning_tech)
+      expect(ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_3_radiation.concept_id).count).to eq(1)
+      procedure_occurrence_phase_3_radiation = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_3_radiation.concept_id).first
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.modifier_of_event_id).to eq(procedure_occurrence_phase_3_radiation.procedure_occurrence_id)
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.modifier_of_field_concept_id).to eq(1147084) #‘procedure_occurrence.procedure_concept_id’ concept
+
+      measurement_phase_1_radiation_number_of_fractions = Measurement.where(modifier_of_field_concept_id: 1147084, measurement_concept_id: @measurement_phase_1_radiation_number_of_fractions_concept.concept_id).first
+      expect(measurement_phase_1_radiation_number_of_fractions.person_id).to eq(@person_1.person_id)
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_concept_id).to eq(@measurement_phase_1_radiation_number_of_fractions_concept.concept_id)
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_time).to be_nil
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_phase_1_radiation_number_of_fractions.value_as_concept_id).to be_nil
+      expect(measurement_phase_1_radiation_number_of_fractions.value_as_number).to eq(@naaccr_item_value_phase_1_radiation_number_of_fractions.to_f)
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_source_value).to eq(@naaccr_item_number_phase_1_radiation_number_of_fractions)
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_source_concept_id).to eq(@measurement_phase_1_radiation_number_of_fraction_source_concept.concept_id)
+      expect(measurement_phase_1_radiation_number_of_fractions.value_source_value).to eq(@naaccr_item_value_phase_1_radiation_number_of_fractions)
+      expect(ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_1_radiation.concept_id).count).to eq(1)
+      procedure_occurrence_phase_1_radiation = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_1_radiation.concept_id).first
+      expect(measurement_phase_1_radiation_number_of_fractions.modifier_of_event_id).to eq(procedure_occurrence_phase_1_radiation.procedure_occurrence_id)
+      expect(measurement_phase_1_radiation_number_of_fractions.modifier_of_field_concept_id).to eq(1147084) #‘procedure_occurrence.procedure_concept_id’ concept
+
+      measurement_phase_2_radiation_number_of_fractions = Measurement.where(modifier_of_field_concept_id: 1147084, measurement_concept_id: @measurement_phase_2_radiation_number_of_fractions_concept.concept_id).first
+      expect(measurement_phase_2_radiation_number_of_fractions.person_id).to eq(@person_1.person_id)
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_concept_id).to eq(@measurement_phase_2_radiation_number_of_fractions_concept.concept_id)
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_time).to be_nil
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_phase_2_radiation_number_of_fractions.value_as_concept_id).to eq(@measurement_phase_2_radiation_number_of_fractions_value_as_concept.concept_id)
+      expect(measurement_phase_2_radiation_number_of_fractions.value_as_number).to be_nil
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_source_value).to eq(@naaccr_item_number_phase_2_radiation_number_of_fractions)
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_source_concept_id).to eq(@measurement_phase_2_radiation_number_of_fractions_source_concept.concept_id)
+      expect(measurement_phase_2_radiation_number_of_fractions.value_source_value).to eq(@naaccr_item_value_phase_2_radiation_number_of_fractions)
+      expect(ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_1_radiation.concept_id).count).to eq(1)
+      procedure_occurrence_phase_2_radiation = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_2_radiation.concept_id).first
+      expect(measurement_phase_2_radiation_number_of_fractions.modifier_of_event_id).to eq(procedure_occurrence_phase_2_radiation.procedure_occurrence_id)
+      expect(measurement_phase_2_radiation_number_of_fractions.modifier_of_field_concept_id).to eq(1147084) #‘procedure_occurrence.procedure_concept_id’ concept
+
+      measurement_phase_3_radiation_number_of_fractions = Measurement.where(modifier_of_field_concept_id: 1147084, measurement_concept_id: @measurement_phase_3_radiation_number_of_fractions_concept.concept_id).first
+      expect(measurement_phase_3_radiation_number_of_fractions.person_id).to eq(@person_1.person_id)
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_concept_id).to eq(@measurement_phase_3_radiation_number_of_fractions_concept.concept_id)
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_time).to be_nil
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_phase_3_radiation_number_of_fractions.value_as_concept_id).to be_nil
+      expect(measurement_phase_3_radiation_number_of_fractions.value_as_number).to eq(@naaccr_item_value_phase_3_radiation_number_of_fractions.to_f)
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_source_value).to eq(@naaccr_item_number_phase_3_radiation_number_of_fractions)
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_source_concept_id).to eq(@measurement_phase_3_radiation_number_of_fraction_source_concept.concept_id)
+      expect(measurement_phase_3_radiation_number_of_fractions.value_source_value).to eq(@naaccr_item_value_phase_3_radiation_number_of_fractions)
+      expect(ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_3_radiation.concept_id).count).to eq(1)
+      procedure_occurrence_phase_3_radiation = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_phase_3_radiation.concept_id).first
+      expect(measurement_phase_3_radiation_number_of_fractions.modifier_of_event_id).to eq(procedure_occurrence_phase_3_radiation.procedure_occurrence_id)
+      expect(measurement_phase_3_radiation_number_of_fractions.modifier_of_field_concept_id).to eq(1147084) #‘procedure_occurrence.procedure_concept_id’ concept
+    end
+
+    it 'pointing to EPISODE', focus: false do
+      #1000000003 = ‘episode.episode_id’ concept
+      expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(7)
+
+      measurement_surgical_margins = Measurement.where(modifier_of_field_concept_id: 1000000003, measurement_concept_id: @measurement_surgical_margins_concept.concept_id).first
+      expect(measurement_surgical_margins.person_id).to eq(@person_1.person_id)
+      expect(measurement_surgical_margins.measurement_concept_id).to eq(@measurement_surgical_margins_concept.concept_id)
+      expect(measurement_surgical_margins.measurement_date).to eq(Date.parse(@naaccr_item_value_surgery_date))
+      expect(measurement_surgical_margins.measurement_time).to be_nil
+      expect(measurement_surgical_margins.measurement_datetime).to eq(Date.parse(@naaccr_item_value_surgery_date))
+      expect(measurement_surgical_margins.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_surgical_margins.value_as_concept_id).to eq(@measurement_surgical_margins_value_as_concept.concept_id)
+      expect(measurement_surgical_margins.measurement_source_value).to eq(@naaccr_item_number_surgical_margins)
+      expect(measurement_surgical_margins.measurement_source_concept_id).to eq(@measurement_surgical_margins_source_concept.concept_id)
+      expect(measurement_surgical_margins.value_source_value).to eq(@naaccr_item_value_surgical_margins)
+      expect(Episode.where(episode_object_concept_id: @episode_object_concept_surgery.concept_id).count).to eq(1)
+      episode_surgery = Episode.where(episode_object_concept_id: @episode_object_concept_surgery.concept_id).first
+      expect(measurement_surgical_margins.modifier_of_event_id).to eq(episode_surgery.episode_id)
+      expect(measurement_surgical_margins.modifier_of_field_concept_id).to eq(1000000003) #1000000003=‘episode.episode_id’ concept
+
+      measurement_phase_1_radiation_external_beam_planning_tech = Measurement.where(modifier_of_field_concept_id: 1000000003, measurement_concept_id: @measurement_phase_1_radiation_external_beam_planning_tech_concept.concept_id).first
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.person_id).to eq(@person_1.person_id)
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_concept_id).to eq(@measurement_phase_1_radiation_external_beam_planning_tech_concept.concept_id)
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_time).to be_nil
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.value_as_concept_id).to eq(@measurement_phase_1_radiation_external_beam_planning_tech_value_as_concept.concept_id)
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_source_value).to eq(@naaccr_item_number_phase_1_radiation_external_beam_planning_tech)
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.measurement_source_concept_id).to eq(@measurement_phase_1_radiation_external_beam_planning_tech_concept.concept_id)
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.value_source_value).to eq(@naaccr_item_value_phase_1_radiation_external_beam_planning_tech)
+      expect(Episode.where(episode_object_concept_id: @episode_object_concept_phase_1_radiation.concept_id).count).to eq(1)
+      episode_phase_1_radiation = Episode.where(episode_object_concept_id: @episode_object_concept_phase_1_radiation.concept_id).first
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.modifier_of_event_id).to eq(episode_phase_1_radiation.episode_id)
+      expect(measurement_phase_1_radiation_external_beam_planning_tech.modifier_of_field_concept_id).to eq(1000000003) #1000000003=‘episode.episode_id’ concept
+
+      measurement_phase_2_radiation_external_beam_planning_tech = Measurement.where(modifier_of_field_concept_id: 1000000003, measurement_concept_id: @measurement_phase_2_radiation_external_beam_planning_tech_concept.concept_id).first
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.person_id).to eq(@person_1.person_id)
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_concept_id).to eq(@measurement_phase_2_radiation_external_beam_planning_tech_concept.concept_id)
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_time).to be_nil
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.value_as_concept_id).to eq(@measurement_phase_2_radiation_external_beam_planning_tech_value_as_concept.concept_id)
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_source_value).to eq(@naaccr_item_number_phase_2_radiation_external_beam_planning_tech)
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.measurement_source_concept_id).to eq(@measurement_phase_2_radiation_external_beam_planning_tech_concept.concept_id)
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.value_source_value).to eq(@naaccr_item_value_phase_2_radiation_external_beam_planning_tech)
+      expect(Episode.where(episode_object_concept_id: @episode_object_concept_phase_2_radiation.concept_id).count).to eq(1)
+      episode_phase_2_radiation = Episode.where(episode_object_concept_id: @episode_object_concept_phase_2_radiation.concept_id).first
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.modifier_of_event_id).to eq(episode_phase_2_radiation.episode_id)
+      expect(measurement_phase_2_radiation_external_beam_planning_tech.modifier_of_field_concept_id).to eq(1000000003) #1000000003=‘episode.episode_id’ concept
+
+      measurement_phase_3_radiation_external_beam_planning_tech = Measurement.where(modifier_of_field_concept_id: 1000000003, measurement_concept_id: @measurement_phase_3_radiation_external_beam_planning_tech_concept.concept_id).first
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.person_id).to eq(@person_1.person_id)
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_concept_id).to eq(@measurement_phase_3_radiation_external_beam_planning_tech_concept.concept_id)
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_time).to be_nil
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.value_as_concept_id).to eq(@measurement_phase_3_radiation_external_beam_planning_tech_value_as_concept.concept_id)
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_source_value).to eq(@naaccr_item_number_phase_3_radiation_external_beam_planning_tech)
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.measurement_source_concept_id).to eq(@measurement_phase_3_radiation_external_beam_planning_tech_concept.concept_id)
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.value_source_value).to eq(@naaccr_item_value_phase_3_radiation_external_beam_planning_tech)
+      expect(Episode.where(episode_object_concept_id: @episode_object_concept_phase_3_radiation.concept_id).count).to eq(1)
+      episode_phase_3_radiation = Episode.where(episode_object_concept_id: @episode_object_concept_phase_3_radiation.concept_id).first
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.modifier_of_event_id).to eq(episode_phase_3_radiation.episode_id)
+      expect(measurement_phase_3_radiation_external_beam_planning_tech.modifier_of_field_concept_id).to eq(1000000003) #‘procedure_occurrence.procedure_concept_id’ concept
+
+      measurement_phase_1_radiation_number_of_fractions = Measurement.where(modifier_of_field_concept_id: 1000000003, measurement_concept_id: @measurement_phase_1_radiation_number_of_fractions_concept.concept_id).first
+      expect(measurement_phase_1_radiation_number_of_fractions.person_id).to eq(@person_1.person_id)
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_concept_id).to eq(@measurement_phase_1_radiation_number_of_fractions_concept.concept_id)
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_time).to be_nil
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_phase_1_radiation_number_of_fractions.value_as_concept_id).to be_nil
+      expect(measurement_phase_1_radiation_number_of_fractions.value_as_number).to eq(@naaccr_item_value_phase_1_radiation_number_of_fractions.to_f)
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_source_value).to eq(@naaccr_item_number_phase_1_radiation_number_of_fractions)
+      expect(measurement_phase_1_radiation_number_of_fractions.measurement_source_concept_id).to eq(@measurement_phase_1_radiation_number_of_fraction_source_concept.concept_id)
+      expect(measurement_phase_1_radiation_number_of_fractions.value_source_value).to eq(@naaccr_item_value_phase_1_radiation_number_of_fractions)
+      expect(Episode.where(episode_object_concept_id: @episode_object_concept_phase_1_radiation.concept_id).count).to eq(1)
+      episode_phase_1_radiation = Episode.where(episode_object_concept_id: @episode_object_concept_phase_1_radiation.concept_id).first
+      expect(measurement_phase_1_radiation_number_of_fractions.modifier_of_event_id).to eq(episode_phase_1_radiation.episode_id)
+      expect(measurement_phase_1_radiation_number_of_fractions.modifier_of_field_concept_id).to eq(1000000003) #‘procedure_occurrence.procedure_concept_id’ concept
+
+      measurement_phase_2_radiation_number_of_fractions = Measurement.where(modifier_of_field_concept_id: 1000000003, measurement_concept_id: @measurement_phase_2_radiation_number_of_fractions_concept.concept_id).first
+      expect(measurement_phase_2_radiation_number_of_fractions.person_id).to eq(@person_1.person_id)
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_concept_id).to eq(@measurement_phase_2_radiation_number_of_fractions_concept.concept_id)
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_time).to be_nil
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_phase_2_radiation_number_of_fractions.value_as_concept_id).to eq(@measurement_phase_2_radiation_number_of_fractions_value_as_concept.concept_id)
+      expect(measurement_phase_2_radiation_number_of_fractions.value_as_number).to be_nil
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_source_value).to eq(@naaccr_item_number_phase_2_radiation_number_of_fractions)
+      expect(measurement_phase_2_radiation_number_of_fractions.measurement_source_concept_id).to eq(@measurement_phase_2_radiation_number_of_fractions_source_concept.concept_id)
+      expect(measurement_phase_2_radiation_number_of_fractions.value_source_value).to eq(@naaccr_item_value_phase_2_radiation_number_of_fractions)
+      expect(Episode.where(episode_object_concept_id: @episode_object_concept_phase_1_radiation.concept_id).count).to eq(1)
+      episode_phase_2_radiation = Episode.where(episode_object_concept_id: @episode_object_concept_phase_2_radiation.concept_id).first
+      expect(measurement_phase_2_radiation_number_of_fractions.modifier_of_event_id).to eq(episode_phase_2_radiation.episode_id)
+      expect(measurement_phase_2_radiation_number_of_fractions.modifier_of_field_concept_id).to eq(1000000003) #‘procedure_occurrence.procedure_concept_id’ concept
+
+      measurement_phase_3_radiation_number_of_fractions = Measurement.where(modifier_of_field_concept_id: 1000000003, measurement_concept_id: @measurement_phase_3_radiation_number_of_fractions_concept.concept_id).first
+      expect(measurement_phase_3_radiation_number_of_fractions.person_id).to eq(@person_1.person_id)
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_concept_id).to eq(@measurement_phase_3_radiation_number_of_fractions_concept.concept_id)
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_date).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_time).to be_nil
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_datetime).to eq(Date.parse(@naaccr_item_value_radiation_date))
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement_phase_3_radiation_number_of_fractions.value_as_concept_id).to be_nil
+      expect(measurement_phase_3_radiation_number_of_fractions.value_as_number).to eq(@naaccr_item_value_phase_3_radiation_number_of_fractions.to_f)
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_source_value).to eq(@naaccr_item_number_phase_3_radiation_number_of_fractions)
+      expect(measurement_phase_3_radiation_number_of_fractions.measurement_source_concept_id).to eq(@measurement_phase_3_radiation_number_of_fraction_source_concept.concept_id)
+      expect(measurement_phase_3_radiation_number_of_fractions.value_source_value).to eq(@naaccr_item_value_phase_3_radiation_number_of_fractions)
+      expect(Episode.where(episode_object_concept_id: @episode_object_concept_phase_3_radiation.concept_id).count).to eq(1)
+      episode_phase_3_radiation = Episode.where(episode_object_concept_id: @episode_object_concept_phase_3_radiation.concept_id).first
+      expect(measurement_phase_3_radiation_number_of_fractions.modifier_of_event_id).to eq(episode_phase_3_radiation.episode_id)
+      expect(measurement_phase_3_radiation_number_of_fractions.modifier_of_field_concept_id).to eq(1000000003) #‘procedure_occurrence.procedure_concept_id’ concept
     end
   end
 end
