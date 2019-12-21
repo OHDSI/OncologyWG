@@ -898,7 +898,7 @@ CREATE TABLE naaccr_data_points_temp
       , ndp.variable_concept_id  -- 32531 Treatment regimen
       , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
       -- Placeholder... TODO:better universal solution for isnull?
-	    , CASE WHEN CHAR_LENGTH(end_dates.naaccr_item_value) > 1
+	    , CASE WHEN LEN(end_dates.naaccr_item_value) > 1
 			 THEN CAST(end_dates.naaccr_item_value as date)
 			 ELSE NULL
 			 END AS episode_end_datetime
@@ -1221,7 +1221,7 @@ CREATE TABLE naaccr_data_points_temp
 	    SELECT *
 	    FROM naaccr_data_points_temp
 	    WHERE person_id IS NOT NULL
-	    AND CHAR_LENGTH(naaccr_item_value) > 0
+	    AND LEN(naaccr_item_value) > 0
 
 	   ) ndp
 		 INNER JOIN concept_relationship cr1 ON ndp.variable_concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Has parent item'
