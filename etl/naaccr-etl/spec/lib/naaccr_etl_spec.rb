@@ -561,13 +561,11 @@ describe NaaccrEtl do
       )
 
       @measurement_concept_1 =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_schema_concept_code_1}@#{@naaccr_item_number}")
-      @measurement_source_concept_1 = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
       concept_code = "#{@naaccr_schema_concept_code_1}@#{@naaccr_item_number}@#{@naaccr_item_value_1}"
       @measurement_value_as_concept_1 = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_schema_concept_code_1}@#{@naaccr_item_number}@#{@naaccr_item_value_1}")
       @condition_concept_1 =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site_1)
 
       @measurement_concept_2 =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_schema_concept_code_2}@#{@naaccr_item_number}")
-      @measurement_source_concept_2 = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
       @measurement_value_as_concept_2 = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_schema_concept_code_2}@#{@naaccr_item_number}@#{@naaccr_item_value_2}")
       @condition_concept_2 =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site_2)
       NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
