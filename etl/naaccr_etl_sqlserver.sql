@@ -7,6 +7,7 @@ BEGIN TRANSACTION;
 
 
 Contents:
+	(optional) Truncate/Insert into PERSON
 	Clear data from previous executions
 	Create temporary tables
 	Load ambiguous schema discriminator table
@@ -51,6 +52,91 @@ Contents:
 	Cleanup temp tables
 
 */
+
+
+
+-- Uncomment to truncate and insert into PERSON
+/*
+DELETE FROM person;
+
+INSERT INTO person
+           (person_id
+           ,gender_concept_id
+           ,year_of_birth
+           ,month_of_birth
+           ,day_of_birth
+           ,birth_datetime
+           ,death_datetime
+           ,race_concept_id
+           ,ethnicity_concept_id
+           ,location_id
+           ,provider_id
+           ,care_site_id
+           ,person_source_value
+           ,gender_source_value
+           ,gender_source_concept_id
+           ,race_source_value
+           ,race_source_concept_id
+           ,ethnicity_source_value
+           ,ethnicity_source_concept_id)
+
+  SELECT per.person_id
+		,COALESCE(gen.gender_concept_id,0)
+		,YEAR(dob)
+		,MONTH(dob)
+		,DAY(dob)
+		,dob
+		,max_dth_date
+		,0
+		,0
+		,NULL
+		,NULL
+		,NULL
+		,NULL
+		,NULL
+		,COALESCE(gen.gender_concept_id,0)
+		,NULL
+		,0
+		,NULL
+		,0
+   FROM
+   (
+    SELECT DISTINCT person_id, 
+				CAST(naaccr_item_value as date) dob
+    FROM naaccr_data_points ndp
+	WHERE naaccr_item_number = 240 -- date of birth
+   ) per
+   LEFT OUTER JOIN
+   -- vital status
+   (
+    SELECT ndp.person_id 
+			,CAST(MAX(ndp.naaccr_item_value) as date) max_dth_date
+    FROM naaccr_data_points ndp
+    INNER JOIN naaccr_data_points ndp2
+      ON ndp.naaccr_item_number = 1750		-- date of last contact
+      AND ndp2.naaccr_item_number = 1760	-- vital status
+      AND ndp.naaccr_item_value IS NOT NULL
+	  AND LEN(ndp.naaccr_item_value) = 8
+      AND ndp2.naaccr_item_value = 1
+    GROUP BY ndp.person_id
+   ) dth_dates
+   ON per.person_id = dth_dates.person_id
+   LEFT OUTER JOIN
+   (
+	SELECT DISTINCT person_id, 
+		CASE WHEN naaccr_item_value = 1 THEN 8507
+			 WHEN naaccr_item_value = 2 THEN 8532 
+			 ELSE 0
+		END as gender_concept_id
+	FROM naaccr_data_points ndp 
+	WHERE naaccr_item_number = 220    -- gender
+   ) gen
+   ON per.person_id = gen.person_id
+   ;
+
+*/
+
+
 
 
 
@@ -284,7 +370,7 @@ CREATE TABLE naaccr_data_points_temp
 
 	 -- Initial data insert
 	 INSERT INTO naaccr_data_points_temp
-	 SELECT  person_id
+	 SELECT  ndp.person_id
          , record_id
          , histology_site
          , naaccr_item_number
@@ -299,11 +385,13 @@ CREATE TABLE naaccr_data_points_temp
          , NULL
          , NULL
          , NULL
-	 FROM naaccr_data_points
-	 WHERE person_id IS NOT NULL
-   AND naaccr_data_points.naaccr_item_value IS NOT NULL
-   AND naaccr_data_points.naaccr_item_value != ''
-   AND naaccr_data_points.naaccr_item_number NOT IN(
+	 FROM naaccr_data_points ndp
+	 -- only consider valid person_id
+	 INNER JOIN person per
+	 ON ndp.person_id = per.person_id
+	AND ndp.naaccr_item_value IS NOT NULL
+	AND ndp.naaccr_item_value != ''
+	AND ndp.naaccr_item_number NOT IN(
      '1810' --ADDR CURRENT--CITY
    );
 
