@@ -5,7 +5,9 @@ Version: 0.1.0
 Author: Robert Miller
 Maintainer: Robert Miller <RMiller1@tuftsmedicalcenter.org>
 Description: TODO
-    
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+Depends:
+    SqlRender ,
+    DatabaseConnector

@@ -1,14 +1,9 @@
-library(DatabaseConnector)
-library(SqlRender)
-
-
-
 NAACCR_to_db <- function(file_path
                          ,record_id_prefix = NULL
                          ,connectionDetails){
 
 
-  conn <- connect(connectionDetails)
+  conn <- DatabaseConnector::connect(connectionDetails)
 
   # Get NAACCR version
   # 160 = v16, 170 = v17, etc
@@ -140,13 +135,13 @@ NAACCR_to_db <- function(file_path
       if(nrow(tmp_df) > 0){
         # Append rows to result dataframe
 
-        insertTable(connection = conn,
-                    tableName = "naaccr_data_points",
-                    data = tmp_df,
-                    dropTableIfExists = FALSE,
-                    createTable = FALSE,
-                    tempTable = FALSE,
-                    useMppBulkLoad = FALSE)
+        DatabaseConnector::insertTable(connection = conn,
+                                      tableName = "naaccr_data_points",
+                                      data = tmp_df,
+                                      dropTableIfExists = FALSE,
+                                      createTable = FALSE,
+                                      tempTable = FALSE,
+                                      useMppBulkLoad = FALSE)
 
       }
 
