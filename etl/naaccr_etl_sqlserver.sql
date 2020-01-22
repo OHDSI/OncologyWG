@@ -48,9 +48,7 @@ Contents:
 		-drug_exposure
 		-episode_event
 		-measurement
-	Person table (commented out)
-		-insert new
-		-update existing
+	Update Observation_Perod
 	Cleanup temp tables
 
 */
@@ -214,6 +212,21 @@ CREATE TABLE drug_exposure_temp
   dose_unit_source_value        VARCHAR(50)   NULL,
   record_id                     VARCHAR(255)    NULL
 );
+
+ IF OBJECT_ID('obs_period_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
+  DROP TABLE obs_period_temp;
+
+CREATE TABLE obs_period_temp
+(
+	observation_period_id int NOT NULL,
+	person_id int NOT NULL,
+	observation_period_start_date date NOT NULL,
+	observation_period_start_datetime datetime NOT NULL,
+	observation_period_end_date date NOT NULL,
+	observation_period_end_datetime datetime NOT NULL,
+	period_type_concept_id int NOT NULL
+ );
+
 
 
  -- Create ambiguous schema discriminator mapping tables
@@ -1625,78 +1638,119 @@ CREATE TABLE naaccr_data_points_temp
   FROM measurement_temp;
 
 
+-- Observation period
 
+		INSERT INTO obs_period_temp	(
+								    observation_period_id	
+									,person_id
+									, observation_period_start_date
+									, observation_period_start_datetime
+									, observation_period_end_date
+									, observation_period_end_datetime
+									, period_type_concept_id
+									)
+	
+		SELECT	0 -- placeholder, doesn't get used
+				, t.person_id
+				, Min(min_date) AS min_date		
+				, Min(min_date) AS min_datetime	
+				, Max(max_date) AS max_date
+				, Max(max_date) AS max_datetime
+				,  44814724 AS period_type_concept_id -- TODO
+		FROM (
+				SELECT person_id
+							, Min(condition_start_date) AS min_date					
+							, Max(condition_start_date)  AS max_date		
+				FROM condition_occurrence
+				GROUP BY person_id
+			UNION
+				SELECT person_id
+						, Min(drug_exposure_start_date)				
+						, Max(drug_exposure_start_date)
+				FROM drug_exposure
+				GROUP BY person_id
+			UNION
+				SELECT person_id
+						, Min(drug_exposure_end_date)				
+						, Max(drug_exposure_end_date)
+				FROM drug_exposure
+				GROUP BY person_id
+			UNION 
+				SELECT person_id
+						, Min(procedure_date)
+						, Max(procedure_date)
+				FROM procedure_occurrence
+				GROUP BY person_id
+			UNION
+				SELECT person_id
+						, Min(observation_date)
+						, Max(observation_date)
+				FROM Observation
+				GROUP BY person_id
+			UNION 
+				SELECT person_id
+						, Min(measurement_date)
+						, Max(measurement_date)
+				FROM measurement
+				GROUP BY person_id
+			UNION 
+				SELECT person_id
+						, Min(death_date)
+						, Max(death_date)
+				FROM death
+				GROUP BY person_id
+				) T
+		GROUP BY t.PERSON_ID
+		;
 
-/**
-TODO: To be used in another script?
+	-- Update existing obs period
 
+	UPDATE observation_period 
+	SET observation_period_start_date = obs.observation_period_start_date
+		,observation_period_start_datetime = obs.observation_period_start_datetime
+		,observation_period_end_date = obs.observation_period_end_date
+		,observation_period_end_datetime = obs.observation_period_end_datetime
+	FROM
+	(
+		SELECT 
+			person_id obs_person_id
+			,MIN(observation_period_start_date) observation_period_start_date
+			,MIN(observation_period_start_datetime) observation_period_start_datetime
+			,MAX(observation_period_end_date) observation_period_end_date
+			,MAX(observation_period_end_datetime) observation_period_end_datetime
+		FROM 
+		(
+			SELECT * 
+			FROM observation_period
+			UNION 
+			SELECT * 
+			FROM obs_period_temp
+		) x
+		GROUP BY x.person_id
+	) obs
+	WHERE person_id = obs.obs_person_id
+	;
 
--- Populate person table ( to retain death )
+	-- If new person, create new obs period 
 
-
-Insert new:
-  // ISSUE: Cant have null year_of_birth.
-
-  Insert (...)
-  SELECT per.person_id, dth_dates.max_dth_date
-   FROM
-   (
-    SELECT DISTINCT person_id
-    FROM naaccr_data_points_temp ndp
-   ) per
-   LEFT OUTER JOIN
-   (
-    SELECT ndp.person_id, MAX(ndp.naaccr_item_value) max_dth_date
-    FROM naaccr_data_points_temp ndp
-    INNER JOIN naaccr_data_points_temp ndp2
-      ON ndp.naaccr_item_number = 1750
-      AND ndp2.naaccr_item_number = 1760
-      AND ndp.naaccr_item_value IS NOT NULL
-      AND ndp2.naaccr_item_value = 1
-    GROUP BY ndp.person_id
-   ) dth_dates
-   ON per.person_id = dth_dates.person_id
-   ;
-
-
-
-
--- Update existing person table:
-
-  UPDATE person
-  SET death_datetime = dth.max_dth_date
-  FROM person per
-  INNER JOIN
-  (
-     SELECT per.person_id, dth_dates.max_dth_date
-     FROM
-     (
-      SELECT DISTINCT person_id
-      FROM naaccr_data_points_temp ndp
-     ) per
-     LEFT OUTER JOIN
-     (
-      SELECT ndp.person_id, MAX(ndp.naaccr_item_value) max_dth_date
-      FROM naaccr_data_points_temp ndp
-      INNER JOIN naaccr_data_points_temp ndp2
-        ON ndp.naaccr_item_number = 1750
-        AND ndp2.naaccr_item_number = 1760
-        AND ndp.naaccr_item_value IS NOT NULL
-        AND ndp2.naaccr_item_value = 1
-      GROUP BY ndp.person_id
-     ) dth_dates
-     ON per.person_id = dth_dates.person_id
-  ) dth
-  ON per.person_id = dth.person_id
-  --AND per.death_datetime IS NULL
-    ;
-
-
-**/
-
-
-
-
+	INSERT INTO observation_period
+           (person_id
+           ,observation_period_start_date
+           ,observation_period_start_datetime
+           ,observation_period_end_date
+           ,observation_period_end_datetime
+           ,period_type_concept_id)
+	SELECT 
+		person_id 
+		,MIN(observation_period_start_date) observation_period_start_date
+		,MIN(observation_period_start_datetime) observation_period_start_datetime
+		,MAX(observation_period_end_date) observation_period_end_date
+		,MAX(observation_period_end_datetime) observation_period_end_datetime
+		,44814724	-- TODO
+	FROM obs_period_temp 
+	WHERE person_id NOT IN (select person_id from observation_period)
+	GROUP BY person_id
+	;
 
 
 --Cleanup
@@ -1723,5 +1777,7 @@ IF OBJECT_ID('procedure_occurrence_temp', 'U') IS NOT NULL           -- Drop tem
 IF OBJECT_ID('drug_exposure_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
 	DROP TABLE drug_exposure_temp;
 
+IF OBJECT_ID('obs_period_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
+	DROP TABLE obs_period_temp;
 
 COMMIT;
