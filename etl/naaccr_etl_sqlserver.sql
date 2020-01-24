@@ -295,6 +295,76 @@ CREATE TABLE naaccr_data_points_temp
 
 
 
+
+ -- PERSON 
+-- We need person insert early on in script as it joins on naaccr_data_points_temp insert
+
+	INSERT INTO [dbo].[person]
+           ([person_id]
+           ,[gender_concept_id]
+           ,[year_of_birth]
+           ,[month_of_birth]
+           ,[day_of_birth]
+           ,[birth_datetime]
+           ,[race_concept_id]
+           ,[ethnicity_concept_id]
+           ,[location_id]
+           ,[provider_id]
+           ,[care_site_id]
+           ,[person_source_value]
+           ,[gender_source_value]
+           ,[gender_source_concept_id]
+           ,[race_source_value]
+           ,[race_source_concept_id]
+           ,[ethnicity_source_value]
+           ,[ethnicity_source_concept_id])
+
+  SELECT per.person_id
+		,COALESCE(gen.gender_concept_id,0)
+		,YEAR(dob)
+		,MONTH(dob)
+		,DAY(dob)
+		,dob
+		,0
+		,0
+		,NULL
+		,NULL
+		,NULL
+		,NULL
+		,NULL
+		,COALESCE(gen.gender_concept_id,0)
+		,NULL
+		,0
+		,NULL
+		,0
+   FROM
+   (
+    SELECT DISTINCT person_id, 
+				CAST(naaccr_item_value as date) dob
+    FROM naaccr_data_points ndp
+	WHERE naaccr_item_number = 240 -- date of birth
+	AND person_id NOT IN ( SELECT person_id FROM person) -- exclude if exists already
+   ) per
+   LEFT OUTER JOIN
+   (
+	SELECT DISTINCT person_id, 
+		CASE WHEN naaccr_item_value = 1 THEN 8507
+			 WHEN naaccr_item_value = 2 THEN 8532 
+			 ELSE 0
+		END as gender_concept_id
+	FROM naaccr_data_points ndp 
+	WHERE naaccr_item_number = 220    -- gender
+   ) gen
+   ON per.person_id = gen.person_id
+   ;
+
+
+
+
+
+
+
+
 -- DATA PREP
 
 
@@ -507,67 +577,6 @@ CREATE TABLE naaccr_data_points_temp
 
 
 
- -- PERSON 
-
-
-	INSERT INTO [dbo].[person]
-           ([person_id]
-           ,[gender_concept_id]
-           ,[year_of_birth]
-           ,[month_of_birth]
-           ,[day_of_birth]
-           ,[birth_datetime]
-           ,[race_concept_id]
-           ,[ethnicity_concept_id]
-           ,[location_id]
-           ,[provider_id]
-           ,[care_site_id]
-           ,[person_source_value]
-           ,[gender_source_value]
-           ,[gender_source_concept_id]
-           ,[race_source_value]
-           ,[race_source_concept_id]
-           ,[ethnicity_source_value]
-           ,[ethnicity_source_concept_id])
-
-  SELECT per.person_id
-		,COALESCE(gen.gender_concept_id,0)
-		,YEAR(dob)
-		,MONTH(dob)
-		,DAY(dob)
-		,dob
-		,0
-		,0
-		,NULL
-		,NULL
-		,NULL
-		,NULL
-		,NULL
-		,COALESCE(gen.gender_concept_id,0)
-		,NULL
-		,0
-		,NULL
-		,0
-   FROM
-   (
-    SELECT DISTINCT person_id, 
-				CAST(naaccr_item_value as date) dob
-    FROM naaccr_data_points ndp
-	WHERE naaccr_item_number = 240 -- date of birth
-	AND person_id NOT IN ( SELECT person_id FROM person) -- exclude if exists already
-   ) per
-   LEFT OUTER JOIN
-   (
-	SELECT DISTINCT person_id, 
-		CASE WHEN naaccr_item_value = 1 THEN 8507
-			 WHEN naaccr_item_value = 2 THEN 8532 
-			 ELSE 0
-		END as gender_concept_id
-	FROM naaccr_data_points ndp 
-	WHERE naaccr_item_number = 220    -- gender
-   ) gen
-   ON per.person_id = gen.person_id
-   ;
 
 
    -- DEATH
