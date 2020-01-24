@@ -1569,9 +1569,13 @@ CREATE TABLE naaccr_data_points_temp
 		AND c1.concept_class_id = 'NAACCR Value' 
 		AND c1.domain_id = 'Observation' 
 		AND c1.standard_concept = 'S'
-	INNER JOIN naaccr_data_points ndp1               
+	INNER JOIN naaccr_data_points_temp ndp1               
 		ON ndp.record_id = ndp1.record_id 
-		AND ndp1.naaccr_item_number = '390';
+		AND ndp1.naaccr_item_number = '390'
+	INNER JOIN episode_temp ep
+		ON ndp.record_id = ep.record_id
+		-- disease first occurrence
+		AND ep.episode_concept_id = 32528;
 /*
   FROM naaccr_data_points_temp AS ndp INNER JOIN concept d                             ON d.vocabulary_id = 'NAACCR' AND d.concept_code = ndp.naaccr_item_number ||  '@' || ndp.naaccr_item_value
                                       INNER JOIN concept_relationship cr1              ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Maps to'
@@ -1886,59 +1890,67 @@ CREATE TABLE naaccr_data_points_temp
 									)
 	
 		SELECT	0 -- placeholder, doesn't get used
-				, t.person_id
-				, Min(min_date) AS min_date		
-				, Min(min_date) AS min_datetime	
-				, Max(max_date) AS max_date
-				, Max(max_date) AS max_datetime
+				, ndp.person_id
+				, st_dt.min_date as observation_period_start_date	
+				, st_dt.min_date as observation_period_start_datetime
+				, ndp.max_date as observation_period_state_date
+				, ndp.max_date as observation_period_state_datetime
 				,  44814724 AS period_type_concept_id -- TODO
-		FROM (
+
+		FROM
+		-- end date -> date of last contact
+		(
+			SELECT person_id, max(naaccr_item_value) max_date
+			FROM naaccr_data_points_temp
+			WHERE naaccr_item_number = 1750
+			AND naaccr_item_value IS NOT NULL
+			GROUP BY person_id
+		) ndp
+		INNER JOIN
+		-- start date -> find earliest record 
+		(	
+			SELECT person_id,
+					MIN(min_date) AS min_date		
+			FROM 
+			(
 				SELECT person_id
-							, Min(condition_start_date) AS min_date					
-							, Max(condition_start_date)  AS max_date		
+							, Min(condition_start_date)  min_date		
 				FROM condition_occurrence
 				GROUP BY person_id
 			UNION
 				SELECT person_id
 						, Min(drug_exposure_start_date)				
-						, Max(drug_exposure_start_date)
-				FROM drug_exposure
-				GROUP BY person_id
-			UNION
-				SELECT person_id
-						, Min(drug_exposure_end_date)				
-						, Max(drug_exposure_end_date)
 				FROM drug_exposure
 				GROUP BY person_id
 			UNION 
 				SELECT person_id
 						, Min(procedure_date)
-						, Max(procedure_date)
 				FROM procedure_occurrence
 				GROUP BY person_id
 			UNION
 				SELECT person_id
 						, Min(observation_date)
-						, Max(observation_date)
 				FROM Observation
 				GROUP BY person_id
 			UNION 
 				SELECT person_id
-						, Min(measurement_date)
-						, Max(measurement_date)
+						, Min(measurement_date)		
 				FROM measurement
 				GROUP BY person_id
 			UNION 
 				SELECT person_id
 						, Min(death_date)
-						, Max(death_date)
 				FROM death
 				GROUP BY person_id
-				) T
-		GROUP BY t.PERSON_ID
+			) T
+			GROUP BY t.PERSON_ID
+		) st_dt
+		ON ndp.person_id = st_dt.min_date
 		;
 
 	-- Update existing obs period
+
+	-- take min and max values of existing obs period and the temp obs period created above
 
 	UPDATE observation_period 
 	SET observation_period_start_date = obs.observation_period_start_date
