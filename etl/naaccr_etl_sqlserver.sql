@@ -450,6 +450,7 @@ CREATE TABLE naaccr_data_points_temp
 
 
 	-- Format dates
+	-- TODO: Add 1750 to this list. Determine if other date fields also dont have relationships
   UPDATE naaccr_data_points_temp
   SET naaccr_item_value =
 		CASE
@@ -1576,13 +1577,6 @@ CREATE TABLE naaccr_data_points_temp
 		ON ndp.record_id = ep.record_id
 		-- disease first occurrence
 		AND ep.episode_concept_id = 32528;
-/*
-  FROM naaccr_data_points_temp AS ndp INNER JOIN concept d                             ON d.vocabulary_id = 'NAACCR' AND d.concept_code = ndp.naaccr_item_number ||  '@' || ndp.naaccr_item_value
-                                      INNER JOIN concept_relationship cr1              ON d.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Maps to'
-                                      INNER JOIN concept AS c1                         ON cr1.concept_id_2 = c1.concept_id AND c1.vocabulary_id = 'NAACCR' AND c1.concept_class_id = 'NAACCR Value' AND c1.domain_id = 'Observation' AND c1.standard_concept = 'S'
-  							                      INNER JOIN naaccr_data_points ndp1               ON ndp.record_id = ndp1.record_id AND ndp1.naaccr_item_number = '390';
-
-*/
 
 
   INSERT INTO fact_relationship_temp
@@ -1894,16 +1888,17 @@ CREATE TABLE naaccr_data_points_temp
 				, st_dt.min_date as observation_period_start_date	
 				, st_dt.min_date as observation_period_start_datetime
 				, ndp.max_date as observation_period_state_date
-				, ndp.max_date as observation_period_state_datetime
+				, ndp.max_date as observation_period_state_datetime				
 				,  44814724 AS period_type_concept_id -- TODO
 
 		FROM
 		-- end date -> date of last contact
 		(
-			SELECT person_id, max(naaccr_item_value) max_date
+			SELECT person_id, CAST(max(naaccr_item_value) as date) max_date
 			FROM naaccr_data_points_temp
 			WHERE naaccr_item_number = 1750
 			AND naaccr_item_value IS NOT NULL
+			AND LEN(naaccr_item_value) = 8
 			GROUP BY person_id
 		) ndp
 		INNER JOIN
@@ -1945,7 +1940,7 @@ CREATE TABLE naaccr_data_points_temp
 			) T
 			GROUP BY t.PERSON_ID
 		) st_dt
-		ON ndp.person_id = st_dt.min_date
+		ON ndp.person_id = st_dt.person_id
 		;
 
 	-- Update existing obs period

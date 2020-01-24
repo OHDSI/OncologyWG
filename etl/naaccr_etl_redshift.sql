@@ -7,6 +7,7 @@ BEGIN TRANSACTION;
 
 
 Contents:
+
 	Clear data from previous executions
 	Create temporary tables
 	Load ambiguous schema discriminator table
@@ -23,6 +24,8 @@ Contents:
 			-schema-independent
 			-schema-dependent
 		-Assign value concept/code
+	Person
+	Death
 	Diagnosis
 		-condition occurrence
 		-condition modifiers
@@ -39,15 +42,16 @@ Contents:
 		-hardcode episode_object_concept_id for drugs to hemonc
 		-treatment episode modifiers
 	Connect treatment episodes to disease episodes via parent_id
+	Observations
 	Insert temp tables into OMOP
 		-episode
 		-procedure
 		-drug_exposure
 		-episode_event
 		-measurement
-	Person table (commented out)
-		-insert new
-		-update existing
+		-observation
+		-fact_relationship
+	Update Observation_Perod
 	Cleanup temp tables
 
 */
@@ -67,6 +71,12 @@ WHERE drug_type_concept_id = 32534;
 
 DELETE FROM procedure_occurrence
 WHERE procedure_type_concept_id = 32534;
+
+DELETE FROM observation 
+WHERE observation_type_concept_id = 32534;
+
+DELETE FROM fact_relationship
+WHERE domain_concept_id_1 = 32527;
 
 DELETE FROM episode;
 
@@ -206,6 +216,62 @@ CREATE TABLE drug_exposure_temp
 )
 DISTKEY(person_id);
 
+ DROP TABLE IF EXISTS obs_period_temp;
+
+CREATE TABLE obs_period_temp
+ (observation_period_id int NOT NULL,
+	 person_id int NOT NULL,
+	observation_period_start_date date NOT NULL,
+	observation_period_start_datetime TIMESTAMP NOT NULL,
+	observation_period_end_date date NOT NULL,
+	observation_period_end_datetime TIMESTAMP NOT NULL,
+	period_type_concept_id int NOT NULL
+ )
+DISTKEY(person_id);
+
+
+  DROP TABLE IF EXISTS observation_temp;
+
+  CREATE TABLE observation_temp
+   (observation_id                  BIGINT       NULL,
+     person_id BIGINT       NOT NULL,
+    observation_concept_id          INT          NOT NULL,
+    observation_date                DATE         NULL,
+    observation_datetime            TIMESTAMP     NULL,
+    observation_type_concept_id     INT          NULL,
+    value_as_number                 NUMERIC      NULL,
+    value_as_string				          VARCHAR(255) NULL,
+    value_as_concept_id             INT          NULL,
+    qualifier_concept_id			      INT          NULL,
+    unit_concept_id                 INT          NULL,
+    provider_id                     BIGINT       NULL,
+    visit_occurrence_id             BIGINT       NULL,
+    visit_detail_id                 BIGINT       NULL,
+    observation_source_value        VARCHAR(50)  NULL,
+    observation_source_concept_id   INT          NULL,
+    unit_source_value               VARCHAR(50)  NULL,
+    qualifier_source_value		      VARCHAR(255) NULL,
+    -- observation_event_id         BIGINT       NULL ,
+    -- obs_event_field_concept_id   BIGINT       NULL ,
+    -- value_as_datetime            BIGINT       NULL ,
+    record_id                       VARCHAR(255) NULL
+  )
+DISTKEY(person_id);
+
+
+  DROP TABLE IF EXISTS fact_relationship_temp;
+
+  CREATE TABLE fact_relationship_temp
+   (domain_concept_id_1             INT           NOT NULL ,
+    fact_id_1                     	BIGINT        NOT NULL ,
+    domain_concept_id_2        		  INT           NOT NULL ,
+    fact_id_2              		   	  BIGINT        NOT NULL ,
+    relationship_concept_id         INT           NOT NULL ,
+    record_id                     	VARCHAR(255)  NULL
+  )
+DISTSTYLE ALL;
+
+
 
  -- Create ambiguous schema discriminator mapping tables
 
@@ -271,12 +337,82 @@ DISTKEY(person_id);
 
 
 
+
+ -- PERSON 
+-- We need person insert early on in script as it joins on naaccr_data_points_temp insert
+
+	INSERT INTO [dbo].[person]
+           ([person_id]
+           ,[gender_concept_id]
+           ,[year_of_birth]
+           ,[month_of_birth]
+           ,[day_of_birth]
+           ,[birth_datetime]
+           ,[race_concept_id]
+           ,[ethnicity_concept_id]
+           ,[location_id]
+           ,[provider_id]
+           ,[care_site_id]
+           ,[person_source_value]
+           ,[gender_source_value]
+           ,[gender_source_concept_id]
+           ,[race_source_value]
+           ,[race_source_concept_id]
+           ,[ethnicity_source_value]
+           ,[ethnicity_source_concept_id])
+
+  SELECT per.person_id
+		,COALESCE(gen.gender_concept_id,0)
+		,EXTRACT(YEAR FROM dob)
+		,EXTRACT(MONTH FROM dob)
+		,EXTRACT(DAY FROM dob)
+		,dob
+		,0
+		,0
+		,NULL
+		,NULL
+		,NULL
+		,NULL
+		,NULL
+		,COALESCE(gen.gender_concept_id,0)
+		,NULL
+		,0
+		,NULL
+		,0
+   FROM
+   (
+    SELECT DISTINCT person_id, 
+				CAST(naaccr_item_value as date) dob
+    FROM naaccr_data_points ndp
+	WHERE naaccr_item_number = 240 -- date of birth
+	AND person_id NOT IN ( SELECT person_id FROM person) -- exclude if exists already
+   ) per
+   LEFT OUTER JOIN
+   (
+	SELECT DISTINCT person_id, 
+		CASE WHEN naaccr_item_value = 1 THEN 8507
+			 WHEN naaccr_item_value = 2 THEN 8532 
+			 ELSE 0
+		END as gender_concept_id
+	FROM naaccr_data_points ndp 
+	WHERE naaccr_item_number = 220    -- gender
+   ) gen
+   ON per.person_id = gen.person_id
+   ;
+
+
+
+
+
+
+
+
 -- DATA PREP
 
 
 	 -- Initial data insert
 	 INSERT INTO naaccr_data_points_temp
-	 SELECT  person_id
+	 SELECT  ndp.person_id
          , record_id
          , histology_site
          , naaccr_item_number
@@ -291,16 +427,19 @@ DISTKEY(person_id);
          , NULL
          , NULL
          , NULL
-	 FROM naaccr_data_points
-	 WHERE person_id IS NOT NULL
-   AND naaccr_data_points.naaccr_item_value IS NOT NULL
-   AND naaccr_data_points.naaccr_item_value != ''
-   AND naaccr_data_points.naaccr_item_number NOT IN(
+	 FROM naaccr_data_points ndp
+	 -- only consider valid person_id
+	 INNER JOIN person per
+	 ON ndp.person_id = per.person_id
+	AND ndp.naaccr_item_value IS NOT NULL
+	AND ndp.naaccr_item_value != ''
+	AND ndp.naaccr_item_number NOT IN(
      '1810' --ADDR CURRENT--CITY
    );
 
 
 	-- Format dates
+	-- TODO: Add 1750 to this list. Determine if other date fields also dont have relationships
   UPDATE naaccr_data_points_temp
   SET naaccr_item_value =
 		CASE
@@ -481,6 +620,41 @@ DISTKEY(person_id);
 
 
 
+
+
+   -- DEATH
+
+	INSERT INTO [dbo].[death]
+           ([person_id]
+           ,[death_date]
+           ,[death_datetime]
+           ,[death_type_concept_id]
+           ,[cause_concept_id]
+           ,[cause_source_value]
+           ,[cause_source_concept_id])
+	SELECT 
+		person_id
+		,max_dth_date
+		,max_dth_date
+		,0 -- TODO
+		,0 -- TODO
+		,NULL
+		,0
+	FROM
+	(
+		SELECT ndp.person_id 
+				,CAST(MAX(ndp.naaccr_item_value) as date) max_dth_date
+		FROM naaccr_data_points ndp
+		INNER JOIN naaccr_data_points ndp2
+		  ON ndp.naaccr_item_number = 1750		-- date of last contact
+		  AND ndp2.naaccr_item_number = 1760	-- vital status
+		  AND ndp.naaccr_item_value IS NOT NULL
+		  AND CHAR_LENGTH(ndp.naaccr_item_value) = 8
+		  AND ndp2.naaccr_item_value = 1
+		GROUP BY ndp.person_id
+	) x
+	WHERE x.person_id NOT IN (SELECT person_id from DEATH)
+	; 
 
 
 
@@ -1134,11 +1308,11 @@ DISTKEY(person_id);
   -- Drug Treatment Episodes:   Update to standard 'Regimen' concepts.
   UPDATE episode_temp
   SET episode_object_concept_id = CASE
-                    WHEN episode_source_value = '1390@01' THEN 35803401 --Hemonc Chemotherapy Modality
-                    WHEN episode_source_value = '1390@02' THEN 35803401
-                    WHEN episode_source_value = '1390@03' THEN 35803401
-                    WHEN episode_source_value = '1400@01' THEN 35803407
-                    WHEN episode_source_value = '1410@01' THEN 35803410
+                    WHEN episode_source_value = '1390' THEN 35803401 --Hemonc Chemotherapy Modality
+                    WHEN episode_source_value = '1390' THEN 35803401
+                    WHEN episode_source_value = '1390' THEN 35803401
+                    WHEN episode_source_value = '1400' THEN 35803407
+                    WHEN episode_source_value = '1410' THEN 35803410
                   ELSE episode_object_concept_id
                   END;
 
@@ -1325,6 +1499,105 @@ DISTKEY(person_id);
 	) det
 	WHERE record_id        = det.rec_id
 	AND episode_concept_id = 32531; --Treatment Regimen
+
+	 --Step 17: Observation
+	 INSERT INTO observation_temp
+  (
+      observation_id
+    , person_id
+    , observation_concept_id
+    , observation_date
+    , observation_datetime
+    , observation_type_concept_id
+    , value_as_number
+    , value_as_string
+    , value_as_concept_id
+    , unit_concept_id
+    , qualifier_concept_id
+    , provider_id
+    , visit_occurrence_id
+    , visit_detail_id
+    , observation_source_value
+    , observation_source_concept_id
+    , unit_source_value
+    , qualifier_source_value
+    -- , observation_event_id
+    -- , obs_event_field_concept_id
+    -- , value_as_datetime
+    , record_id
+  )
+  SELECT (CASE WHEN  (SELECT MAX(observation_id) FROM observation_temp) IS NULL THEN 0 ELSE  (SELECT MAX(observation_id) FROM observation_temp) END + ROW_NUMBER() OVER (ORDER BY ndp.record_id ))	 AS observation_id
+        , ndp.person_id                                                                                                                                                      AS person_id
+        , c1.concept_id                                                                                                                                                      AS observation_concept_id
+        , CAST(ndp1.naaccr_item_value as date)                                                                                                                               AS observation_date
+        , CAST(ndp1.naaccr_item_value as date)                                                                                                                               AS observation_datetime
+        , 32534                                                                                                                                                              AS observation_type_concept_id
+        , NULL																							                                                                                                                 AS value_as_number
+        , NULL		                                                                                                                                                           AS value_as_concept_id
+  	    , NULL																																					                                                                                     AS value_as_string
+        , NULL																			                                                                                                                         AS unit_concept_id
+  	    , NULL																																					                                                                                     AS qualifier_concept_id
+        , NULL                                                                                                                                                               AS provider_id
+        , NULL                                                                                                                                                               AS visit_occurrence_id
+        , NULL                                                                                                                                                               AS visit_detail_id
+        , ndp.value_concept_code                                                                                                                                                     AS observation_source_value
+        , ndp.value_concept_id                                                                                                                                                       AS observation_source_concept_id
+        , NULL                                                                                                                                                               AS unit_source_value
+        , NULL		                                                                                                                                                           AS qualifier_source_value
+  --    , NULL                                                                                                                            						                       AS observation_event_id
+  --    , NULL                                                                                                                                              		             AS obs_event_field_concept_id
+  --	  , NULL																																					                                                                                     AS value_as_datetime
+        , ndp.record_id              AS record_id
+
+	FROM naaccr_data_points_temp AS ndp
+	INNER JOIN concept_relationship cr1              
+		ON ndp.value_concept_id = cr1.concept_id_1 
+		AND cr1.relationship_id = 'Maps to'
+    INNER JOIN concept AS c1                         
+		ON cr1.concept_id_2 = c1.concept_id 
+		AND c1.vocabulary_id = 'NAACCR' 
+		AND c1.concept_class_id = 'NAACCR Value' 
+		AND c1.domain_id = 'Observation' 
+		AND c1.standard_concept = 'S'
+	INNER JOIN naaccr_data_points_temp ndp1               
+		ON ndp.record_id = ndp1.record_id 
+		AND ndp1.naaccr_item_number = '390'
+	INNER JOIN episode_temp ep
+		ON ndp.record_id = ep.record_id
+		-- disease first occurrence
+		AND ep.episode_concept_id = 32528;
+
+
+  INSERT INTO fact_relationship_temp
+  (
+      domain_concept_id_1
+    , fact_id_1
+    , domain_concept_id_2
+    , fact_id_2
+    , relationship_concept_id
+    , record_id
+  )
+  SELECT
+      32527                             AS domain_concept_id_1			  -- Episode
+    , ep.episode_id                     AS fact_id_1
+    , 27                                AS domain_concept_id_2				-- Observation
+    , ob.observation_id                 AS fact_id_2
+    , 44818750                          AS relationship_concept_id  	-- Has occurrence
+	, NULL record_id
+  FROM episode_temp ep 
+  INNER JOIN observation_temp ob 
+	ON ep.person_id = ob.person_id 
+	AND ep.record_id = ob.record_id 
+	AND ep.episode_concept_id = 32528;			-- Disease First Occurrence
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1515,79 +1788,200 @@ DISTKEY(person_id);
     , modifier_of_field_concept_id
   FROM measurement_temp;
 
-
-
-
-/**
-TODO: To be used in another script?
-
-
--- Populate person table ( to retain death )
-
-
-Insert new:
-  // ISSUE: Cant have null year_of_birth.
-
-  Insert (...)
-  SELECT per.person_id, dth_dates.max_dth_date
-   FROM
-   (
-    SELECT DISTINCT person_id
-    FROM naaccr_data_points_temp ndp
-   ) per
-   LEFT OUTER JOIN
-   (
-    SELECT ndp.person_id, MAX(ndp.naaccr_item_value) max_dth_date
-    FROM naaccr_data_points_temp ndp
-    INNER JOIN naaccr_data_points_temp ndp2
-      ON ndp.naaccr_item_number = 1750
-      AND ndp2.naaccr_item_number = 1760
-      AND ndp.naaccr_item_value IS NOT NULL
-      AND ndp2.naaccr_item_value = 1
-    GROUP BY ndp.person_id
-   ) dth_dates
-   ON per.person_id = dth_dates.person_id
-   ;
-
-
-
-
--- Update existing person table:
-
-  UPDATE person
-  SET death_datetime = dth.max_dth_date
-  FROM person per
-  INNER JOIN
+  -- move from observation_temp to observation
+  INSERT INTO observation
   (
-     SELECT per.person_id, dth_dates.max_dth_date
-     FROM
-     (
-      SELECT DISTINCT person_id
-      FROM naaccr_data_points_temp ndp
-     ) per
-     LEFT OUTER JOIN
-     (
-      SELECT ndp.person_id, MAX(ndp.naaccr_item_value) max_dth_date
-      FROM naaccr_data_points_temp ndp
-      INNER JOIN naaccr_data_points_temp ndp2
-        ON ndp.naaccr_item_number = 1750
-        AND ndp2.naaccr_item_number = 1760
-        AND ndp.naaccr_item_value IS NOT NULL
-        AND ndp2.naaccr_item_value = 1
-      GROUP BY ndp.person_id
-     ) dth_dates
-     ON per.person_id = dth_dates.person_id
-  ) dth
-  ON per.person_id = dth.person_id
-  --AND per.death_datetime IS NULL
-    ;
+      observation_id
+    , person_id
+    , observation_concept_id
+    , observation_date
+    , observation_datetime
+    , observation_type_concept_id
+    , value_as_number
+    , value_as_string
+    , value_as_concept_id
+    , qualifier_concept_id
+    , unit_concept_id
+    , provider_id
+    , visit_occurrence_id
+    , visit_detail_id
+    , observation_source_value
+    , observation_source_concept_id
+    , unit_source_value
+    , qualifier_source_value
+    -- , observation_event_id
+    -- , obs_event_field_concept_id
+    -- , value_as_datetime
+  )
+  SELECT
+      observation_id
+    , person_id
+    , observation_concept_id
+    , observation_date
+    , observation_datetime
+    , observation_type_concept_id
+    , value_as_number
+    , value_as_string
+    , value_as_concept_id
+    , qualifier_concept_id
+    , unit_concept_id
+    , provider_id
+    , visit_occurrence_id
+    , visit_detail_id
+    , observation_source_value
+    , observation_source_concept_id
+    , unit_source_value
+    , qualifier_source_value
+    -- , observation_event_id
+    -- , obs_event_field_concept_id
+    -- , value_as_datetime
+    FROM observation_temp;
+
+  -- move from fact_relationship_temp to fact_relationship
+  INSERT INTO fact_relationship
+  (
+      domain_concept_id_1
+    , fact_id_1
+    , domain_concept_id_2
+    , fact_id_2
+    , relationship_concept_id
+  )
+  SELECT
+      domain_concept_id_1
+    , fact_id_1
+    , domain_concept_id_2
+    , fact_id_2
+    , relationship_concept_id
+  FROM fact_relationship_temp;
 
 
-**/
 
 
 
 
+
+--------- Observation period
+
+		INSERT INTO obs_period_temp	(
+								    observation_period_id	
+									,person_id
+									, observation_period_start_date
+									, observation_period_start_datetime
+									, observation_period_end_date
+									, observation_period_end_datetime
+									, period_type_concept_id
+									)
+	
+		SELECT	0 -- placeholder, doesn't get used
+				, ndp.person_id
+				, st_dt.min_date as observation_period_start_date	
+				, st_dt.min_date as observation_period_start_datetime
+				, ndp.max_date as observation_period_state_date
+				, ndp.max_date as observation_period_state_datetime				
+				,  44814724 AS period_type_concept_id -- TODO
+
+		FROM
+		-- end date -> date of last contact
+		(
+			SELECT person_id, CAST(max(naaccr_item_value) as date) max_date
+			FROM naaccr_data_points_temp
+			WHERE naaccr_item_number = 1750
+			AND naaccr_item_value IS NOT NULL
+			AND CHAR_LENGTH(naaccr_item_value) = 8
+			GROUP BY person_id
+		) ndp
+		INNER JOIN
+		-- start date -> find earliest record 
+		(	
+			SELECT person_id,
+					MIN(min_date) AS min_date		
+			FROM 
+			(
+				SELECT person_id
+							, Min(condition_start_date)  min_date		
+				FROM condition_occurrence
+				GROUP BY person_id
+			UNION
+				SELECT person_id
+						, Min(drug_exposure_start_date)				
+				FROM drug_exposure
+				GROUP BY person_id
+			UNION 
+				SELECT person_id
+						, Min(procedure_date)
+				FROM procedure_occurrence
+				GROUP BY person_id
+			UNION
+				SELECT person_id
+						, Min(observation_date)
+				FROM Observation
+				GROUP BY person_id
+			UNION 
+				SELECT person_id
+						, Min(measurement_date)		
+				FROM measurement
+				GROUP BY person_id
+			UNION 
+				SELECT person_id
+						, Min(death_date)
+				FROM death
+				GROUP BY person_id
+			) T
+			GROUP BY t.PERSON_ID
+		) st_dt
+		ON ndp.person_id = st_dt.person_id
+		;
+
+	-- Update existing obs period
+
+	-- take min and max values of existing obs period and the temp obs period created above
+
+	UPDATE observation_period 
+	SET observation_period_start_date = obs.observation_period_start_date
+		,observation_period_start_datetime = obs.observation_period_start_datetime
+		,observation_period_end_date = obs.observation_period_end_date
+		,observation_period_end_datetime = obs.observation_period_end_datetime
+	FROM
+	(
+		SELECT 
+			person_id obs_person_id
+			,MIN(observation_period_start_date) observation_period_start_date
+			,MIN(observation_period_start_datetime) observation_period_start_datetime
+			,MAX(observation_period_end_date) observation_period_end_date
+			,MAX(observation_period_end_datetime) observation_period_end_datetime
+		FROM 
+		(
+			SELECT * 
+			FROM observation_period
+			UNION 
+			SELECT * 
+			FROM obs_period_temp
+		) x
+		GROUP BY x.person_id
+	) obs
+	WHERE person_id = obs.obs_person_id
+	;
+
+	-- If new person, create new obs period 
+
+	INSERT INTO observation_period
+           (person_id
+           ,observation_period_start_date
+           ,observation_period_start_datetime
+           ,observation_period_end_date
+           ,observation_period_end_datetime
+           ,period_type_concept_id)
+	SELECT 
+		person_id 
+		,MIN(observation_period_start_date) observation_period_start_date
+		,MIN(observation_period_start_datetime) observation_period_start_datetime
+		,MAX(observation_period_end_date) observation_period_end_date
+		,MAX(observation_period_end_datetime) observation_period_end_datetime
+		,44814724	-- TODO
+	FROM obs_period_temp 
+	WHERE person_id NOT IN (select person_id from observation_period)
+	GROUP BY person_id
+	;
 
 
 --Cleanup
@@ -1607,5 +2001,10 @@ DROP TABLE IF EXISTS procedure_occurrence_temp;
 
 DROP TABLE IF EXISTS drug_exposure_temp;
 
+DROP TABLE IF EXISTS observation_temp;
+
+DROP TABLE IF EXISTS fact_relationship_temp;
+
+DROP TABLE IF EXISTS obs_period_temp;
 
 COMMIT;
