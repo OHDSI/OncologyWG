@@ -682,7 +682,7 @@ CREATE TABLE naaccr_data_points_temp
 		  AND ndp2.naaccr_item_number = '1760'	-- vital status
 		  AND ndp.naaccr_item_value IS NOT NULL
 		  AND LEN(ndp.naaccr_item_value) = '8'
-		  AND ndp2.naaccr_item_value = '1'
+		  AND ndp2.naaccr_item_value = '0' --'0'='Dead'
 		GROUP BY ndp.person_id
 	) x
 	WHERE x.person_id NOT IN (SELECT person_id from DEATH)
@@ -1970,13 +1970,15 @@ CREATE TABLE naaccr_data_points_temp
 									, observation_period_end_date
 									, period_type_concept_id
 									)
-
-		SELECT	0 -- placeholder, doesn't get used
-				, ndp.person_id
-				, st_dt.min_date as observation_period_start_date
-				, ndp.max_date as observation_period_state_date
-				, 44814724 AS period_type_concept_id -- TODO
-
+    SELECT  ( CASE WHEN  (SELECT MAX(observation_period_id) FROM observation_period) IS NULL
+               THEN 0
+               ELSE  (SELECT MAX(observation_period_id) FROM observation_period)
+             END + row_number() over (order by ndp.person_id)
+             ) AS observation_period_id
+   				, ndp.person_id
+   				, st_dt.min_date as observation_period_start_date
+   				, ndp.max_date as observation_period_end_date
+   				, 44814724 AS period_type_concept_id -- TODO. 44814724-"Period covering healthcare encounters"
 		FROM
 		-- end date -> date of last contact
 		(
@@ -2067,18 +2069,21 @@ CREATE TABLE naaccr_data_points_temp
 	-- If new person, create new obs period
 
 	INSERT INTO observation_period
-           (person_id
+           (
+            observation_period_id
+           ,person_id
            ,observation_period_start_date
            ,observation_period_end_date
            ,period_type_concept_id)
 	SELECT
-		person_id
+     observation_period_id
+    ,person_id
 		,MIN(observation_period_start_date) observation_period_start_date
 		,MAX(observation_period_end_date) observation_period_end_date
 		,44814724	-- TODO
 	FROM observation_period_temp
 	WHERE person_id NOT IN (select person_id from observation_period)
-	GROUP BY person_id
+	GROUP BY observation_period_id, person_id
 	;
 
 
