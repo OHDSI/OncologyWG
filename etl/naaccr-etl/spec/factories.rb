@@ -29,4 +29,12 @@ FactoryBot.define do
     ethnicity_source_value                  { nil }
     ethnicity_source_concept_id             { 0 }
   end
+
+  factory :observation_period do
+    sequence(:observation_period_id)
+    person_id                              { nil }
+    observation_period_start_date          { nil }
+    observation_period_end_date            { nil }
+    period_type_concept_id                 { 44814724 } #44814724-"Period covering healthcare encounters"
+  end
 end

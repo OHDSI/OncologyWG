@@ -2,13 +2,273 @@ require 'rails_helper'
 describe NaaccrEtl do
   before(:each) do
     NaaccrEtl::SpecSetup.teardown
-    @person_1 = FactoryBot.create(:person)
-    @person_2 = FactoryBot.create(:person)
+    @person_1 = FactoryBot.create(:person, person_id: 1)
+    @person_2 = FactoryBot.create(:person, person_id: 2)
     @legacy = false
   end
 
   after(:each) do
     # NaaccrEtl::SpecSetup.teardown
+  end
+
+  describe "For a person that does not have an entry in the PERSON table" do
+    before(:each) do
+      @diagnosis_date = '19981022'
+      @birth_date = '19760704'
+      @histology = '8140/3'
+      @site = 'C61.9'
+      @histology_site = "#{@histology}-#{@site}"
+      @naaccr_item_number_date_of_birth = '240'      #DATE OF BIRTH
+      @naaccr_item_value_date_of_birth = '19760704'
+
+      @naaccr_item_number_sex = '220'      #SEX
+      @naaccr_item_value_sex_male = '1'         #Male
+
+      @naaccr_item_number_date_of_last_contact = '1750'      #DATE OF LAST CONTACT
+      @naaccr_item_value_date_of_last_contact = '20180101'
+
+      @naaccr_item_number_vital_status = '1760'      #VITAL STATUS
+      @naaccr_item_value_vital_status_dead = '0'     #Dead
+
+      @person_id = Person.maximum(:person_id) + 1
+
+      #390=Date of Diagnosis
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_id \
+        , record_id: '1' \
+        , naaccr_item_number: '390' \
+        , naaccr_item_value:  @diagnosis_date \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_date_of_birth \
+        , naaccr_item_value:  @naaccr_item_value_date_of_birth \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_sex \
+        , naaccr_item_value:  @naaccr_item_value_sex_male \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_date_of_last_contact \
+        , naaccr_item_value:  @naaccr_item_value_date_of_last_contact \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_vital_status \
+        , naaccr_item_value:  @naaccr_item_value_vital_status_dead \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      @condition_concept = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
+    end
+
+    it "creates an entry in the PERSON table, the DEATH table and the OBSERVATION_PERIOD table", focus: false do
+      expect(Person.count).to eq(2)
+      expect(Death.count).to eq(0)
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+      expect(Person.count).to eq(3)
+      expect(Death.where(person_id: @person_id).count).to eq(1)
+      person = Person.where(person_id: @person_id).first
+      expect(person.person_id).to eq(@person_id)
+      expect(person.year_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).year)
+      expect(person.month_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).month)
+      expect(person.day_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).day)
+      expect(person.birth_datetime).to eq(Date.parse(@naaccr_item_value_date_of_birth))
+      expect(person.gender_concept_id).to eq(8507) #8507=MALE
+      expect(Death.where(person_id: @person_id).count).to eq(1)
+      death = Death.where(person_id: @person_id).first
+      expect(death.person_id).to eq(@person_id)
+      expect(death.death_date).to eq(Date.parse(@naaccr_item_value_date_of_last_contact))
+      expect(death.death_datetime).to eq(Date.parse(@naaccr_item_value_date_of_last_contact))
+      expect(death.death_datetime).to eq(Date.parse(@naaccr_item_value_date_of_last_contact))
+      expect(ConditionOccurrence.count).to eq(1)
+      condition_occurrence = ConditionOccurrence.where(person_id: @person_id).first
+      expect(condition_occurrence.person_id).to eq(@person_id)
+      expect(ObservationPeriod.count).to eq(1)
+      observation_period = ObservationPeriod.where(person_id: @person_id).first
+      expect(observation_period.observation_period_start_date).to eq(Date.parse(@diagnosis_date))
+      expect(observation_period.observation_period_end_date).to eq(Date.parse(@naaccr_item_value_date_of_last_contact))
+      expect(observation_period. period_type_concept_id).to eq(44814724) #44814724="Period covering healthcare encounters"
+    end
+  end
+
+  describe "For a person that does have an entry in the PERSON table but no record of death" do
+    before(:each) do
+      @diagnosis_date = '19981022'
+      @birth_date = '19760704'
+      @histology = '8140/3'
+      @site = 'C61.9'
+      @histology_site = "#{@histology}-#{@site}"
+      @naaccr_item_number_date_of_birth = '240'      #DATE OF BIRTH
+      @naaccr_item_value_date_of_birth = '19760704'
+
+      @naaccr_item_number_sex = '220'      #SEX
+      @naaccr_item_value_sex_male = '1'         #Male
+
+      @naaccr_item_number_date_of_last_contact = '1750'      #DATE OF LAST CONTACT
+      @naaccr_item_value_date_of_last_contact = '20180101'
+
+      @naaccr_item_number_vital_status = '1760'      #VITAL STATUS
+      @naaccr_item_value_vital_status_dead = '0'     #Dead
+
+      @person_id = Person.maximum(:person_id) + 1
+
+      #390=Date of Diagnosis
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: '390' \
+        , naaccr_item_value:  @diagnosis_date \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_date_of_last_contact \
+        , naaccr_item_value:  @naaccr_item_value_date_of_last_contact \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_vital_status \
+        , naaccr_item_value:  @naaccr_item_value_vital_status_dead \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      @condition_concept = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
+    end
+
+    it "does not create an entry in the PERSON table but does create an entry in the DEATH table", focus: false do
+      expect(Person.count).to eq(2)
+      expect(Death.where(person_id: @person_1.person_id).count).to eq(0)
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+      expect(Person.count).to eq(2)
+      expect(Death.where(person_id: @person_1.person_id).count).to eq(1)
+      death = Death.where(person_id: @person_1.person_id).first
+      expect(death.person_id).to eq(@person_1.person_id)
+      expect(death.death_date).to eq(Date.parse(@naaccr_item_value_date_of_last_contact))
+      expect(death.death_datetime).to eq(Date.parse(@naaccr_item_value_date_of_last_contact))
+      expect(death.death_datetime).to eq(Date.parse(@naaccr_item_value_date_of_last_contact))
+      person = Person.where(person_id: @person_1.person_id).first
+      expect(person.person_id).to eq(@person_1.person_id)
+      expect(ConditionOccurrence.count).to eq(1)
+      condition_occurrence = ConditionOccurrence.first
+      expect(condition_occurrence.person_id).to eq(@person_1.person_id)
+    end
+  end
+
+  describe "For a person that does have an entry in the PERSON table and an entry in the OBSERVATION_PERIOD table that has an observation_period_end_date < 'DATE OF LAST CONTACT'" do
+    before(:each) do
+      @diagnosis_date = '19981022'
+      @birth_date = '19760704'
+      @histology = '8140/3'
+      @site = 'C61.9'
+      @histology_site = "#{@histology}-#{@site}"
+      @naaccr_item_number_date_of_birth = '240'      #DATE OF BIRTH
+      @naaccr_item_value_date_of_birth = '19760704'
+
+      @naaccr_item_number_sex = '220'      #SEX
+      @naaccr_item_value_sex_male = '1'         #Male
+
+      @naaccr_item_number_date_of_last_contact = '1750'      #DATE OF LAST CONTACT
+      @naaccr_item_value_date_of_last_contact = '20180101'
+
+      @naaccr_item_number_vital_status = '1760'      #VITAL STATUS
+      @naaccr_item_value_vital_status_dead = '1'     #Alive
+
+      @person_id = Person.maximum(:person_id) + 1
+
+      #390=Date of Diagnosis
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: '390' \
+        , naaccr_item_value:  @diagnosis_date \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_date_of_last_contact \
+        , naaccr_item_value:  @naaccr_item_value_date_of_last_contact \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_vital_status \
+        , naaccr_item_value:  @naaccr_item_value_vital_status_dead \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      @observation_period_end_date = Date.parse(@naaccr_item_value_date_of_last_contact) - 1
+      FactoryBot.create(:observation_period \
+        , person_id: @person_1.person_id \
+        , observation_period_start_date: Date.parse(@diagnosis_date) \
+        , observation_period_end_date: @observation_period_end_date \
+      )
+
+      @condition_concept = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
+    end
+
+    it "does not create an entry in the PERSON table but does create an entry in the DEATH table", focus: false do
+      expect(Person.count).to eq(2)
+      expect(Death.where(person_id: @person_1.person_id).count).to eq(0)
+      expect(ObservationPeriod.where(person_id: @person_1.person_id).count).to eq(1)
+      observation_period = ObservationPeriod.where(person_id: @person_1.person_id).first
+      expect(observation_period.observation_period_end_date).to eq(@observation_period_end_date)
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+      expect(Person.count).to eq(2)
+      expect(Death.where(person_id: @person_1.person_id).count).to eq(0)
+      person = Person.where(person_id: @person_1.person_id).first
+      expect(person.person_id).to eq(@person_1.person_id)
+      expect(ConditionOccurrence.count).to eq(1)
+      condition_occurrence = ConditionOccurrence.first
+      expect(condition_occurrence.person_id).to eq(@person_1.person_id)
+      observation_period = ObservationPeriod.where(person_id: @person_1.person_id).first
+      expect(observation_period.observation_period_end_date).to eq(Date.parse(@naaccr_item_value_date_of_last_contact))
+    end
   end
 
   describe "For an 'ICDO Condition' that maps to itself" do
@@ -1211,7 +1471,7 @@ describe NaaccrEtl do
       expect(EpisodeEvent.where(episode_id: episode_brm.episode_id, event_id: drug_exposure_brm.drug_exposure_id, episode_event_field_concept_id: 1147094).count).to eq(1)
     end
 
-    it "links back to the corresponding 'Disease episode", focus: true do
+    it "links back to the corresponding 'Disease episode", focus: false do
       #32528='Disease First Occurrence'
       episode_disease = Episode.where(episode_concept_id: 32528, episode_object_concept_id: @condition_concept.concept_id).first
 
@@ -2048,6 +2308,140 @@ describe NaaccrEtl do
       episode_phase_3_radiation = Episode.where(episode_object_concept_id: @episode_object_concept_phase_3_radiation.concept_id).first
       expect(measurement_phase_3_radiation_number_of_fractions.modifier_of_event_id).to eq(episode_phase_3_radiation.episode_id)
       expect(measurement_phase_3_radiation_number_of_fractions.modifier_of_field_concept_id).to eq(1000000003) #‘procedure_occurrence.procedure_concept_id’ concept
+    end
+  end
+
+  describe "For a 'Did not happen' treatment NAACCR variable" do
+    before(:each) do
+      @diagnosis_date_1 = '20191025'
+      @diagnosis_date_2 = '20190926'
+      @histology_1 = '8140/3'
+      @site_1 = 'C18.7'
+      @histology_site_1 = "#{@histology_1}-#{@site_1}"
+
+      @histology_2 = '8140/3'
+      @site_2 = 'C61.9'
+      @histology_site_2 = "#{@histology_2}-#{@site_2}"
+
+      @naaccr_item_number_rx_summ_chemo = '1390'          #RX SUMM--CHEMO
+      @naaccr_item_value_rx_summ_chemo = '00'             #None, chemotherapy was not part of the planned first course of therapy.
+
+      @naaccr_item_number_rx_summ_hormone = '1400'          #RX SUMM--HORMONE
+      @naaccr_item_value_rx_summ_hormone = '82'             #Hormone therapy was not recommended/administered because it was contraindicated due to patient risk factors (i.e., comorbid conditions, advanced age).
+
+      #390=Date of Diagnosis
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: '390' \
+        , naaccr_item_value:  @diagnosis_date_1 \
+        , histology:  @histology_1 \
+        , site: @site_1 \
+        , histology_site:  @histology_site_1 \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_rx_summ_chemo \
+        , naaccr_item_value: @naaccr_item_value_rx_summ_chemo  \
+        , histology: @histology_1 \
+        , site: @site_1 \
+        , histology_site: @histology_site_1 \
+      )
+
+      #390=Date of Diagnosis
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_2.person_id \
+        , record_id: '2' \
+        , naaccr_item_number: '390' \
+        , naaccr_item_value:  @diagnosis_date_2 \
+        , histology:  @histology_2 \
+        , site: @site_2 \
+        , histology_site:  @histology_site_2 \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_2.person_id \
+        , record_id: '2' \
+        , naaccr_item_number: @naaccr_item_number_rx_summ_hormone \
+        , naaccr_item_value: @naaccr_item_value_rx_summ_hormone  \
+        , histology: @histology_2 \
+        , site: @site_2 \
+        , histology_site: @histology_site_2 \
+      )
+
+      @observation_concept_1 =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_item_number_rx_summ_chemo}@#{@naaccr_item_value_rx_summ_chemo}")
+      @condition_concept_1 = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site_1)
+      @condition_source_concept_1 = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'ICDO3', concept_code: @histology_site_1)
+
+      @observation_concept_2 =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: "#{@naaccr_item_number_rx_summ_hormone}@#{@naaccr_item_value_rx_summ_hormone}")
+      @condition_concept_2 = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site_2)
+      @condition_source_concept_2 = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'ICDO3', concept_code: @histology_site_2)
+
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+    end
+
+    it "creates an entry in the OBSERVATION table", focus: false do
+      expect(Observation.where(person_id: @person_1.person_id).count).to eq(1)
+      observation_1 = Observation.where(person_id: @person_1.person_id).first
+      expect(observation_1.observation_concept_id).to eq(@observation_concept_1.concept_id)
+      expect(observation_1.person_id).to eq(@person_1.person_id)
+      expect(observation_1.observation_date).to eq(Date.parse(@diagnosis_date_1))
+      expect(observation_1.observation_datetime).to eq(Date.parse(@diagnosis_date_1))
+      expect(observation_1.observation_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
+      expect(observation_1.observation_source_value).to eq(@observation_concept_1.concept_code)
+      expect(observation_1.observation_source_concept_id).to eq(@observation_concept_1.concept_id)
+
+      expect(Observation.where(person_id: @person_2.person_id).count).to eq(1)
+      observation_2 = Observation.where(person_id: @person_2.person_id).first
+      expect(observation_2.observation_concept_id).to eq(@observation_concept_2.concept_id)
+      expect(observation_2.person_id).to eq(@person_2.person_id)
+      expect(observation_2.observation_date).to eq(Date.parse(@diagnosis_date_2))
+      expect(observation_2.observation_datetime).to eq(Date.parse(@diagnosis_date_2))
+      expect(observation_2.observation_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
+      expect(observation_2.observation_source_value).to eq(@observation_concept_2.concept_code)
+      expect(observation_2.observation_source_concept_id).to eq(@observation_concept_2.concept_id)
+
+      expect(Episode.where(person_id: @person_1.person_id).count).to eq(1)
+      episode_1 = Episode.where(person_id: @person_1.person_id).first
+      expect(episode_1.person_id).to eq(@person_1.person_id)
+      expect(episode_1.episode_concept_id).to eq(32528) #32528='Disease First Occurrence'
+      expect(episode_1.episode_start_datetime).to eq(Date.parse(@diagnosis_date_1))
+      expect(episode_1.episode_end_datetime).to be_nil
+      expect(episode_1.episode_object_concept_id).to eq(@condition_source_concept_1.concept_id)
+      expect(episode_1.episode_type_concept_id).to eq(32546)
+      expect(episode_1.episode_source_value).to eq(@histology_site_1)
+      expect(episode_1.episode_source_concept_id).to eq(@condition_source_concept_1.concept_id)
+
+      expect(Episode.where(person_id: @person_2.person_id).count).to eq(1)
+      episode_2 = Episode.where(person_id: @person_2.person_id).first
+      expect(episode_2.person_id).to eq(@person_2.person_id)
+      expect(episode_2.episode_concept_id).to eq(32528) #32528='Disease First Occurrence'
+      expect(episode_2.episode_start_datetime).to eq(Date.parse(@diagnosis_date_2))
+      expect(episode_2.episode_end_datetime).to be_nil
+      expect(episode_2.episode_object_concept_id).to eq(@condition_source_concept_2.concept_id)
+      expect(episode_2.episode_type_concept_id).to eq(32546)
+      expect(episode_2.episode_source_value).to eq(@histology_site_2)
+      expect(episode_2.episode_source_concept_id).to eq(@condition_source_concept_2.concept_id)
+
+      expect(FactRelationship.count).to eq(2)
+      fact_relationship_1 = FactRelationship.where(domain_concept_id_1: 32527, fact_id_1: episode_1.episode_id).first
+
+      expect(fact_relationship_1.domain_concept_id_1).to eq(32527) #32527=Episode
+      expect(fact_relationship_1.fact_id_1).to eq(episode_1.episode_id)
+      expect(fact_relationship_1.domain_concept_id_2).to eq(27) #27=Observation
+      expect(fact_relationship_1.fact_id_2).to eq(observation_1.observation_id)
+      expect(fact_relationship_1.relationship_concept_id).to eq(44818750) #44818750=Has occurrence
+
+      expect(FactRelationship.count).to eq(2)
+      fact_relationship_2 = FactRelationship.where(domain_concept_id_1: 32527, fact_id_1: episode_2.episode_id).first
+
+      expect(fact_relationship_2.domain_concept_id_1).to eq(32527) #32527=Episode
+      expect(fact_relationship_2.fact_id_1).to eq(episode_2.episode_id)
+      expect(fact_relationship_2.domain_concept_id_2).to eq(27) #27=Observation
+      expect(fact_relationship_2.fact_id_2).to eq(observation_2.observation_id)
+      expect(fact_relationship_2.relationship_concept_id).to eq(44818750) #44818750=Has occurrence
     end
   end
 end
