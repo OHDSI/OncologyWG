@@ -1,4 +1,4 @@
- -- Survival from diagnosis, record level
+-- Survival from diagnosis, record level
 select
 ed.person_id,
 c.concept_name as cohort_cols,

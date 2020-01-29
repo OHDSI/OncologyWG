@@ -1,4 +1,4 @@
--- Survival from diagnosis, record level
+-- Time between diagnosis and treatment, record level
 select
 ed.person_id,
 c.concept_name as cancer_type,
