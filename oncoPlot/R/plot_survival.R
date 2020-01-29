@@ -29,32 +29,26 @@ plot_survival <- function(dbms = c("oracle","postgresql","redshift","sql server"
         rendered_sql <-
                 SqlRender::loadRenderTranslateSql(sqlFilename = "time_dx_to_survival.sql",
                                                   packageName = "oncoPlot",
-                                                  dbms = dbms)
+                                                  dbms = dbms,
+                                                  cdmSchema = schema)
 
         dataframe <- DatabaseConnector::dbGetQuery(con, statement = rendered_sql)
 
         DatabaseConnector::dbDisconnect(conn = con)
 
-        cohort_cols <- "cancer_type"
-        event_col <- "vital_status"
-        survival_time_col <- "survival_from_diagnosis_months"
+        dataframe$survival_time_col <- as.numeric(dataframe$survival_time_col)
+        dataframe$event_col <- as.numeric(dataframe$event_col)
 
-        survival_time_col <- dplyr::enquo(survival_time_col)
-        event_col <- dplyr::enquo(event_col)
-        cohort_cols <- dplyr::enquos(cohort_cols)
+        dataframe$cohort_cols <- as.factor(dataframe$cohort_cols)
 
-        dataframe <- dataframe %>% dplyr::mutate_at(vars(!!survival_time_col, !!event_col),
-                                                                  as.numeric) %>%
-                                mutate_at(vars(!!!cohort_cols), as.factor)
-
-        survival_object <<- try_catch_error_as_na(Surv(time = dataframe %>% select(!!survival_time_col) %>% unlist(),
-                                                       event = dataframe %>% select(!!event_col) %>% unlist(),
+        survival_object <- try_catch_error_as_na(Surv(time = unlist(dataframe$survival_time_col),
+                                                       event = unlist(dataframe$event_col),
                                                        type = "right"))
 
         if (is.vector(survival_object)) {
                 cat(crayon::red("\n\tError: survival_time and/or event_occurred not in correct format. Please check and try again.\n"))
         } else {
-                km_fit_01 <- try_catch_error_as_na(survfit(survival_object ~ !!cohort_cols,
+                km_fit_01 <- try_catch_error_as_na(survfit(survival_object ~ cohort_cols,
                                                            data = dataframe))
                 if ((length(km_fit_01) == 1) & any(is.na(km_fit_01))) {
                         cat(crayon::red("\n\tError: cohort_object and/or dataframe not in correct format. Please check and try again.\n"))
@@ -71,7 +65,7 @@ plot_survival <- function(dbms = c("oracle","postgresql","redshift","sql server"
                                              surv.median.line = "hv",
                                              legend.title = "Cohort",
                                              legend.labs = levels(dataframe %>%
-                                                                          select(!!cohort_col) %>% unlist())) + xlab("Survival Time (Years)") + ylab("Survival Probability") + ggtitle("Kaplan-Meier Curves")
+                                                                          select(cohort_cols) %>% unlist())) + xlab("Survival Time (Years)") + ylab("Survival Probability") + ggtitle("Kaplan-Meier Curves")
 
                         OUTPUT$plot + ggplot2::annotate("text",
                                                         x = medsurv$median + 2,
