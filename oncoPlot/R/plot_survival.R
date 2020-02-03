@@ -42,22 +42,22 @@ plot_survival <- function(dbms = c("oracle","postgresql","redshift","sql server"
 
         dataframe$cohort_cols <- as.factor(dataframe$cohort_cols)
 
-        survival_object <- try_catch_error_as_na(survival::Surv(time = unlist(dataframe$survival_time_col),
-                                                       event = unlist(dataframe$event_col),
+        survival_object <- try_catch_error_as_na(survival::Surv(time = dataframe$survival_time_col,
+                                                       event = dataframe$event_col,
                                                        type = "right"))
 
         if (is.vector(survival_object)) {
                 cat(crayon::red("\n\tError: survival_time and/or event_occurred not in correct format. Please check and try again.\n"))
         } else {
-                km_fit_01 <- try_catch_error_as_na(survfit(survival_object ~ cohort_cols,
+                km_fit_01 <- try_catch_error_as_na(survival::survfit(survival_object ~ cohort_cols,
                                                            data = dataframe))
                 if ((length(km_fit_01) == 1) & any(is.na(km_fit_01))) {
                         cat(crayon::red("\n\tError: cohort_object and/or dataframe not in correct format. Please check and try again.\n"))
 
                 } else {
-                        medsurv <- surv_median(km_fit_01)
+                        medsurv <- survminer::surv_median(km_fit_01)
 
-                        OUTPUT <- ggsurvplot(km_fit_01,
+                        OUTPUT <- survminer::ggsurvplot(km_fit_01,
                                              data = dataframe,
                                              pval = pval,
                                              xscale = 12,
