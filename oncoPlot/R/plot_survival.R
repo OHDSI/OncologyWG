@@ -9,6 +9,7 @@
 #' @import dplyr
 #' @import ggplot2
 #' @import survminer
+#' @import survival
 #' @importFrom crayon red
 #' @export
 #'
@@ -41,7 +42,7 @@ plot_survival <- function(dbms = c("oracle","postgresql","redshift","sql server"
 
         dataframe$cohort_cols <- as.factor(dataframe$cohort_cols)
 
-        survival_object <- try_catch_error_as_na(Surv(time = unlist(dataframe$survival_time_col),
+        survival_object <- try_catch_error_as_na(survival::Surv(time = unlist(dataframe$survival_time_col),
                                                        event = unlist(dataframe$event_col),
                                                        type = "right"))
 
@@ -72,14 +73,6 @@ plot_survival <- function(dbms = c("oracle","postgresql","redshift","sql server"
                                                         y = (1:nrow(medsurv))/20,
                                                         label = round(medsurv$median/12, 2),
                                                         parse = TRUE)
-
-                        if (median_survival_time == TRUE) {
-                                return(surv_median(km_fit_01))
-                        }
-
-                        if (pval == TRUE) {
-                                return(surv_pvalue(km_fit_01))
-                        }
                 }
 
         }
