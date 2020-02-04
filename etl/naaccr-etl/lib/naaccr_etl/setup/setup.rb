@@ -42,6 +42,15 @@ module NaaccrEtl
       `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} -U #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{file}"`
     end
 
+    def self.compile_cdm_source_provenance
+      ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
+      file = Dir.pwd
+      file.gsub!('naaccr-etl', '')
+      file = "#{file}cdm_source_provenance.sql"
+
+      `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} -U #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{file}"`
+    end
+
     def self.compile_omop_indexes
       ENV['PGPASSWORD'] = Rails.configuration.database_configuration[Rails.env]['password']
       `psql -h #{Rails.configuration.database_configuration[Rails.env]['host']} -U #{Rails.configuration.database_configuration[Rails.env]['username']} -d #{Rails.configuration.database_configuration[Rails.env]['database']} -f "#{Rails.root}/db/migrate/CommonDataModel-5.3.1/PostgreSQL/OMOP CDM postgresql indexes.txt"`

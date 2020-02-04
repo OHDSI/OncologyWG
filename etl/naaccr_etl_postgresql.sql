@@ -764,9 +764,9 @@ CREATE TABLE naaccr_data_points_temp
         AND c2.domain_id = 'Condition'
     ;
 
-  -- assumes there is no IDENTITY on condition_occurrence_id
-  INSERT INTO condition_occurrence
-  (
+    -- assumes there is no IDENTITY on condition_occurrence_id
+    INSERT INTO condition_occurrence
+    (
     condition_occurrence_id
     , person_id
     , condition_concept_id
@@ -778,13 +778,13 @@ CREATE TABLE naaccr_data_points_temp
     , stop_reason
     , provider_id
     , visit_occurrence_id
-  --, visit_detail_id
+    --, visit_detail_id
     , condition_source_value
     , condition_source_concept_id
     , condition_status_source_value
     , condition_status_concept_id
-  )
-  SELECT  condition_occurrence_id
+    )
+    SELECT  condition_occurrence_id
       , person_id
       , condition_concept_id
       , condition_start_date
@@ -792,7 +792,7 @@ CREATE TABLE naaccr_data_points_temp
       , condition_end_date
       , condition_end_datetime
       , condition_type_concept_id
-      , record_id
+      , stop_reason
       , provider_id
       , visit_occurrence_id
       --, visit_detail_id
@@ -800,10 +800,19 @@ CREATE TABLE naaccr_data_points_temp
       , condition_source_concept_id
       , condition_status_source_value
       , condition_status_concept_id
-  FROM condition_occurrence_temp
-  ;
+    FROM condition_occurrence_temp
+    ;
 
-
+    INSERT INTO cdm_source_provenance
+    (
+      cdm_event_id
+    , cdm_field_concept_id
+    , record_id
+    )
+    SELECT  condition_occurrence_id
+        , 1147127   --condition_occurrence.condition_occurrence_id
+        , record_id
+    FROM condition_occurrence_temp;
 
   --   condition modifiers
 

@@ -8,6 +8,7 @@ module NaaccrEtl
       ActiveRecord::Base.connection.execute('TRUNCATE TABLE observation CASCADE;')
       ActiveRecord::Base.connection.execute('TRUNCATE TABLE episode CASCADE;')
       ActiveRecord::Base.connection.execute('TRUNCATE TABLE fact_relationship CASCADE;')
+      ActiveRecord::Base.connection.execute('TRUNCATE TABLE cdm_source_provenance CASCADE;')
     end
 
     def self.standard_concept(options={})
