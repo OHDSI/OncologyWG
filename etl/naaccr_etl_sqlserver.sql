@@ -82,6 +82,8 @@ DELETE FROM episode;
 
 DELETE FROM episode_event;
 
+DELETE FROM cdm_source_provenance;
+
 
 -- Create temporary tables
 
@@ -2128,5 +2130,8 @@ IF OBJECT_ID('fact_relationship_temp', 'U') IS NOT NULL           -- Drop temp t
 
 IF OBJECT_ID('observation_period_temp', 'U') IS NOT NULL           -- Drop temp table if it exists
 	DROP TABLE observation_period_temp;
+	
+IF OBJECT_ID('ambig_schema_discrim', 'U') IS NOT NULL           -- Drop temp table if it exists
+  DROP TABLE ambig_schema_discrim;
 
 COMMIT;
