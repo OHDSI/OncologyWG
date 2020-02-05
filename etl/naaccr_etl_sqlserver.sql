@@ -777,55 +777,7 @@ CREATE TABLE naaccr_data_points_temp
         AND c2.domain_id = 'Condition'
     ;
 
-    -- assumes there is no IDENTITY on condition_occurrence_id
-    INSERT INTO condition_occurrence
-    (
-    condition_occurrence_id
-    , person_id
-    , condition_concept_id
-    , condition_start_date
-    , condition_start_datetime
-    , condition_end_date
-    , condition_end_datetime
-    , condition_type_concept_id
-    , stop_reason
-    , provider_id
-    , visit_occurrence_id
-    --, visit_detail_id
-    , condition_source_value
-    , condition_source_concept_id
-    , condition_status_source_value
-    , condition_status_concept_id
-    )
-    SELECT  condition_occurrence_id
-      , person_id
-      , condition_concept_id
-      , condition_start_date
-      , condition_start_datetime
-      , condition_end_date
-      , condition_end_datetime
-      , condition_type_concept_id
-      , stop_reason
-      , provider_id
-      , visit_occurrence_id
-      --, visit_detail_id
-      , condition_source_value
-      , condition_source_concept_id
-      , condition_status_source_value
-      , condition_status_concept_id
-    FROM condition_occurrence_temp
-    ;
-
-    INSERT INTO cdm_source_provenance
-    (
-      cdm_event_id
-    , cdm_field_concept_id
-    , record_id
-    )
-    SELECT  condition_occurrence_id
-        , 1147127   --condition_occurrence.condition_occurrence_id
-        , record_id
-    FROM condition_occurrence_temp;
+  
 
   --   condition modifiers
 
@@ -1718,6 +1670,56 @@ CREATE TABLE naaccr_data_points_temp
 
 -- INSERT TEMP TABLES
 
+  -- assumes there is no IDENTITY on condition_occurrence_id
+    INSERT INTO condition_occurrence
+    (
+    condition_occurrence_id
+    , person_id
+    , condition_concept_id
+    , condition_start_date
+    , condition_start_datetime
+    , condition_end_date
+    , condition_end_datetime
+    , condition_type_concept_id
+    , stop_reason
+    , provider_id
+    , visit_occurrence_id
+    --, visit_detail_id
+    , condition_source_value
+    , condition_source_concept_id
+    , condition_status_source_value
+    , condition_status_concept_id
+    )
+    SELECT  condition_occurrence_id
+      , person_id
+      , condition_concept_id
+      , condition_start_date
+      , condition_start_datetime
+      , condition_end_date
+      , condition_end_datetime
+      , condition_type_concept_id
+      , stop_reason
+      , provider_id
+      , visit_occurrence_id
+      --, visit_detail_id
+      , condition_source_value
+      , condition_source_concept_id
+      , condition_status_source_value
+      , condition_status_concept_id
+    FROM condition_occurrence_temp
+    ;
+
+    INSERT INTO cdm_source_provenance
+    (
+      cdm_event_id
+    , cdm_field_concept_id
+    , record_id
+    )
+    SELECT  condition_occurrence_id
+        , 1147127   --condition_occurrence.condition_occurrence_id
+        , record_id
+    FROM condition_occurrence_temp;
+
   --Step 18: Move episode_temp into episode
   INSERT INTO episode
   (
@@ -1783,6 +1785,17 @@ CREATE TABLE naaccr_data_points_temp
        , modifier_source_value
   FROM procedure_occurrence_temp;
 
+   INSERT INTO cdm_source_provenance
+    (
+      cdm_event_id
+    , cdm_field_concept_id
+    , record_id
+    )
+    SELECT  procedure_occurrence_id
+        , 1147082   --procedure_occurrence.procedure_occurrence_id
+        , record_id
+    FROM procedure_occurrence_temp;
+
   --Move drug_exposure_temp into drug_exposure
    INSERT INTO drug_exposure
   (
@@ -1834,6 +1847,17 @@ CREATE TABLE naaccr_data_points_temp
       , route_source_value
       , dose_unit_source_value
   FROM drug_exposure_temp;
+
+   INSERT INTO cdm_source_provenance
+    (
+      cdm_event_id
+    , cdm_field_concept_id
+    , record_id
+    )
+    SELECT  drug_exposure_id
+        , 1147094   --drug_exposure.drug_exposure_id
+        , record_id
+    FROM drug_exposure_temp;
 
   -- Move episode_event_temp into episode_event
   INSERT INTO episode_event
@@ -1900,6 +1924,17 @@ CREATE TABLE naaccr_data_points_temp
     , modifier_of_field_concept_id
   FROM measurement_temp;
 
+   INSERT INTO cdm_source_provenance
+    (
+      cdm_event_id
+    , cdm_field_concept_id
+    , record_id
+    )
+    SELECT  measurement_id
+        , 1147138   --measurement.measurement_id
+        , record_id
+    FROM measurement_temp;
+
   -- move from observation_temp to observation
   INSERT INTO observation
   (
@@ -1949,6 +1984,17 @@ CREATE TABLE naaccr_data_points_temp
     -- , value_as_datetime
     FROM observation_temp;
 
+	INSERT INTO cdm_source_provenance
+    (
+      cdm_event_id
+    , cdm_field_concept_id
+    , record_id
+    )
+    SELECT  observation_id
+        , 1147165   --observaton.observation_id
+        , record_id
+    FROM observation_temp;
+
   -- move from fact_relationship_temp to fact_relationship
   INSERT INTO fact_relationship
   (
@@ -1984,62 +2030,71 @@ CREATE TABLE naaccr_data_points_temp
     SELECT  ( CASE WHEN  (SELECT MAX(observation_period_id) FROM observation_period) IS NULL
                THEN 0
                ELSE  (SELECT MAX(observation_period_id) FROM observation_period)
-             END + row_number() over (order by ndp.person_id)
+             END + row_number() over (order by obs_dates.person_id)
              ) AS observation_period_id
-   				, ndp.person_id
-   				, st_dt.min_date as observation_period_start_date
-   				, ndp.max_date as observation_period_end_date
+   				, obs_dates.person_id
+   				, obs_dates.min_date as observation_period_start_date
+   				, COALESCE(ndp.max_date, obs_dates.max_date) as observation_period_end_date
    				, 44814724 AS period_type_concept_id -- TODO. 44814724-"Period covering healthcare encounters"
 		FROM
+	
+		-- start date -> find earliest record
+		(
+			SELECT person_id,
+					MIN(min_date) AS min_date
+					,MAX(max_date) as max_date
+			FROM
+			(
+				SELECT person_id
+							, Min(condition_start_date)  min_date
+							, MAX(condition_start_date)  max_date
+				FROM condition_occurrence
+				GROUP BY person_id
+			UNION
+				SELECT person_id
+						, Min(drug_exposure_start_date)
+						, Max(drug_exposure_start_date)
+				FROM drug_exposure
+				GROUP BY person_id
+			UNION
+				SELECT person_id
+						, Min(procedure_date)
+						, Max(procedure_date)
+				FROM procedure_occurrence
+				GROUP BY person_id
+			UNION
+				SELECT person_id
+						, Min(observation_date)
+						, Max(observation_date)
+				FROM Observation
+				GROUP BY person_id
+			UNION
+				SELECT person_id
+						, Min(measurement_date)
+						, Max(measurement_date)
+				FROM measurement
+				GROUP BY person_id
+			UNION
+				SELECT person_id
+						, Min(death_date)
+						, Max(death_date)
+				FROM death
+				GROUP BY person_id
+			) T
+			GROUP BY t.PERSON_ID
+		) obs_dates
+		LEFT OUTER JOIN 
 		-- end date -> date of last contact
 		(
-			SELECT person_id, CAST(max(naaccr_item_value) as date) max_date
+			SELECT person_id
+				, CAST(max(naaccr_item_value) as date) max_date
 			FROM naaccr_data_points_temp
 			WHERE naaccr_item_number = '1750'
 			AND naaccr_item_value IS NOT NULL
 			AND LEN(naaccr_item_value) = '8'
 			GROUP BY person_id
 		) ndp
-		INNER JOIN
-		-- start date -> find earliest record
-		(
-			SELECT person_id,
-					MIN(min_date) AS min_date
-			FROM
-			(
-				SELECT person_id
-							, Min(condition_start_date)  min_date
-				FROM condition_occurrence
-				GROUP BY person_id
-			UNION
-				SELECT person_id
-						, Min(drug_exposure_start_date)
-				FROM drug_exposure
-				GROUP BY person_id
-			UNION
-				SELECT person_id
-						, Min(procedure_date)
-				FROM procedure_occurrence
-				GROUP BY person_id
-			UNION
-				SELECT person_id
-						, Min(observation_date)
-				FROM Observation
-				GROUP BY person_id
-			UNION
-				SELECT person_id
-						, Min(measurement_date)
-				FROM measurement
-				GROUP BY person_id
-			UNION
-				SELECT person_id
-						, Min(death_date)
-				FROM death
-				GROUP BY person_id
-			) T
-			GROUP BY t.PERSON_ID
-		) st_dt
-		ON ndp.person_id = st_dt.person_id
+		ON obs_dates.person_id = ndp.person_id
 		;
 
 	-- Update existing obs period
