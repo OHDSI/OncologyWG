@@ -7,6 +7,7 @@ FROM naaccr_data_points ndp1 JOIN naaccr_data_points ndp2 ON ndp1.record_id = nd
                              JOIN naaccr_data_points ndp4 ON ndp1.record_id = ndp4.record_id AND ndp4.naaccr_item_number NOT IN('390', '400', '521') AND ndp4.naaccr_item_value IS NOT NULL AND trim(ndp4.naaccr_item_value) != '' AND ndp4.person_id IS NOT NULL
                              JOIN naaccr_items ni ON ndp4.naaccr_item_number = ni.item_number
 WHERE ni.section IN('Cancer Identification','Stage/Prognostic Factors')
+AND ndp3.naaccr_item_value NOT IN('20099999', '19979999', '20150399', '20160499', '20170299')
 AND
 EXISTS(
 SELECT 1
@@ -35,12 +36,13 @@ SELECT  CASE WHEN c1.concept_code like '%@%' THEN SUBSTRING(c1.concept_code, POS
       , m1.value_as_number
       , m1.measurement_source_value
       , m1.value_source_value
-      , co1.stop_reason             AS record_id
+      , cdm_source_provenance.record_id
 FROM condition_occurrence co1 JOIN measurement m1 ON co1.condition_occurrence_id = m1.modifier_of_event_id AND m1.modifier_of_field_concept_id = 1147127
                               JOIN concept c1 ON m1.measurement_concept_id = c1.concept_id
                               LEFT JOIN concept c2 on m1.value_as_concept_id = c2.concept_id
 	                            JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_2 And cr1.relationship_id = 'Maps to'
 	                            JOIN concept c3 ON cr1.concept_id_1 = c3.concept_id
+                              JOIN cdm_source_provenance ON co1.condition_occurrence_id = cdm_source_provenance.cdm_event_id AND cdm_source_provenance.cdm_field_concept_id = 1147127   --condition_occurrence.condition_occurrence_id
 ) data
 WHERE ndp4.record_id = data.record_id
 AND (

@@ -275,10 +275,11 @@ describe NaaccrEtl do
     before(:each) do
       @diagnosis_date = '19981022'
       @histology_site = '8140/3-C61.9'
+      @record_id = '1'
       #390=Date of Diagnosis
       FactoryBot.create(:naaccr_data_point \
         , person_id: @person_1.person_id \
-        , record_id: '1' \
+        , record_id: @record_id \
         , naaccr_item_number: '390' \
         , naaccr_item_value:  @diagnosis_date \
         , histology: '8140/3' \
@@ -299,6 +300,11 @@ describe NaaccrEtl do
       expect(condition_occurrence.condition_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
       expect(condition_occurrence.condition_source_value).to eq(@histology_site)
       expect(condition_occurrence.condition_source_concept_id).to eq(@condition_concept.concept_id)
+      expect(CdmSourceProvenance.where(cdm_field_concept_id: 1147127).count).to eq(1)
+      cdm_source_provenance = CdmSourceProvenance.where(cdm_field_concept_id: 1147127).first
+      expect(cdm_source_provenance.cdm_event_id).to eq(condition_occurrence.condition_occurrence_id)
+      expect(cdm_source_provenance.cdm_field_concept_id).to eq(1147127) #1147127=condition_occurrence.condition_occurrence_id
+      expect(cdm_source_provenance.record_id).to eq(@record_id)
     end
 
     it "creates an entry in the EPISODE table", focus: false do
