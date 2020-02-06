@@ -59,14 +59,14 @@ plot_survival <- function(dbms = c("oracle","postgresql","redshift","sql server"
 
                         OUTPUT <- survminer::ggsurvplot(km_fit_01,
                                              data = dataframe,
-                                             pval = pval,
+                                      #       pval = pval,
                                              xscale = 12,
                                              break.x.by = 6,
                                              legend = c(0.8, 0.9),
                                              surv.median.line = "hv",
                                              legend.title = "Cohort",
                                              legend.labs = levels(dataframe %>%
-                                                                          select(cohort_cols) %>% unlist())) + xlab("Survival Time (Years)") + ylab("Survival Probability") + ggtitle("Kaplan-Meier Curves")
+                                                                          select(cohort_cols) %>% unlist())) + ggplot2::xlab("Survival Time (Years)") + ggplot2::ylab("Survival Probability") + ggplot2::ggtitle("Kaplan-Meier Curves")
 
                         OUTPUT$plot + ggplot2::annotate("text",
                                                         x = medsurv$median + 2,
