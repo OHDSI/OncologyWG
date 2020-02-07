@@ -1350,11 +1350,11 @@ DISTKEY(person_id);
   -- Drug Treatment Episodes:   Update to standard 'Regimen' concepts.
   UPDATE episode_temp
   SET episode_object_concept_id = CASE
-                    WHEN episode_source_value = '1390' THEN 35803401 --Hemonc Chemotherapy Modality
-                    WHEN episode_source_value = '1390' THEN 35803401
-                    WHEN episode_source_value = '1390' THEN 35803401
-                    WHEN episode_source_value = '1400' THEN 35803407
-                    WHEN episode_source_value = '1410' THEN 35803410
+                    WHEN episode_source_value = '1390@01' THEN 35803401 --Hemonc Chemotherapy Modality
+                    WHEN episode_source_value = '1390@02' THEN 35803401
+                    WHEN episode_source_value = '1390@03' THEN 35803401
+                    WHEN episode_source_value = '1400@01' THEN 35803407
+                    WHEN episode_source_value = '1410@01' THEN 35803410
                   ELSE episode_object_concept_id
                   END;
 
