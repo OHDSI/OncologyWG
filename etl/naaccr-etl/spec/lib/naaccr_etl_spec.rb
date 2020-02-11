@@ -30,6 +30,12 @@ describe NaaccrEtl do
       @naaccr_item_number_vital_status = '1760'      #VITAL STATUS
       @naaccr_item_value_vital_status_dead = '0'     #Dead
 
+      @naaccr_item_number_race_1 = '160'          #RACE 1
+      @naaccr_item_value_race_1_black = '02'      #Black
+
+      @naaccr_item_number_spanish_hispanic_origin = '190'             #SPANISH/HISPANIC ORIGIN
+      @naaccr_item_value_spanish_hispanic_origin_puerto_rican = '2'   #Puerto Rican
+
       @person_id = Person.maximum(:person_id) + 1
 
       #390=Date of Diagnosis
@@ -83,6 +89,26 @@ describe NaaccrEtl do
         , histology_site:  @histology_site \
       )
 
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_race_1 \
+        , naaccr_item_value:  @naaccr_item_value_race_1_black \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_spanish_hispanic_origin \
+        , naaccr_item_value:  @naaccr_item_value_spanish_hispanic_origin_puerto_rican \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
       @condition_concept = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
     end
 
@@ -98,7 +124,9 @@ describe NaaccrEtl do
       expect(person.month_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).month)
       expect(person.day_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).day)
       expect(person.birth_datetime).to eq(Date.parse(@naaccr_item_value_date_of_birth))
-      expect(person.gender_concept_id).to eq(8507) #8507=MALE
+      expect(person.gender_concept_id).to eq(8507)  #8507=MALE
+      expect(person.race_concept_id).to eq(8516)    #8516=Black
+      expect(person.ethnicity_concept_id).to eq(38003563) #38003563=Hispanic or Latino
       death = Death.where(person_id: @person_id).first
       expect(death.person_id).to eq(@person_id)
       expect(death.death_date).to eq(Date.parse(@naaccr_item_value_date_of_last_contact))
@@ -127,6 +155,12 @@ describe NaaccrEtl do
 
       @naaccr_item_number_sex = '220'      #SEX
       @naaccr_item_value_sex_male = '1'         #Male
+
+      @naaccr_item_number_race_1 = '160'          #RACE 1
+      @naaccr_item_value_race_1_black = '02'      #Black
+
+      @naaccr_item_number_spanish_hispanic_origin = '190'             #SPANISH/HISPANIC ORIGIN
+      @naaccr_item_value_spanish_hispanic_origin_puerto_rican = '2'   #Puerto Rican
 
       @person_id = Person.maximum(:person_id) + 1
 
@@ -161,6 +195,26 @@ describe NaaccrEtl do
         , histology_site:  @histology_site \
       )
 
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_race_1 \
+        , naaccr_item_value:  @naaccr_item_value_race_1_black \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_spanish_hispanic_origin \
+        , naaccr_item_value:  @naaccr_item_value_spanish_hispanic_origin_puerto_rican \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
       @condition_concept = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
     end
 
@@ -177,6 +231,8 @@ describe NaaccrEtl do
       expect(person.day_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).day)
       expect(person.birth_datetime).to eq(Date.parse(@naaccr_item_value_date_of_birth))
       expect(person.gender_concept_id).to eq(8507) #8507=MALE
+      expect(person.race_concept_id).to eq(8516)    #8516=Black
+      expect(person.ethnicity_concept_id).to eq(38003563) #38003563=Hispanic or Latino
       expect(ConditionOccurrence.count).to eq(1)
       condition_occurrence = ConditionOccurrence.where(person_id: @person_id).first
       expect(condition_occurrence.person_id).to eq(@person_id)
@@ -207,6 +263,12 @@ describe NaaccrEtl do
       @naaccr_item_number_vital_status = '1760'      #VITAL STATUS
       @naaccr_item_value_vital_status_dead = '0'     #Dead
 
+      @naaccr_item_number_race_1 = '160'          #RACE 1
+      @naaccr_item_value_race_1_black = '02'      #Black
+
+      @naaccr_item_number_spanish_hispanic_origin = '190'             #SPANISH/HISPANIC ORIGIN
+      @naaccr_item_value_spanish_hispanic_origin_puerto_rican = '2'   #Puerto Rican
+
       @person_id = Person.maximum(:person_id) + 1
 
       #390=Date of Diagnosis
@@ -260,6 +322,26 @@ describe NaaccrEtl do
         , histology_site:  @histology_site \
       )
 
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_race_1 \
+        , naaccr_item_value:  @naaccr_item_value_race_1_black \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_spanish_hispanic_origin \
+        , naaccr_item_value:  @naaccr_item_value_spanish_hispanic_origin_puerto_rican \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
       @condition_concept = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
     end
 
@@ -276,6 +358,8 @@ describe NaaccrEtl do
       expect(person.day_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).day)
       expect(person.birth_datetime).to eq(Date.parse(@naaccr_item_value_date_of_birth))
       expect(person.gender_concept_id).to eq(8507) #8507=MALE
+      expect(person.race_concept_id).to eq(8516)    #8516=Black
+      expect(person.ethnicity_concept_id).to eq(38003563) #38003563=Hispanic or Latino
       expect(ConditionOccurrence.count).to eq(1)
       condition_occurrence = ConditionOccurrence.where(person_id: @person_id).first
       expect(condition_occurrence.person_id).to eq(@person_id)
