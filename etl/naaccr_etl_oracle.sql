@@ -456,18 +456,18 @@ CREATE TABLE naaccr_data_points_temp
 		,EXTRACT(MONTH FROM dob)
 		,EXTRACT(DAY FROM dob)
 		,dob
-		,0
-		,0
+		,COALESCE(race.race_concept_id, 0)
+		,COALESCE(ethn.ethnicity_concept_id, 0)
 		,NULL
 		,NULL
 		,NULL
 		,NULL
-		,NULL
+		,gen.naaccr_item_value
 		,COALESCE(gen.gender_concept_id,0)
-		,NULL
-		,0
-		,NULL
-		,0
+		,race.naaccr_item_value
+		,COALESCE(race.race_concept_id, 0)
+		,ethn.naaccr_item_value
+		,COALESCE(ethn.ethnicity_concept_id, 0)
    FROM (SELECT DISTINCT person_id,
 				CAST(naaccr_item_value as date) dob
     FROM naaccr_data_points ndp
@@ -475,8 +475,10 @@ CREATE TABLE naaccr_data_points_temp
 	AND person_id NOT IN (SELECT person_id FROM person ) -- exclude if exists already
     ) per
    LEFT OUTER JOIN
-   (SELECT DISTINCT person_id,
-		CASE WHEN naaccr_item_value = '1' THEN 8507
+   (SELECT DISTINCT 
+		person_id
+		,naaccr_item_value
+		,CASE WHEN naaccr_item_value = '1' THEN 8507
 			 WHEN naaccr_item_value = '2' THEN 8532
 			 ELSE '0'
 		END as gender_concept_id
@@ -484,6 +486,56 @@ CREATE TABLE naaccr_data_points_temp
 	  WHERE naaccr_item_number = '220'    -- gender
     ) gen
    ON per.person_id = gen.person_id
+   LEFT OUTER JOIN
+   (SELECT DISTINCT 
+		person_id
+		,naaccr_item_value
+		,CASE WHEN naaccr_item_value = '01' THEN 8527		-- white
+			 WHEN naaccr_item_value = '02' THEN 8516		-- black
+			 WHEN naaccr_item_value = '03' THEN 8657		-- american indian or alaska native
+			 WHEN naaccr_item_value = '04' THEN 38003579	-- chinese
+			 WHEN naaccr_item_value = '05' THEN 38003584	-- japanese
+			 WHEN naaccr_item_value = '06' THEN 38003581	-- filipino
+			 WHEN naaccr_item_value = '07' THEN 8557		-- native hawaiian or other pacific islander
+			 WHEN naaccr_item_value = '08' THEN 38003585	-- korean
+			 WHEN naaccr_item_value = '10' THEN 38003592	-- vietnamese
+			 WHEN naaccr_item_value = '11' THEN 38003586	-- laotian
+			 WHEN naaccr_item_value = '12' THEN 38003582	-- hmong
+			 WHEN naaccr_item_value = '13' THEN 38003578	-- cambodian
+			 WHEN naaccr_item_value = '14' THEN 38003591	-- thai
+	--TODO	 WHEN naaccr_item_value = '15' THEN ?			-- asian indian or pakistani
+			 WHEN naaccr_item_value = '16' THEN 38003574	-- asian indian
+			 WHEN naaccr_item_value = '17' THEN 38003589	-- pakistani
+			 WHEN naaccr_item_value = '20' THEN 38003611	-- micronesian
+	--TODO	 WHEN naaccr_item_value = '21' THEN ?			-- chamorro/chamoru
+			 WHEN naaccr_item_value = '22' THEN 4085322		-- guamanian -> oceanian
+			 WHEN naaccr_item_value = '25' THEN 38003610	-- polynesian, nos
+	--TODO	 WHEN naaccr_item_value = '26' THEN ?			-- tahitian
+			 WHEN naaccr_item_value = '27' THEN 4085322		-- samoan -> oceanian
+			 WHEN naaccr_item_value = '28' THEN 4085322		-- tongan -> oceanian
+			 WHEN naaccr_item_value = '30' THEN 38003612	-- melanesian
+			 WHEN naaccr_item_value = '31' THEN 4085322		-- fijian -> oceanian
+	--TODO	 WHEN naaccr_item_value = '32' THEN ?			-- new guinean
+			 WHEN naaccr_item_value = '96' THEN 8515		-- (other) asian
+			 WHEN naaccr_item_value = '37' THEN 38003613	-- other pacific islander
+			 ELSE '0'
+		END as race_concept_id
+	FROM naaccr_data_points ndp
+	  WHERE naaccr_item_number = '160'    -- race 1
+    ) race
+   ON per.person_id = race.person_id
+   LEFT OUTER JOIN
+   (SELECT DISTINCT
+		person_id
+		,naaccr_item_value
+		,CASE WHEN naaccr_item_value = '0' THEN 38003564									-- non hispanic or latino
+			 WHEN naaccr_item_value IN ('1','2','3','4','5','6','7','8') THEN 38003563	-- hispanic or latino
+			 ELSE '0'
+		END as ethnicity_concept_id
+	FROM naaccr_data_points ndp
+	  WHERE naaccr_item_number = '190'    -- spanish/hispanic origin
+    ) ethn
+   ON per.person_id = ethn.person_id
     ;
 
 
