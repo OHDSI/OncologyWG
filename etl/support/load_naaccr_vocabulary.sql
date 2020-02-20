@@ -491,9 +491,9 @@ INSERT INTO naaccr_items (item_number, item_name, section) SELECT '3250', 'RX Su
 INSERT INTO naaccr_items (item_number, item_name, section) SELECT '3270', 'RX Summ--Palliative Proc', 'Treatment-1st Course';
 
 
-select *
-from naaccr_data_points ndp join naaccr_items ni ON ndp.naaccr_item_number = ni.item_number
-where record_id = '?'
-and naaccr_item_value is not null
-and  section != 'Follow-up/Recurrence/Death'
-order by item_name
+-- select *
+-- from naaccr_data_points ndp join naaccr_items ni ON ndp.naaccr_item_number = ni.item_number
+-- where record_id = '?'
+-- and naaccr_item_value is not null
+-- and  section != 'Follow-up/Recurrence/Death'
+-- order by item_name
