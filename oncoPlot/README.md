@@ -12,7 +12,7 @@ This package contains functions that plots the Kaplan-Meier Survival Curves and 
   
   
 ### Survival Curve
-```oncoPlot::plot_survival(dbms = "postgresql", \nuser = Sys.getenv("username"), password = Sys.getenv("password"), server = Sys.getenv("server"), schema = schema, port = port)```
+```oncoPlot::plot_survival(dbms = "postgresql", user = Sys.getenv("username"), password = Sys.getenv("password"), server = Sys.getenv("server"), schema = schema, port = port)```
                         
 ### Time To Treatment Histogram
 ```oncoPlot::plot_time_to_rx_hist(dbms = "postgresql", user = Sys.getenv("username"), password = Sys.getenv("password"), server = Sys.getenv("server"), schema = schema, port = port)```
