@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_survival.R
 \name{plot_survival}
 \alias{plot_survival}
-\title{Function to plot survival curve}
+\title{Plot a Kaplan-Meier Curve}
 \usage{
 plot_survival(
   dbms = c("oracle", "postgresql", "redshift", "sql server", "pdw", "netezza",
@@ -15,18 +15,18 @@ plot_survival(
 )
 }
 \arguments{
-\item{dbms}{DBMS runnong on the OMOP server}
+\item{dbms}{one of the following supported Database Management Systems: c("oracle","postgresql","redshift","sql server","pdw", "netezza","bigquery","sqlite")}
 
-\item{survival_time_col}{numberic variable that indicates survival time}
+\item{user}{username for OMOP v5.0 instance}
 
-\item{event_col}{boolean variable that indicates event occurrence}
+\item{password}{password for OMOP v5.0 instance}
 
-\item{cohort_cols}{variable names of length 1 or greater that indicates grouping variables for output}
+\item{server}{OMOP v5.0 server}
 
-\item{pval}{TRUE if pval is to be included in the plot}
+\item{port}{NULL by default.}
 
-\item{median_survival_time}{TRUE if median survival time should be returned}
+\item{schema}{NULL by default.}
 }
 \description{
-Function to plot survival curve
+Plot a Kaplan-Meier Curve
 }

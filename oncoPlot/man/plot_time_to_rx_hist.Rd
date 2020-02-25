@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_time_to_rx_hist.R
 \name{plot_time_to_rx_hist}
 \alias{plot_time_to_rx_hist}
-\title{Plot a histogram of the time to treatment}
+\title{Plot a Time-to-Treatment Histogram}
 \usage{
 plot_time_to_rx_hist(
   dbms = c("oracle", "postgresql", "redshift", "sql server", "pdw", "netezza",
@@ -15,12 +15,18 @@ plot_time_to_rx_hist(
 )
 }
 \arguments{
-\item{dataframe}{dataframe from SQL queries}
+\item{dbms}{one of the following supported Database Management Systems: c("oracle","postgresql","redshift","sql server","pdw", "netezza","bigquery","sqlite")}
 
-\item{time_to_rx_col}{numeric variable indicating time to treatment}
+\item{user}{username for OMOP v5.0 instance}
 
-\item{cohort_cols}{grouping variables of length 1 or greater}
+\item{password}{password for OMOP v5.0 instance}
+
+\item{server}{OMOP v5.0 server}
+
+\item{port}{NULL by default.}
+
+\item{schema}{NULL by default.}
 }
 \description{
-Plot a histogram of the time to treatment
+Plot a Time-to-Treatment Histogram
 }
