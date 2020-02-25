@@ -41,7 +41,7 @@ plot_survival <- function(dbms = c("oracle","postgresql","redshift","sql server"
 
         dataframe$cohort_cols <- as.factor(dataframe$cohort_cols)
 
-        survival_object <- try_catch_error_as_na(survival::Surv(time = dataframe$survival_time_col,
+        survival_object <<- try_catch_error_as_na(survival::Surv(time = dataframe$survival_time_col,
                                                        event = dataframe$event_col,
                                                        type = "right"))
 
