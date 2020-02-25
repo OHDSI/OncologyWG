@@ -6,12 +6,12 @@ This package contains functions that plots the Kaplan-Meier Survival Curves and 
 * R version 3.5.0 or newer. 
   
 ### Installing oncoPlot   
-install.packages("devtools")
-library(devtools)
-devtools::install_github("OHDSI/OncologyWG/oncoPlot")
+```install.packages("devtools")```
+```library(devtools)```
+```devtools::install_github("OHDSI/OncologyWG/oncoPlot")```
 
 
-Survival Curve
+### Survival Curve
 oncoPlot::plot_survival(dbms = "postgresql",
                         user = Sys.getenv("username"),
                         password = Sys.getenv("password"),
