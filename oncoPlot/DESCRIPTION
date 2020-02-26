@@ -1,10 +1,10 @@
 Package: oncoPlot
 Type: Package
-Title: Plot your instance of OMOP
+Title: Plot the Kaplan-Meier Survival Curves and Time to Treatment Histograms from your OMOP CDM v5.0 instance.
 Version: 0.1.0
 Author: OHDSI Oncology Workgroup
 Maintainer: Meera Patel, MD <patelm9@mskcc.org>
-Description: Returns survival curves and time to treatment histogram using connection details to your OMOP instance.
+Description: This package implements the survminer and survival packages to plot Kaplan-Meier Curves and Time-to-Treatment Histograms as demonstrated at the OHDSI Symposium in September 2019. The goal of this implementation is to take advantage of the OMOP CDM v5.0 by executing the same SQL, ensuring consistent aggregation and analytics across multiple institutions. 
 License: Apache
 Encoding: UTF-8
 LazyData: true

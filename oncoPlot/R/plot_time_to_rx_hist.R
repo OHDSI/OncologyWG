@@ -1,9 +1,13 @@
-#' Plot a histogram of the time to treatment
-#' @param dataframe dataframe from SQL queries
-#' @param time_to_rx_col numeric variable indicating time to treatment
-#' @param cohort_cols grouping variables of length 1 or greater
+#' Plot a Time-to-Treatment Histogram
+#' @param dbms one of the following supported Database Management Systems: c("oracle","postgresql","redshift","sql server","pdw", "netezza","bigquery","sqlite")
+#' @param user username for OMOP v5.0 instance
+#' @param password password for OMOP v5.0 instance
+#' @param server OMOP v5.0 server
+#' @param port NULL by default.
+#' @param schema NULL by default.
 #' @import dplyr
 #' @import ggplot2
+#' @import DatabaseConnector
 #' @export
 
 plot_time_to_rx_hist <-
