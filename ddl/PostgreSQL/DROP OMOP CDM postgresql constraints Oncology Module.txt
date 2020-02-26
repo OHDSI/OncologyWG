@@ -1,0 +1,43 @@
+/**************************/
+
+
+/************************
+*************************
+*************************
+*************************
+
+Foreign key constraints
+
+*************************
+*************************
+*************************
+************************/
+
+/************************
+
+Standardized vocabulary
+
+************************/
+ALTER TABLE concept_numeric DROP CONSTRAINT fpk_concept_numeric_concept CASCADE;
+
+ALTER TABLE concept_numeric DROP CONSTRAINT fpk_concept_numeric_unit CASCADE;
+ALTER TABLE concept_numeric DROP CONSTRAINT fpk_concept_numeric_operator CASCADE;
+
+/************************
+
+Standardized clinical data
+
+************************/
+ALTER TABLE episode DROP CONSTRAINT fpk_episode_person CASCADE;
+
+ALTER TABLE episode DROP CONSTRAINT fpk_episode_concept CASCADE;
+
+ALTER TABLE episode DROP CONSTRAINT fpk_episode_object_concept CASCADE;
+
+ALTER TABLE episode DROP CONSTRAINT fpk_episode_type_concept CASCADE;
+
+ALTER TABLE episode DROP CONSTRAINT fpk_episode_source_concept CASCADE;
+
+ALTER TABLE episode_event DROP CONSTRAINT fpk_episode_event_field_concept CASCADE;
+
+ALTER TABLE measurement DROP CONSTRAINT fpk_measurement_modifier_of_field_concept CASCADE;
