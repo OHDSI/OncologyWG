@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_10_30_115110) do
+ActiveRecord::Schema.define(version: 2020_01_22_110557) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -43,6 +43,12 @@ ActiveRecord::Schema.define(version: 2019_10_30_115110) do
     t.date "cdm_release_date"
     t.string "cdm_version", limit: 10
     t.string "vocabulary_version", limit: 20
+  end
+
+  create_table "cdm_source_provenance", id: false, force: :cascade do |t|
+    t.bigint "cdm_event_id", null: false
+    t.integer "cdm_field_concept_id", null: false
+    t.string "record_id", limit: 255, null: false
   end
 
   create_table "cohort", id: false, force: :cascade do |t|

@@ -411,18 +411,20 @@ namespace :ingest do
           end
           table = seer_api.table(naaccr_schema.naaccr_staging_algorithm.algorithm, input['table'])
 
-          table[:response]['rows'].each do |row|
-            puts 'code'
-            puts row.first
-            puts 'code_description'
-            puts row.last
-            puts 'looking for snowflakes'
-            puts naaccr_item.naaccr_item_codes.where("provenance = ? AND code = ? AND replace(lower(code_description), ' ', '') = ?", NaaccrItemCode::PROVENANCE_BASE_NAACCR_DATA_DICTIONARY, row.first, row.last.downcase).to_sql
-            if naaccr_item.naaccr_item_codes.where("provenance = ? AND code = ? AND replace(lower(code_description), ' ', '') = ?", NaaccrItemCode::PROVENANCE_BASE_NAACCR_DATA_DICTIONARY, row.first, row.last.downcase.gsub(' ', '')).count == 0
-              puts 'We found a snowflake.'
-              schema_specific_naaccr_item_codes = true
-            else
-              puts 'We found a poser!'
+          if table[:response].present?
+            table[:response]['rows'].each do |row|
+              puts 'code'
+              puts row.first
+              puts 'code_description'
+              puts row.last
+              puts 'looking for snowflakes'
+              puts naaccr_item.naaccr_item_codes.where("provenance = ? AND code = ? AND replace(lower(code_description), ' ', '') = ?", NaaccrItemCode::PROVENANCE_BASE_NAACCR_DATA_DICTIONARY, row.first, row.last.downcase).to_sql
+              if naaccr_item.naaccr_item_codes.where("provenance = ? AND code = ? AND replace(lower(code_description), ' ', '') = ?", NaaccrItemCode::PROVENANCE_BASE_NAACCR_DATA_DICTIONARY, row.first, row.last.downcase.gsub(' ', '')).count == 0
+                puts 'We found a snowflake.'
+                schema_specific_naaccr_item_codes = true
+              else
+                puts 'We found a poser!'
+              end
             end
           end
 
