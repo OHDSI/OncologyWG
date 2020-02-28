@@ -739,6 +739,7 @@ CREATE TABLE naaccr_data_points_temp
 		  AND ndp.naaccr_item_value IS NOT NULL
 		  AND LEN(ndp.naaccr_item_value) = '8'
 		  AND ndp2.naaccr_item_value = '0' --'0'='Dead'
+		  AND ndp.record_id = ndp2.record_id
 		GROUP BY ndp.person_id
 	) x
 	WHERE x.person_id NOT IN (SELECT person_id from DEATH)
