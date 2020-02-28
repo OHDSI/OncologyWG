@@ -29,19 +29,21 @@ plot_survival <- function(dbms = c("oracle","postgresql","redshift","sql server"
         rendered_sql <-
                 SqlRender::loadRenderTranslateSql(sqlFilename = "time_dx_to_survival.sql",
                                                   packageName = "oncoPlot",
-                                                  dbms = dbms,
                                                   cdmSchema = schema)
 
         dataframe <- DatabaseConnector::dbGetQuery(con, statement = rendered_sql)
 
         DatabaseConnector::dbDisconnect(conn = con)
 
-        dataframe$survival_time_col <- as.numeric(dataframe$survival_time_col)
+   #     dataframe$survival_time_col <- as.numeric(dataframe$survival_time_col)
         dataframe$event_col <- as.numeric(dataframe$event_col)
 
         dataframe$cohort_cols <- as.factor(dataframe$cohort_cols)
 
-        survival_object <<- try_catch_error_as_na(survival::Surv(time = dataframe$survival_time_col,
+
+        dataframe$timediff <- difftime(as.Date(dataframe$end_date),as.Date(dataframe$start_date), units = "days")/30
+
+        survival_object <<- try_catch_error_as_na(survival::Surv(time = dataframe$timediff,
                                                        event = dataframe$event_col,
                                                        type = "right"))
 

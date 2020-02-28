@@ -3,8 +3,10 @@ select
 ed.person_id,
 c.concept_name as cohort_cols,
 meas.is_metastatic,
-case WHEN dth.death_datetime is null then 1 else 0 end as event_col,
-DATEDIFF(month, ed.episode_start_datetime, coalesce(dth.death_datetime, op.last_followup_date)) as survival_time_col
+case WHEN dth.death_datetime is not null then 1 else 0 end as event_col,
+--DATEDIFF(month, ed.episode_start_datetime, coalesce(dth.death_datetime, op.last_followup_date)) as survival_time_col
+ed.episode_start_datetime as start_date,
+coalesce(dth.death_datetime, op.last_followup_date) as end_date
 from @cdmSchema.episode ed
 left join @cdmSchema.person p
 on ed.episode_concept_id = 32528 -- first disease occurrence
