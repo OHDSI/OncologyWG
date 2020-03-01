@@ -29,6 +29,7 @@ describe NaaccrEtl do
 
       @naaccr_item_number_vital_status = '1760'      #VITAL STATUS
       @naaccr_item_value_vital_status_dead = '0'     #Dead
+      @naaccr_item_value_vital_status_alive = '1'     #Alive
 
       @naaccr_item_number_race_1 = '160'          #RACE 1
       @naaccr_item_value_race_1_black = '02'      #Black
@@ -36,11 +37,11 @@ describe NaaccrEtl do
       @naaccr_item_number_spanish_hispanic_origin = '190'             #SPANISH/HISPANIC ORIGIN
       @naaccr_item_value_spanish_hispanic_origin_puerto_rican = '2'   #Puerto Rican
 
-      @person_id = Person.maximum(:person_id) + 1
+      @new_person_id = Person.maximum(:person_id) + 1
 
       #390=Date of Diagnosis
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: '390' \
         , naaccr_item_value:  @diagnosis_date \
@@ -50,7 +51,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_date_of_birth \
         , naaccr_item_value:  @naaccr_item_value_date_of_birth \
@@ -60,7 +61,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_sex \
         , naaccr_item_value:  @naaccr_item_value_sex_male \
@@ -70,7 +71,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_date_of_last_contact \
         , naaccr_item_value:  @naaccr_item_value_date_of_last_contact \
@@ -80,7 +81,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_vital_status \
         , naaccr_item_value:  @naaccr_item_value_vital_status_dead \
@@ -90,7 +91,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_race_1 \
         , naaccr_item_value:  @naaccr_item_value_race_1_black \
@@ -100,10 +101,52 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_spanish_hispanic_origin \
         , naaccr_item_value:  @naaccr_item_value_spanish_hispanic_origin_puerto_rican \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      #existing person
+      #390=Date of Diagnosis
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '2' \
+        , naaccr_item_number: '390' \
+        , naaccr_item_value:  @diagnosis_date \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '2' \
+        , naaccr_item_number: @naaccr_item_number_date_of_birth \
+        , naaccr_item_value:  @naaccr_item_value_date_of_birth \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '2' \
+        , naaccr_item_number: @naaccr_item_number_date_of_last_contact \
+        , naaccr_item_value:  @naaccr_item_value_date_of_last_contact \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '2' \
+        , naaccr_item_number: @naaccr_item_number_vital_status \
+        , naaccr_item_value:  @naaccr_item_value_vital_status_alive \
         , histology: @histology \
         , site: @site \
         , histology_site:  @histology_site \
@@ -117,9 +160,8 @@ describe NaaccrEtl do
       expect(Death.count).to eq(0)
       NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
       expect(Person.count).to eq(3)
-      expect(Death.where(person_id: @person_id).count).to eq(1)
-      person = Person.where(person_id: @person_id).first
-      expect(person.person_id).to eq(@person_id)
+      person = Person.where(person_id: @new_person_id).first
+      expect(person.person_id).to eq(@new_person_id)
       expect(person.year_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).year)
       expect(person.month_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).month)
       expect(person.day_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).day)
@@ -127,19 +169,31 @@ describe NaaccrEtl do
       expect(person.gender_concept_id).to eq(8507)  #8507=MALE
       expect(person.race_concept_id).to eq(8516)    #8516=Black
       expect(person.ethnicity_concept_id).to eq(38003563) #38003563=Hispanic or Latino
-      death = Death.where(person_id: @person_id).first
-      expect(death.person_id).to eq(@person_id)
+      expect(Death.count).to eq(1)
+      death = Death.where(person_id: @new_person_id).first
+      expect(death.person_id).to eq(@new_person_id)
       expect(death.death_date).to eq(Date.parse(@naaccr_item_value_date_of_last_contact))
       expect(death.death_datetime).to eq(Date.parse(@naaccr_item_value_date_of_last_contact))
       expect(death.death_datetime).to eq(Date.parse(@naaccr_item_value_date_of_last_contact))
-      expect(ConditionOccurrence.count).to eq(1)
-      condition_occurrence = ConditionOccurrence.where(person_id: @person_id).first
-      expect(condition_occurrence.person_id).to eq(@person_id)
-      expect(ObservationPeriod.count).to eq(1)
-      observation_period = ObservationPeriod.where(person_id: @person_id).first
+      expect(ConditionOccurrence.count).to eq(2)
+      condition_occurrence = ConditionOccurrence.where(person_id: @new_person_id).first
+      expect(condition_occurrence.person_id).to eq(@new_person_id)
+      expect(ObservationPeriod.count).to eq(2)
+      observation_period = ObservationPeriod.where(person_id: @new_person_id).first
       expect(observation_period.observation_period_start_date).to eq(Date.parse(@diagnosis_date))
       expect(observation_period.observation_period_end_date).to eq(Date.parse(@naaccr_item_value_date_of_last_contact))
       expect(observation_period. period_type_concept_id).to eq(44814724) #44814724="Period covering healthcare encounters"
+    end
+
+    it 'does not create an entry in the DEATH table for exisitng entries in the PERSON table not marked as dead', focus: false do
+      expect(Person.count).to eq(2)
+      expect(Death.count).to eq(0)
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+      expect(Death.count).to eq(1)
+      death = Death.where(person_id: @new_person_id).first
+      expect(death.person_id).to eq(@new_person_id)
+      expect(Death.where(person_id: @person_1.person_id).first).to be_nil
+      expect(Death.where(person_id: @person_2.person_id).first).to be_nil
     end
   end
 
@@ -162,11 +216,11 @@ describe NaaccrEtl do
       @naaccr_item_number_spanish_hispanic_origin = '190'             #SPANISH/HISPANIC ORIGIN
       @naaccr_item_value_spanish_hispanic_origin_puerto_rican = '2'   #Puerto Rican
 
-      @person_id = Person.maximum(:person_id) + 1
+      @new_person_id = Person.maximum(:person_id) + 1
 
       #390=Date of Diagnosis
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: '390' \
         , naaccr_item_value:  @diagnosis_date \
@@ -176,7 +230,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_date_of_birth \
         , naaccr_item_value:  @naaccr_item_value_date_of_birth \
@@ -186,7 +240,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_sex \
         , naaccr_item_value:  @naaccr_item_value_sex_male \
@@ -196,7 +250,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_race_1 \
         , naaccr_item_value:  @naaccr_item_value_race_1_black \
@@ -206,7 +260,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_spanish_hispanic_origin \
         , naaccr_item_value:  @naaccr_item_value_spanish_hispanic_origin_puerto_rican \
@@ -223,9 +277,9 @@ describe NaaccrEtl do
       expect(Death.count).to eq(0)
       NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
       expect(Person.count).to eq(3)
-      expect(Death.where(person_id: @person_id).count).to eq(0)
-      person = Person.where(person_id: @person_id).first
-      expect(person.person_id).to eq(@person_id)
+      expect(Death.where(person_id: @new_person_id).count).to eq(0)
+      person = Person.where(person_id: @new_person_id).first
+      expect(person.person_id).to eq(@new_person_id)
       expect(person.year_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).year)
       expect(person.month_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).month)
       expect(person.day_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).day)
@@ -234,10 +288,10 @@ describe NaaccrEtl do
       expect(person.race_concept_id).to eq(8516)    #8516=Black
       expect(person.ethnicity_concept_id).to eq(38003563) #38003563=Hispanic or Latino
       expect(ConditionOccurrence.count).to eq(1)
-      condition_occurrence = ConditionOccurrence.where(person_id: @person_id).first
-      expect(condition_occurrence.person_id).to eq(@person_id)
+      condition_occurrence = ConditionOccurrence.where(person_id: @new_person_id).first
+      expect(condition_occurrence.person_id).to eq(@new_person_id)
       expect(ObservationPeriod.count).to eq(1)
-      observation_period = ObservationPeriod.where(person_id: @person_id).first
+      observation_period = ObservationPeriod.where(person_id: @new_person_id).first
       expect(observation_period.observation_period_start_date).to eq(Date.parse(@diagnosis_date))
       expect(observation_period.observation_period_end_date).to eq(Date.parse(@diagnosis_date))
       expect(observation_period. period_type_concept_id).to eq(44814724) #44814724="Period covering healthcare encounters"
@@ -269,11 +323,11 @@ describe NaaccrEtl do
       @naaccr_item_number_spanish_hispanic_origin = '190'             #SPANISH/HISPANIC ORIGIN
       @naaccr_item_value_spanish_hispanic_origin_puerto_rican = '2'   #Puerto Rican
 
-      @person_id = Person.maximum(:person_id) + 1
+      @new_person_id = Person.maximum(:person_id) + 1
 
       #390=Date of Diagnosis
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: '390' \
         , naaccr_item_value:  @diagnosis_date \
@@ -283,7 +337,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_date_of_birth \
         , naaccr_item_value:  @naaccr_item_value_date_of_birth \
@@ -293,7 +347,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_sex \
         , naaccr_item_value:  @naaccr_item_value_sex_male \
@@ -303,7 +357,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_date_of_last_contact \
         , naaccr_item_value:  @naaccr_item_value_date_of_last_contact \
@@ -313,7 +367,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_vital_status \
         , naaccr_item_value:  @naaccr_item_value_vital_status_dead \
@@ -323,7 +377,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_race_1 \
         , naaccr_item_value:  @naaccr_item_value_race_1_black \
@@ -333,7 +387,7 @@ describe NaaccrEtl do
       )
 
       FactoryBot.create(:naaccr_data_point \
-        , person_id: @person_id \
+        , person_id: @new_person_id \
         , record_id: '1' \
         , naaccr_item_number: @naaccr_item_number_spanish_hispanic_origin \
         , naaccr_item_value:  @naaccr_item_value_spanish_hispanic_origin_puerto_rican \
@@ -350,9 +404,9 @@ describe NaaccrEtl do
       expect(Death.count).to eq(0)
       NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
       expect(Person.count).to eq(3)
-      expect(Death.where(person_id: @person_id).count).to eq(0)
-      person = Person.where(person_id: @person_id).first
-      expect(person.person_id).to eq(@person_id)
+      expect(Death.where(person_id: @new_person_id).count).to eq(0)
+      person = Person.where(person_id: @new_person_id).first
+      expect(person.person_id).to eq(@new_person_id)
       expect(person.year_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).year)
       expect(person.month_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).month)
       expect(person.day_of_birth).to eq(Date.parse(@naaccr_item_value_date_of_birth).day)
@@ -361,10 +415,10 @@ describe NaaccrEtl do
       expect(person.race_concept_id).to eq(8516)    #8516=Black
       expect(person.ethnicity_concept_id).to eq(38003563) #38003563=Hispanic or Latino
       expect(ConditionOccurrence.count).to eq(1)
-      condition_occurrence = ConditionOccurrence.where(person_id: @person_id).first
-      expect(condition_occurrence.person_id).to eq(@person_id)
+      condition_occurrence = ConditionOccurrence.where(person_id: @new_person_id).first
+      expect(condition_occurrence.person_id).to eq(@new_person_id)
       expect(ObservationPeriod.count).to eq(1)
-      observation_period = ObservationPeriod.where(person_id: @person_id).first
+      observation_period = ObservationPeriod.where(person_id: @new_person_id).first
       expect(observation_period.observation_period_start_date).to eq(Date.parse(@diagnosis_date))
       expect(observation_period.observation_period_end_date).to eq(Date.parse(@diagnosis_date))
       expect(observation_period. period_type_concept_id).to eq(44814724) #44814724="Period covering healthcare encounters"
@@ -390,7 +444,7 @@ describe NaaccrEtl do
       @naaccr_item_number_vital_status = '1760'      #VITAL STATUS
       @naaccr_item_value_vital_status_dead = '0'     #Dead
 
-      @person_id = Person.maximum(:person_id) + 1
+      @new_person_id = Person.maximum(:person_id) + 1
 
       #390=Date of Diagnosis
       FactoryBot.create(:naaccr_data_point \
@@ -464,7 +518,7 @@ describe NaaccrEtl do
       @naaccr_item_number_vital_status = '1760'      #VITAL STATUS
       @naaccr_item_value_vital_status_dead = '1'     #Alive
 
-      @person_id = Person.maximum(:person_id) + 1
+      @new_person_id = Person.maximum(:person_id) + 1
 
       #390=Date of Diagnosis
       FactoryBot.create(:naaccr_data_point \
