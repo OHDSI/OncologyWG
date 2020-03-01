@@ -679,6 +679,60 @@ describe NaaccrEtl do
     end
   end
 
+  describe "For an 'ICDO Condition' that has an unknown histology" do
+    before(:each) do
+      @diagnosis_date = '19981022'
+      @histology_site = 'NULL-C61.9'
+      @record_id = '1'
+      #390=Date of Diagnosis
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: @record_id \
+        , naaccr_item_number: '390' \
+        , naaccr_item_value:  @diagnosis_date \
+        , histology: '8140/3' \
+        , site: 'C61.9' \
+        , histology_site:  @histology_site \
+      )
+      @condition_concept = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+    end
+
+    it "creates an entry in the CONDITION_OCCURRENCE table", focus: false do
+      expect(ConditionOccurrence.count).to eq(1)
+      condition_occurrence = ConditionOccurrence.first
+      expect(condition_occurrence.condition_concept_id).to eq(@condition_concept.concept_id)
+      expect(condition_occurrence.person_id).to eq(@person_1.person_id)
+      expect(condition_occurrence.condition_start_date).to eq(Date.parse(@diagnosis_date))
+      expect(condition_occurrence.condition_start_datetime).to eq(Date.parse(@diagnosis_date))
+      expect(condition_occurrence.condition_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
+      expect(condition_occurrence.condition_source_value).to eq(@histology_site)
+      expect(condition_occurrence.condition_source_concept_id).to eq(@condition_concept.concept_id)
+      expect(CdmSourceProvenance.where(cdm_field_concept_id: 1147127).count).to eq(1)
+      cdm_source_provenance = CdmSourceProvenance.where(cdm_field_concept_id: 1147127).first
+      expect(cdm_source_provenance.cdm_event_id).to eq(condition_occurrence.condition_occurrence_id)
+      expect(cdm_source_provenance.cdm_field_concept_id).to eq(1147127) #1147127=condition_occurrence.condition_occurrence_id
+      expect(cdm_source_provenance.record_id).to eq(@record_id)
+    end
+
+    it "creates an entry in the EPISODE table", focus: false do
+      expect(Episode.count).to eq(1)
+      episode = Episode.first
+      expect(episode.person_id).to eq(@person_1.person_id)
+      expect(episode.episode_concept_id).to eq(32528) #32528='Disease First Occurrence'
+      expect(episode.episode_start_datetime).to eq(Date.parse(@diagnosis_date))
+      expect(episode.episode_end_datetime).to be_nil
+      expect(episode.episode_object_concept_id).to eq(@condition_concept.concept_id)
+      expect(episode.episode_type_concept_id).to eq(32546)
+      expect(episode.episode_source_value).to eq(@histology_site)
+      expect(episode.episode_source_concept_id).to eq(@condition_concept.concept_id)
+      expect(ConditionOccurrence.count).to eq(1)
+      condition_occurrence = ConditionOccurrence.first
+      #1147127 = ‘condition_occurrence.condition_occurrence_id’ concept
+      expect(EpisodeEvent.where(episode_id: episode.episode_id, event_id: condition_occurrence.condition_occurrence_id, episode_event_field_concept_id: 1147127).count).to eq(1)
+    end
+  end
+
   describe 'Creating entries in MEASUREMENT table for a standard categorical schema-independent diagnosis modifier' do
     before(:each) do
       @diagnosis_date = '20170630'
