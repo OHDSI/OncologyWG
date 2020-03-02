@@ -392,14 +392,16 @@ CREATE TABLE naaccr_data_points_temp
 		,ethn.naaccr_item_value
 		,COALESCE(ethn.ethnicity_concept_id, 0)
    FROM
+   -- where DOB isn't null and person doesn't already exist in person
    (
     SELECT DISTINCT person_id,
-				CAST(naaccr_item_value as date) dob
+		   CAST(naaccr_item_value as date) dob
     FROM naaccr_data_points ndp
-	WHERE naaccr_item_number = '240' -- date of birth
-	AND person_id NOT IN ( SELECT person_id FROM person) -- exclude if exists already
+    WHERE naaccr_item_number = '240' -- date of birth
+    AND person_id NOT IN ( SELECT person_id FROM person) -- exclude if exists already
    ) per
    LEFT OUTER JOIN
+   -- Gender
    (
 	SELECT DISTINCT 
 		person_id
@@ -413,6 +415,7 @@ CREATE TABLE naaccr_data_points_temp
    ) gen
    ON per.person_id = gen.person_id
    LEFT OUTER JOIN
+   -- Race
    (
 	SELECT DISTINCT 
 		person_id
@@ -451,6 +454,7 @@ CREATE TABLE naaccr_data_points_temp
 	WHERE naaccr_item_number = '160'    -- race 1
    ) race
    ON per.person_id = race.person_id
+   -- ethnicity
    LEFT OUTER JOIN
    (
 	SELECT DISTINCT
@@ -482,6 +486,7 @@ CREATE TABLE naaccr_data_points_temp
          , record_id
          , histology_site
          , naaccr_item_number
+	 -- arbitrary string length filter for join efficiency
          , CASE WHEN LEN(naaccr_item_value) > 255
 				THEN SUBSTRING(naaccr_item_value,1,255)
 				ELSE naaccr_item_value
@@ -558,14 +563,14 @@ CREATE TABLE naaccr_data_points_temp
       ) x
       INNER JOIN
       (
-      SELECT DISTINCT conc.concept_code, cr.concept_id_2
-      FROM concept conc
-      INNER JOIN concept_relationship cr
-      ON conc. vocabulary_id = 'ICDO3'
-      AND cr.concept_id_1 = conc.concept_id
-      AND relationship_id = 'ICDO to Schema'
-      -- Theres a ton of duplicated schemas here that arent in the mapping file... Item/value must be identical between schemas?
-      AND cr.concept_id_2 IN (SELECT DISTINCT schema_concept_id FROM ambig_schema_discrim)
+	      SELECT DISTINCT conc.concept_code, cr.concept_id_2
+	      FROM concept conc
+	      INNER JOIN concept_relationship cr
+	      ON conc. vocabulary_id = 'ICDO3'
+	      AND cr.concept_id_1 = conc.concept_id
+	      AND relationship_id = 'ICDO to Schema'
+	      -- Theres a ton of duplicated schemas here that arent in the mapping file... Item/value must be identical between schemas?
+	      AND cr.concept_id_2 IN (SELECT DISTINCT schema_concept_id FROM ambig_schema_discrim)
       ) ambig_cond
       ON x.histology_site = ambig_cond.concept_code
       INNER JOIN ambig_schema_discrim asd
@@ -648,6 +653,7 @@ CREATE TABLE naaccr_data_points_temp
   AND c1.vocabulary_id = 'NAACCR'
   AND c1.concept_class_id = 'NAACCR Value'
   AND CONCAT(naaccr_data_points_temp.variable_concept_code,'@', naaccr_data_points_temp.naaccr_item_value) = c1.concept_code
+  -- get date items
   AND naaccr_data_points_temp.naaccr_item_number NOT IN(-- todo: verify this list
       SELECT DISTINCT c.concept_code
       FROM concept c
@@ -876,18 +882,18 @@ CREATE TABLE naaccr_data_points_temp
         , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
         , conc_num.operator_concept_id                                                                                                                            AS operator_concept_id
         , CASE
-				  WHEN ndp.type_concept_id = 32676 --'Numeric'
-						THEN
-							CASE
-							WHEN ndp.value_concept_id IS NULL
-							THEN
-								CAST(ndp.naaccr_item_value AS NUMERIC)
-							ELSE
-								COALESCE(conc_num.value_as_number, NULL)
-							END
-					  ELSE
-						NULL
-					END as value_as_number
+	  WHEN ndp.type_concept_id = 32676 --'Numeric'
+		THEN
+			CASE
+			WHEN ndp.value_concept_id IS NULL
+				THEN
+				CAST(ndp.naaccr_item_value AS NUMERIC)
+				ELSE
+				COALESCE(conc_num.value_as_number, NULL)
+			END
+		  ELSE
+			NULL
+		END as value_as_number
         , ndp.value_concept_id                                                                                                                          AS value_as_concept_id
         , COALESCE(unit_cr.concept_id_2, conc_num.unit_concept_id)                                                                                                  AS unit_concept_id
         , NULL                                                                                                                                                    AS range_low
@@ -1061,7 +1067,6 @@ CREATE TABLE naaccr_data_points_temp
   ON mt.record_id = et.record_id
   ;
 --
---
 
 -- Treatment Episodes
 
@@ -1176,7 +1181,7 @@ CREATE TABLE naaccr_data_points_temp
       	 , value_concept_code
       	 , type_concept_id
     FROM naaccr_data_points_temp
-    WHERE naaccr_item_number NOT IN ( '1290' )
+    WHERE naaccr_item_number NOT IN ( '1290' ) -- not surgery
   ) ndp
   INNER JOIN concept c1 ON c1.concept_class_id = 'NAACCR Variable' AND ndp.naaccr_item_number = c1.concept_code
 	INNER JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Has Answer'
@@ -1247,7 +1252,7 @@ CREATE TABLE naaccr_data_points_temp
       	 , value_concept_code
       	 , type_concept_id
     FROM naaccr_data_points_temp
-    WHERE naaccr_item_number = '1290'
+    WHERE naaccr_item_number = '1290'  -- surgery only
   ) ndp
   -- get icdo
   INNER JOIN concept conc
