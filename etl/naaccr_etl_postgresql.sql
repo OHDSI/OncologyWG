@@ -1063,6 +1063,25 @@ CREATE TABLE naaccr_data_points_temp
 
 -- Treatment Episodes
 
+  -- Temp table with NAACCR dates
+  -- Used in joins instead full naaccr_data_points table to improve performance
+  DROP TABLE IF EXISTS tmp_naaccr_data_points_temp_dates;
+  CREATE TABLE tmp_naaccr_data_points_temp_dates AS
+  SELECT *
+  FROM naaccr_data_points_temp src
+  WHERE EXISTS
+    (
+      SELECT 1
+      FROM concept_relationship cr
+      WHERE cr.concept_id_1 = src.variable_concept_id
+        AND cr.relationship_id IN ('End date of', 'Start date of')
+    );
+  
+  CREATE INDEX idx_ndptmp_date_join ON tmp_naaccr_data_points_temp_dates USING btree (variable_concept_id, record_id);
+  
+  ANALYZE tmp_naaccr_data_points_temp_dates;
+
+
   -- populate episode_temp
 
   -- insert drugs into episode_temp
@@ -1120,7 +1139,7 @@ CREATE TABLE naaccr_data_points_temp
   -- Get start date
 	INNER JOIN concept_relationship cr2 ON c1.concept_id = cr2.concept_id_1
     AND cr2.relationship_id = 'Has start date'
-  INNER JOIN naaccr_data_points_temp ndp_dates
+  INNER JOIN tmp_naaccr_data_points_temp_dates ndp_dates
     ON cr2.concept_id_2 = ndp_dates.variable_concept_id
     AND ndp.record_id = ndp_dates.record_id
 	-- filter null dates
@@ -1184,7 +1203,7 @@ CREATE TABLE naaccr_data_points_temp
   INNER JOIN concept_relationship cr2
     ON c1.concept_id = cr2.concept_id_1
     AND cr2.relationship_id = 'Has start date'
-  INNER JOIN naaccr_data_points_temp ndp_dates
+  INNER JOIN tmp_naaccr_data_points_temp_dates ndp_dates
     ON cr2.concept_id_2 = ndp_dates.variable_concept_id
 	-- filter null dates
 	AND ndp_dates.naaccr_item_value IS NOT NULL
@@ -1193,7 +1212,7 @@ CREATE TABLE naaccr_data_points_temp
   LEFT OUTER JOIN concept_relationship cr3
     ON c1.concept_id = cr3.concept_id_1
     AND cr3.relationship_id = 'Has end date'
-  LEFT OUTER JOIN naaccr_data_points_temp end_dates
+  LEFT OUTER JOIN tmp_naaccr_data_points_temp_dates end_dates
     ON cr3.concept_id_2 = end_dates.variable_concept_id
 	--ON end_dates.naaccr_item_number = '3220'
 	-- filter null dates
@@ -1266,12 +1285,14 @@ CREATE TABLE naaccr_data_points_temp
     AND CONCAT(schem_conc.concept_code, '@', 1290, '@', ndp.naaccr_item_value) = var_conc.concept_code
 
   -- hardcoded for now until update
-  INNER JOIN naaccr_data_points_temp ndp_dates
+  INNER JOIN tmp_naaccr_data_points_temp_dates ndp_dates
     ON ndp_dates.naaccr_item_number = '1200'
     AND ndp.record_id = ndp_dates.record_id
   -- filter null dates
   WHERE ndp_dates.naaccr_item_value IS NOT NULL
   ;
+
+  DROP TABLE IF EXISTS tmp_naaccr_data_points_temp_dates;
 
   -- Insert from episode_temp into domain temp tables
 
