@@ -697,8 +697,14 @@ CREATE TABLE naaccr_data_points_temp
   AND naaccr_data_points_temp.variable_concept_id = cr1.concept_id_1;
 
 
+  -- Building indexes to optimize performance
 
+  CREATE INDEX idx_cr_ndpt_record_id            ON naaccr_data_points_temp  USING btree (record_id);
+  CREATE INDEX idx_cr_ndpt_naaccr_item_number   ON naaccr_data_points_temp  USING btree (naaccr_item_number);
+  CREATE INDEX idx_cr_ndpt_naaccr_item_value    ON naaccr_data_points_temp  USING btree (naaccr_item_value);
+  CREATE INDEX idx_cr_ndpt_variable_concept_id  ON naaccr_data_points_temp  USING btree (variable_concept_id);
 
+  ANALYZE naaccr_data_points_temp;
 
    -- DEATH
 
@@ -1417,6 +1423,10 @@ CREATE TABLE naaccr_data_points_temp
                   END;
 
 	-- Treatment Episode Modifiers
+
+    CREATE INDEX idx_tmp_ep_record_id ON episode_temp USING btree (record_id);
+
+    ANALYZE episode_temp;
 
 	  INSERT INTO measurement_temp
 	  (
