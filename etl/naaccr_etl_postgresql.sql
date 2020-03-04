@@ -575,31 +575,34 @@ CREATE TABLE naaccr_data_points_temp
     AND naaccr_data_points_temp.schema_concept_id IS NULL;
 
 	-- Variables
-  -- schema-independent
   UPDATE naaccr_data_points_temp
-  SET variable_concept_code = c1.concept_code
-    , variable_concept_id   = c1.concept_id
+    SET variable_concept_code = cv.variable_concept_code
+    , variable_concept_id   = cv.variable_concept_id
+    FROM 
+    (
+        SELECT DISTINCT
+            c1.concept_code                   AS concept_code,
+            CASE
+                WHEN COALESCE(c1.standard_concept, '') = 'S'
+                THEN c1.concept_code
+                ELSE c2.concept_code
+            END                               AS variable_concept_code,
+            CASE
+                WHEN COALESCE(c1.standard_concept, '') = 'S'
+                THEN c1.concept_id
+                ELSE c2.concept_id
+            END                               AS variable_concept_id
   FROM concept c1
+        LEFT JOIN concept_relationship cr1 
+            ON  c1.concept_id = cr1.concept_id_1 
+            AND cr1.relationship_id = 'Maps to'
+        LEFT JOIN concept c2
+            ON cr1.concept_id_2 = c2.concept_id
   WHERE c1.vocabulary_id = 'NAACCR'
   AND c1.concept_class_id = 'NAACCR Variable'
-  AND naaccr_data_points_temp.variable_concept_id IS NULL
-  AND c1.concept_id IS NOT NULL
-	AND c1.standard_concept = 'S'
-  AND naaccr_data_points_temp.naaccr_item_number = c1.concept_code;
-
-  -- schema-independent non-standard
-  UPDATE naaccr_data_points_temp
-  SET variable_concept_code = c2.concept_code
-    , variable_concept_id   = c2.concept_id
-  FROM concept c1 JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Maps to'
-								  JOIN concept c2 							ON cr1.concept_id_2 = c2.concept_id
-  WHERE c1.vocabulary_id = 'NAACCR'
-  AND c1.concept_class_id = 'NAACCR Variable'
-  AND naaccr_data_points_temp.variable_concept_id IS NULL
-  AND c1.concept_id IS NOT NULL
-	AND c1.standard_concept IS NULL
-	AND c2.standard_concept = 'S'
-  AND naaccr_data_points_temp.naaccr_item_number = c1.concept_code;
+    ) cv
+    WHERE naaccr_data_points_temp.variable_concept_id IS NULL
+    AND naaccr_data_points_temp.naaccr_item_number = cv.concept_code;
 
 
   --  schema dependent
