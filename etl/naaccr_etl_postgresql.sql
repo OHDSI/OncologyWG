@@ -776,7 +776,7 @@ CREATE TABLE naaccr_data_points_temp
 
   SELECT COALESCE( (SELECT MAX(condition_occurrence_id) FROM condition_occurrence_temp),
                  , (SELECT MAX(condition_occurrence_id) FROM condition_occurrence)
-                 , 0) + row_number() over (order by s.record_id)                                              AS condition_occurrence_id
+                 , 0) + row_number() over ()                                                                  AS condition_occurrence_id
       , s.person_id                                                                                           AS person_id
       , c2.concept_id                                                                                         AS condition_concept_id
       , CAST(s.naaccr_item_value as date)  		                                                          AS condition_start_date
@@ -862,7 +862,7 @@ CREATE TABLE naaccr_data_points_temp
 
     SELECT COALESCE( (SELECT MAX(measurement_id) FROM measurement_temp),
                  , (SELECT MAX(measurement_id) FROM measurement)
-                 , 0) + row_number() over (order by ndp.record_id)                                                                                                AS measurement_id
+                 , 0) + row_number() over ()                                                                                                                      AS measurement_id
         , ndp.person_id                                                                                                                                             AS person_id
         , conc.concept_id                                                                                                                                        AS measurement_concept_id
         , cot.condition_start_date                                                                                                                                AS measurement_date
@@ -972,7 +972,7 @@ CREATE TABLE naaccr_data_points_temp
   )
   SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp),
                  , (SELECT MAX(episode_id) FROM episode)
-                 , 0) + row_number() over(order by cot.record_id)                                                                                               AS episode_id
+                 , 0) + row_number() over()                                                                                                                     AS episode_id
       , cot.person_id                                                                                                                                           AS person_id
       , 32528                                                                                                                                                   AS episode_concept_id  --Disease First Occurrence
       , cot.condition_start_datetime                                                                                                                            AS episode_start_datetime        --?
@@ -1031,7 +1031,7 @@ CREATE TABLE naaccr_data_points_temp
   )
   SELECT COALESCE( (SELECT MAX(measurement_id) FROM measurement_temp),
                  , (SELECT MAX(measurement_id) FROM measurement)
-                 , 0) + row_number() over(order by mt.record_id)                                                                                                          AS measurement_id
+                 , 0) + row_number() over()                                                                                                                               AS measurement_id
       , mt.person_id                                                                                                                                                      AS person_id
       , mt.measurement_concept_id                                                                                                                                         AS measurement_concept_id
       , mt.measurement_date                                                                                                                                               AS measurement_date
@@ -1103,7 +1103,7 @@ CREATE TABLE naaccr_data_points_temp
   )
   SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp),
                  , (SELECT MAX(episode_id) FROM episode)
-                 , 0) + row_number() over(order by ndp.record_id)                                                                                                 AS episode_id
+                 , 0) + row_number() over()                                                                                                                     AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , ndp.variable_concept_id  -- 32531 Treatment regimen
       , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
@@ -1185,7 +1185,7 @@ CREATE TABLE naaccr_data_points_temp
   )
   SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp),
                  , (SELECT MAX(episode_id) FROM episode)
-                 , 0) + row_number() over(order by ndp.record_id)                                                                                                 AS episode_id
+                 , 0) + row_number() over()                                                                                                                       AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , ndp.variable_concept_id  -- 32531 Treatment regimen
       , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
@@ -1262,7 +1262,7 @@ CREATE TABLE naaccr_data_points_temp
   )
   SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp),
                  , (SELECT MAX(episode_id) FROM episode)
-                 , 0) + row_number() over(order by ndp.record_id)                                                                                               AS episode_id
+                 , 0) + row_number() over()                                                                                                                     AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
       , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
@@ -1348,7 +1348,7 @@ CREATE TABLE naaccr_data_points_temp
   )
   SELECT COALESCE( (SELECT MAX(drug_exposure_id) FROM drug_exposure_temp),
                  , (SELECT MAX(drug_exposure_id) FROM drug_exposure)
-                 , 0) + row_number() over(order by et.record_id)                             AS drug_exposure_id
+                 , 0) + row_number() over()                             AS drug_exposure_id
     , et.person_id                                                                                                                                                                                  AS person_id
     , et.episode_object_concept_id                                                                                                                                                                  AS drug_concept_id
     , et.episode_start_datetime                                                                                                                                                               AS drug_exposure_start_date
@@ -1401,7 +1401,7 @@ CREATE TABLE naaccr_data_points_temp
   )
   SELECT COALESCE( (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence_temp),
                  , (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence)
-                 , 0) + row_number() over(order by et.record_id)  AS procedure_occurrence_id
+                 , 0) + row_number() over()  AS procedure_occurrence_id
     , et.person_id                                                                                                                                                                                   AS person_id
     , et.episode_object_concept_id                                                                                                                                                                   AS procedure_concept_id
     , et.episode_start_datetime                                                                                                                                                           AS procedure_date
@@ -1506,7 +1506,7 @@ CREATE TABLE naaccr_data_points_temp
 
 	  SELECT COALESCE( (SELECT MAX(measurement_id) FROM measurement_temp),
                    , (SELECT MAX(measurement_id) FROM measurement)
-                   , 0) + row_number() over(order by ndp.record_id)                                                                                                 AS measurement_id
+                   , 0) + row_number() over()                                                                                                                       AS measurement_id
 	      , ndp.person_id                                                                                                                                             AS person_id
 	      , conc.concept_id                                                                                                                                        AS measurement_concept_id
 	      , et.episode_start_datetime                                                                                                                           AS measurement_time
@@ -1622,7 +1622,7 @@ CREATE TABLE naaccr_data_points_temp
 	)
 	SELECT COALESCE(   (SELECT MAX(measurement_id) FROM measurement_temp),
                    , (SELECT MAX(measurement_id) FROM measurement)
-                   , 0) + row_number() over(order by mt.record_id)                                                                                                          AS measurement_id
+                   , 0) + row_number() over()                                                                                                                               AS measurement_id
 	      , mt.person_id                                                                                                                                                      AS person_id
 	      , mt.measurement_concept_id                                                                                                                                         AS measurement_concept_id
 	      , mt.measurement_date                                                                                                                                               AS measurement_date
@@ -1699,7 +1699,7 @@ CREATE TABLE naaccr_data_points_temp
   )
   SELECT COALESCE(   (SELECT MAX(observation_id) FROM observation_temp),
                    , (SELECT MAX(observation_id) FROM observation)
-                   , 0) + row_number() over(order by ndp.record_id) 	                                                                                                       AS observation_id
+                   , 0) + row_number() over() 	                                                                                                                             AS observation_id
         , ndp.person_id                                                                                                                                                      AS person_id
         , c1.concept_id                                                                                                                                                      AS observation_concept_id
         , CAST(ndp1.naaccr_item_value as date)                                                                                                                               AS observation_date
@@ -2138,7 +2138,7 @@ CREATE TABLE naaccr_data_points_temp
 									)
     SELECT  COALESCE(   (SELECT MAX(observation_period_id) FROM observation_period_temp),
                       , (SELECT MAX(observation_period_id) FROM observation_period)
-                      , 0) + row_number() over (order by obs_dates.person_id)         AS observation_period_id
+                      , 0) + row_number() over ()         AS observation_period_id
    				, obs_dates.person_id
    				, obs_dates.min_date as observation_period_start_date
    				, COALESCE(ndp.max_date, obs_dates.max_date) as observation_period_end_date
