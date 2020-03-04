@@ -874,7 +874,7 @@ CREATE TABLE naaccr_data_points_temp
 				  WHEN ndp.type_concept_id = 32676 --'Numeric'
 						THEN
 							CASE
-							WHEN ndp.value_concept_id IS NULL
+							WHEN ndp.value_concept_id IS NULL AND ndp.naaccr_item_value ~ '^[0-9]*\.?[0-9]*$'
 							THEN
 								CAST(ndp.naaccr_item_value AS NUMERIC)
 							ELSE
@@ -1475,7 +1475,7 @@ CREATE TABLE naaccr_data_points_temp
 				  WHEN ndp.type_concept_id = 32676 --'Numeric'
 						THEN
 							CASE
-							WHEN ndp.value_concept_id IS NULL
+							WHEN ndp.value_concept_id IS NULL AND ndp.naaccr_item_value ~ '^[0-9]*\.?[0-9]*$'
 							THEN
 								CAST(ndp.naaccr_item_value AS NUMERIC)
 							ELSE
