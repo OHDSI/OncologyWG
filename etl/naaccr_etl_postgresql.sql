@@ -1145,6 +1145,27 @@ CREATE TABLE naaccr_data_points_temp
 	-- filter null dates
 	AND ndp_dates.naaccr_item_value IS NOT NULL;
 
+
+  -- Temp table with concept_ids only to optimize insert query
+  DROP TABLE IF EXISTS tmp_concept_naaccr_procedures;
+  CREATE TABLE tmp_concept_naaccr_procedures AS
+  SELECT 
+    c1.concept_id     AS c1_concept_id,
+    c1.concept_code   AS c1_concept_code,
+    c2.concept_id     AS c2_concept_id,
+    c2.concept_code   AS c2_concept_code
+  FROM concept c1 
+  INNER JOIN concept_relationship cr1 
+    ON  c1.concept_id = cr1.concept_id_1 
+    AND cr1.relationship_id = 'Has Answer'
+  INNER JOIN concept c2 
+    ON  cr1.concept_id_2 = c2.concept_id 
+    AND c2.domain_id = 'Procedure'
+  WHERE c1.vocabulary_id = 'NAACCR'
+    AND c1.concept_class_id = 'NAACCR Variable' 
+  ;
+
+
   -- insert procedure (all except surgeries)
   INSERT INTO episode_temp
   (
@@ -1175,10 +1196,10 @@ CREATE TABLE naaccr_data_points_temp
 			 END AS episode_end_datetime
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
-      , c2.concept_id                                                                                                                                           AS episode_object_concept_id
+      , c.c2_concept_id                                                                                                                                           AS episode_object_concept_id
       , 32546                                                                                                                                                   AS episode_type_concept_id --Episode derived from registry
-      , c2.concept_code                                                                                                     																		AS episode_source_value
-      , c2.concept_id
+      , c.c2_concept_code                                                                                                     																		AS episode_source_value
+      , c.c2_concept_id
       , ndp.record_id                                                                                                                                             AS record_id
   FROM
   (
@@ -1197,11 +1218,10 @@ CREATE TABLE naaccr_data_points_temp
     FROM naaccr_data_points_temp
     WHERE naaccr_item_number NOT IN ( '1290' )
   ) ndp
-  INNER JOIN concept c1 ON c1.concept_class_id = 'NAACCR Variable' AND ndp.naaccr_item_number = c1.concept_code
-	INNER JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Has Answer'
-	INNER JOIN concept c2 ON cr1.concept_id_2 = c2.concept_id AND CONCAT(c1.concept_code,'@', ndp.naaccr_item_value) = c2.concept_code AND c2.domain_id = 'Procedure'
+  INNER JOIN tmp_concept_naaccr_procedures c 
+    ON CONCAT(c.c1_concept_code,'@', ndp.naaccr_item_value) = c.c2_concept_code
   INNER JOIN concept_relationship cr2
-    ON c1.concept_id = cr2.concept_id_1
+    ON c.c1_concept_id = cr2.concept_id_1
     AND cr2.relationship_id = 'Has start date'
   INNER JOIN tmp_naaccr_data_points_temp_dates ndp_dates
     ON cr2.concept_id_2 = ndp_dates.variable_concept_id
@@ -1210,7 +1230,7 @@ CREATE TABLE naaccr_data_points_temp
     AND ndp.record_id = ndp_dates.record_id
   -- Get end date
   LEFT OUTER JOIN concept_relationship cr3
-    ON c1.concept_id = cr3.concept_id_1
+    ON c.c1_concept_id = cr3.concept_id_1
     AND cr3.relationship_id = 'Has end date'
   LEFT OUTER JOIN tmp_naaccr_data_points_temp_dates end_dates
     ON cr3.concept_id_2 = end_dates.variable_concept_id
@@ -1219,6 +1239,8 @@ CREATE TABLE naaccr_data_points_temp
 	AND end_dates.naaccr_item_value IS NOT NULL
 	AND ndp.record_id = end_dates.record_id
   ;
+
+  DROP TABLE IF EXISTS tmp_concept_naaccr_procedures;
 
   -- insert surgery procedures
   -- this requires its own schema mapping (ICDO to Proc Schema)
