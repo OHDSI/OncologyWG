@@ -29,6 +29,7 @@ plot_survival <- function(dbms = c("oracle","postgresql","redshift","sql server"
         rendered_sql <-
                 SqlRender::loadRenderTranslateSql(sqlFilename = "time_dx_to_survival.sql",
                                                   packageName = "oncoPlot",
+                                                  dbms = dbms,
                                                   cdmSchema = schema)
 
         dataframe <- DatabaseConnector::dbGetQuery(con, statement = rendered_sql)
