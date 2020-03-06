@@ -43,7 +43,7 @@ left join
  (
   SELECT modifier_of_event_id
 		,COUNT(CASE WHEN value_source_value IN ('1','2') THEN 1 END) metastatic
-		,COUNT(CASE WHEN value_source_value = 0  THEN 1 END ) nonmeta
+		,COUNT(CASE WHEN value_source_value = '0'  THEN 1 END ) nonmeta
  FROM @cdmSchema.measurement
  WHERE modifier_of_field_concept_id = 1000000003 -- 'epsiode.episode_id'
  AND measurement_concept_id
