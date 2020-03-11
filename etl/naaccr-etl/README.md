@@ -26,7 +26,7 @@ To run the test suite locally, do the following:
     ALTER DATABASE naaccr_etl_test OWNER TO naaccr_etl_test;
     ALTER USER naaccr_etl_test SUPERUSER;
 
-*  Put the path to the psql exectuable within your search path.
+* Put the path to the psql exectuable within your search path.
   * Mac/Linux
     * Add the following line to your '~/.bash_profile file' `export PATH="/Library/PostgreSQL/10/bin:$PATH"` (Substitute the location/version where PostgreSQL is installed on your computuer)
   * Windows

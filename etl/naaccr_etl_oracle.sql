@@ -473,9 +473,10 @@ CREATE TABLE naaccr_data_points_temp
     FROM naaccr_data_points ndp
 	  WHERE naaccr_item_number = '240' -- date of birth
 	AND person_id NOT IN (SELECT person_id FROM person ) -- exclude if exists already
+  AND ndp.person_id IS NOT NULL
     ) per
    LEFT OUTER JOIN
-   (SELECT DISTINCT 
+   (SELECT DISTINCT
 		person_id
 		,naaccr_item_value
 		,CASE WHEN naaccr_item_value = '1' THEN 8507
@@ -487,7 +488,7 @@ CREATE TABLE naaccr_data_points_temp
     ) gen
    ON per.person_id = gen.person_id
    LEFT OUTER JOIN
-   (SELECT DISTINCT 
+   (SELECT DISTINCT
 		person_id
 		,naaccr_item_value
 		,CASE WHEN naaccr_item_value = '01' THEN 8527		-- white
@@ -801,6 +802,7 @@ CREATE TABLE naaccr_data_points_temp
 		  AND LENGTH(ndp.naaccr_item_value) = '8'
 		  AND ndp2.naaccr_item_value = '0' --'0'='Dead'
 		  AND ndp.record_id = ndp2.record_id
+      AND ndp.person_id IS NOT NULL
 		GROUP BY ndp.person_id
 	 ) x
 	  WHERE x.person_id NOT IN (SELECT person_id FROM DEATH )
@@ -887,7 +889,7 @@ CREATE TABLE naaccr_data_points_temp
         AND c2.domain_id = 'Condition'
      ;
 
-  
+
 
   --   condition modifiers
 
@@ -2171,7 +2173,7 @@ CREATE TABLE naaccr_data_points_temp
 			 ) T
 			GROUP BY t.PERSON_ID
 		 ) obs_dates
-		LEFT OUTER JOIN 
+		LEFT OUTER JOIN
 		-- end date -> date of last contact
 		(SELECT person_id
 				, CAST(max(naaccr_item_value) as date) max_date
@@ -2337,7 +2339,7 @@ EXCEPTION
       RAISE;
     END IF;
 END;
-	
+
 BEGIN
   EXECUTE IMMEDIATE 'TRUNCATE TABLE ambig_schema_discrim';
   EXECUTE IMMEDIATE 'DROP TABLE ambig_schema_discrim';

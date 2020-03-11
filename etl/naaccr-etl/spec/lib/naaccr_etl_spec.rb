@@ -197,6 +197,115 @@ describe NaaccrEtl do
     end
   end
 
+  describe "For a person that does not have an entry in the PERSON table but has a NULL person_id" do
+    before(:each) do
+      @diagnosis_date = '19981022'
+      @birth_date = '19760704'
+      @histology = '8140/3'
+      @site = 'C61.9'
+      @histology_site = "#{@histology}-#{@site}"
+      @naaccr_item_number_date_of_birth = '240'      #DATE OF BIRTH
+      @naaccr_item_value_date_of_birth = '19760704'
+
+      @naaccr_item_number_sex = '220'      #SEX
+      @naaccr_item_value_sex_male = '1'         #Male
+
+      @naaccr_item_number_date_of_last_contact = '1750'      #DATE OF LAST CONTACT
+      @naaccr_item_value_date_of_last_contact = '20180101'
+
+      @naaccr_item_number_vital_status = '1760'      #VITAL STATUS
+      @naaccr_item_value_vital_status_dead = '0'     #Dead
+      @naaccr_item_value_vital_status_alive = '1'     #Alive
+
+      @naaccr_item_number_race_1 = '160'          #RACE 1
+      @naaccr_item_value_race_1_black = '02'      #Black
+
+      @naaccr_item_number_spanish_hispanic_origin = '190'             #SPANISH/HISPANIC ORIGIN
+      @naaccr_item_value_spanish_hispanic_origin_puerto_rican = '2'   #Puerto Rican
+
+      #390=Date of Diagnosis
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: nil \
+        , record_id: '1' \
+        , naaccr_item_number: '390' \
+        , naaccr_item_value:  @diagnosis_date \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: nil \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_date_of_birth \
+        , naaccr_item_value:  @naaccr_item_value_date_of_birth \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: nil \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_sex \
+        , naaccr_item_value:  @naaccr_item_value_sex_male \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: nil \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_date_of_last_contact \
+        , naaccr_item_value:  @naaccr_item_value_date_of_last_contact \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: nil \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_vital_status \
+        , naaccr_item_value:  @naaccr_item_value_vital_status_dead \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: nil \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_race_1 \
+        , naaccr_item_value:  @naaccr_item_value_race_1_black \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: nil \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_spanish_hispanic_origin \
+        , naaccr_item_value:  @naaccr_item_value_spanish_hispanic_origin_puerto_rican \
+        , histology: @histology \
+        , site: @site \
+        , histology_site:  @histology_site \
+      )
+    end
+
+    it "does not creates an entry in the PERSON table, the DEATH table or OBSERVATION_PERIOD table", focus: false do
+      expect(Person.count).to eq(2)
+      expect(Death.count).to eq(0)
+      expect(ObservationPeriod.count).to eq(0)
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+      expect(Person.count).to eq(2)
+      expect(Death.count).to eq(0)
+      expect(ObservationPeriod.count).to eq(0)
+    end
+  end
+
   describe "For a person that does not have an entry in the PERSON table and has no 'DATE OF LAST CONTACT" do
     before(:each) do
       @diagnosis_date = '19981022'
