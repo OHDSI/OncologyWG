@@ -35,13 +35,20 @@ plot_survival <- function(dbms = c("oracle","postgresql","redshift","sql server"
         dataframe <- DatabaseConnector::dbGetQuery(con, statement = rendered_sql)
 
         DatabaseConnector::dbDisconnect(conn = con)
+        # trim string names
+        dataframe$cohort_cols <- sub("[(].*", "", dataframe$cohort_cols)
 
-        dataframe$survival_time_col <- as.numeric(dataframe$survival_time_col)
+        # filter to only the top 10 most prevalent
+        top10 <- names(sort(table(dataframe$cohort_cols), decreasing = TRUE)[1:10])
+        dataframe <- dataframe[dataframe$cohort_cols %in% top10,]
+
         dataframe$event_col <- as.numeric(dataframe$event_col)
 
         dataframe$cohort_cols <- as.factor(dataframe$cohort_cols)
 
-        survival_object <<- try_catch_error_as_na(survival::Surv(time = dataframe$survival_time_col,
+        dataframe$timediff <- difftime(as.Date(dataframe$end_date),as.Date(dataframe$start_date), units = "days")/30
+
+        survival_object <<- try_catch_error_as_na(survival::Surv(time = dataframe$timediff,
                                                        event = dataframe$event_col,
                                                        type = "right"))
 
