@@ -699,10 +699,10 @@ CREATE TABLE naaccr_data_points_temp
 
   -- Building indexes to optimize performance
 
-  CREATE INDEX idx_cr_ndpt_record_id            ON naaccr_data_points_temp  USING btree (record_id);
-  CREATE INDEX idx_cr_ndpt_naaccr_item_number   ON naaccr_data_points_temp  USING btree (naaccr_item_number);
-  CREATE INDEX idx_cr_ndpt_naaccr_item_value    ON naaccr_data_points_temp  USING btree (naaccr_item_value);
-  CREATE INDEX idx_cr_ndpt_variable_concept_id  ON naaccr_data_points_temp  USING btree (variable_concept_id);
+  CREATE INDEX idx_cr_ndpt_record_id            ON naaccr_data_points_temp  (record_id);
+  CREATE INDEX idx_cr_ndpt_naaccr_item_number   ON naaccr_data_points_temp  (naaccr_item_number);
+  CREATE INDEX idx_cr_ndpt_naaccr_item_value    ON naaccr_data_points_temp  (naaccr_item_value);
+  CREATE INDEX idx_cr_ndpt_variable_concept_id  ON naaccr_data_points_temp  (variable_concept_id);
 
   ANALYZE naaccr_data_points_temp;
 
@@ -860,8 +860,7 @@ CREATE TABLE naaccr_data_points_temp
     )
 
 
-    SELECT COALESCE( (SELECT MAX(measurement_id) FROM measurement_temp)
-                 , (SELECT MAX(measurement_id) FROM measurement)
+    SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement)
                  , 0) + row_number() over ()                                                                                                                      AS measurement_id
         , ndp.person_id                                                                                                                                             AS person_id
         , conc.concept_id                                                                                                                                        AS measurement_concept_id
@@ -970,8 +969,7 @@ CREATE TABLE naaccr_data_points_temp
     , episode_source_concept_id
     , record_id
   )
-  SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp)
-                 , (SELECT MAX(episode_id) FROM episode)
+  SELECT COALESCE((SELECT MAX(episode_id) FROM episode)
                  , 0) + row_number() over()                                                                                                                     AS episode_id
       , cot.person_id                                                                                                                                           AS person_id
       , 32528                                                                                                                                                   AS episode_concept_id  --Disease First Occurrence
@@ -1077,7 +1075,7 @@ CREATE TABLE naaccr_data_points_temp
         AND cr.relationship_id IN ('End date of', 'Start date of')
     );
   
-  CREATE INDEX idx_ndptmp_date_join ON tmp_naaccr_data_points_temp_dates USING btree (variable_concept_id, record_id);
+  CREATE INDEX idx_ndptmp_date_join ON tmp_naaccr_data_points_temp_dates (variable_concept_id, record_id);
   
   ANALYZE tmp_naaccr_data_points_temp_dates;
 
@@ -1473,7 +1471,7 @@ CREATE TABLE naaccr_data_points_temp
 
 	-- Treatment Episode Modifiers
 
-    CREATE INDEX idx_tmp_ep_record_id ON episode_temp USING btree (record_id);
+    CREATE INDEX idx_tmp_ep_record_id ON episode_temp (record_id);
 
     ANALYZE episode_temp;
 
