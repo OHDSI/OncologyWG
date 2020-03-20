@@ -48,7 +48,8 @@ function(dbms = c("oracle","postgresql","redshift","sql server","pdw", "netezza"
                                 strip.background = element_blank(),
                                 strip.text.y = element_blank(),
                         ) +
-                        coord_cartesian(xlim = c(0,max(dataframe %>% select(time_to_rx_col) %>% unlist()))) +
+                        coord_cartesian(xlim = c(0,100), ylim=c(0,max(data.frame(table(dataframe$cancer_type))$Freq))) +
+                        # coord_cartesian(xlim = c(0,max(dataframe %>% select(time_to_rx_col) %>% unlist()))) +
                         geom_vline(data = meandat,aes(xintercept=mean_value),linetype="dashed", size = .5) +
                         geom_text(data = meandat, aes(x = round((mean_value)), y = max(select(dataframe, time_to_rx_col)), label = paste0("mean = ",mean_value), hjust = -0.2)) +
                         geom_vline(data = meandat,aes(xintercept=median_value),linetype="solid", size = .3, color = "#CC3300") +
