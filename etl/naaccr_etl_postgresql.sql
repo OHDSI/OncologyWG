@@ -576,31 +576,34 @@ CREATE TABLE naaccr_data_points_temp
     AND naaccr_data_points_temp.schema_concept_id IS NULL;
 
 	-- Variables
-  -- schema-independent
   UPDATE naaccr_data_points_temp
-  SET variable_concept_code = c1.concept_code
-    , variable_concept_id   = c1.concept_id
+    SET variable_concept_code = cv.variable_concept_code
+    , variable_concept_id   = cv.variable_concept_id
+    FROM 
+    (
+        SELECT DISTINCT
+            c1.concept_code                   AS concept_code,
+            CASE
+                WHEN COALESCE(c1.standard_concept, '') = 'S'
+                THEN c1.concept_code
+                ELSE c2.concept_code
+            END                               AS variable_concept_code,
+            CASE
+                WHEN COALESCE(c1.standard_concept, '') = 'S'
+                THEN c1.concept_id
+                ELSE c2.concept_id
+            END                               AS variable_concept_id
   FROM concept c1
+        LEFT JOIN concept_relationship cr1 
+            ON  c1.concept_id = cr1.concept_id_1 
+            AND cr1.relationship_id = 'Maps to'
+        LEFT JOIN concept c2
+            ON cr1.concept_id_2 = c2.concept_id
   WHERE c1.vocabulary_id = 'NAACCR'
   AND c1.concept_class_id = 'NAACCR Variable'
-  AND naaccr_data_points_temp.variable_concept_id IS NULL
-  AND c1.concept_id IS NOT NULL
-	AND c1.standard_concept = 'S'
-  AND naaccr_data_points_temp.naaccr_item_number = c1.concept_code;
-
-  -- schema-independent non-standard
-  UPDATE naaccr_data_points_temp
-  SET variable_concept_code = c2.concept_code
-    , variable_concept_id   = c2.concept_id
-  FROM concept c1 JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Maps to'
-								  JOIN concept c2 							ON cr1.concept_id_2 = c2.concept_id
-  WHERE c1.vocabulary_id = 'NAACCR'
-  AND c1.concept_class_id = 'NAACCR Variable'
-  AND naaccr_data_points_temp.variable_concept_id IS NULL
-  AND c1.concept_id IS NOT NULL
-	AND c1.standard_concept IS NULL
-	AND c2.standard_concept = 'S'
-  AND naaccr_data_points_temp.naaccr_item_number = c1.concept_code;
+    ) cv
+    WHERE naaccr_data_points_temp.variable_concept_id IS NULL
+    AND naaccr_data_points_temp.naaccr_item_number = cv.concept_code;
 
 
   --  schema dependent
@@ -695,8 +698,14 @@ CREATE TABLE naaccr_data_points_temp
   AND naaccr_data_points_temp.variable_concept_id = cr1.concept_id_1;
 
 
+  -- Building indexes to optimize performance
 
+  CREATE INDEX idx_cr_ndpt_record_id            ON naaccr_data_points_temp  (record_id);
+  CREATE INDEX idx_cr_ndpt_naaccr_item_number   ON naaccr_data_points_temp  (naaccr_item_number);
+  CREATE INDEX idx_cr_ndpt_naaccr_item_value    ON naaccr_data_points_temp  (naaccr_item_value);
+  CREATE INDEX idx_cr_ndpt_variable_concept_id  ON naaccr_data_points_temp  (variable_concept_id);
 
+  ANALYZE naaccr_data_points_temp;
 
    -- DEATH
 
@@ -767,11 +776,9 @@ CREATE TABLE naaccr_data_points_temp
     , record_id
   )
 
-  SELECT ( CASE WHEN  (SELECT MAX(condition_occurrence_id) FROM condition_occurrence) IS NULL
-            THEN 0
-            ELSE  (SELECT MAX(condition_occurrence_id) FROM condition_occurrence)
-          END + row_number() over (order by s.record_id)
-      ) AS condition_occurrence_id
+  SELECT COALESCE( (SELECT MAX(condition_occurrence_id) FROM condition_occurrence_temp)
+                 , (SELECT MAX(condition_occurrence_id) FROM condition_occurrence)
+                 , 0) + row_number() over ()                                                                  AS condition_occurrence_id
       , s.person_id                                                                                           AS person_id
       , c2.concept_id                                                                                         AS condition_concept_id
       , CAST(s.naaccr_item_value as date)  		                                                          AS condition_start_date
@@ -855,10 +862,8 @@ CREATE TABLE naaccr_data_points_temp
     )
 
 
-    SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement) IS NULL
-        THEN 0
-        ELSE  (SELECT MAX(measurement_id) FROM measurement)
-      END + row_number() over (order by ndp.record_id)) AS measurement_id
+    SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement)
+                 , 0) + row_number() over ()                                                                                                                      AS measurement_id
         , ndp.person_id                                                                                                                                             AS person_id
         , conc.concept_id                                                                                                                                        AS measurement_concept_id
         , cot.condition_start_date                                                                                                                                AS measurement_date
@@ -870,7 +875,7 @@ CREATE TABLE naaccr_data_points_temp
 				  WHEN ndp.type_concept_id = 32676 --'Numeric'
 						THEN
 							CASE
-							WHEN ndp.value_concept_id IS NULL
+							WHEN ndp.value_concept_id IS NULL AND ndp.naaccr_item_value ~ '^[0-9]*\.?[0-9]*$'
 							THEN
 								CAST(ndp.naaccr_item_value AS NUMERIC)
 							ELSE
@@ -966,7 +971,8 @@ CREATE TABLE naaccr_data_points_temp
     , episode_source_concept_id
     , record_id
   )
-  SELECT ( CASE WHEN  (SELECT MAX(episode_id) FROM episode) IS NULL THEN 0 ELSE  (SELECT MAX(episode_id) FROM episode) END + row_number() over(order by cot.record_id))                 AS episode_id
+  SELECT COALESCE((SELECT MAX(episode_id) FROM episode)
+                 , 0) + row_number() over()                                                                                                                     AS episode_id
       , cot.person_id                                                                                                                                           AS person_id
       , 32528                                                                                                                                                   AS episode_concept_id  --Disease First Occurrence
       , cot.condition_start_datetime                                                                                                                            AS episode_start_datetime        --?
@@ -1023,8 +1029,9 @@ CREATE TABLE naaccr_data_points_temp
     , modifier_of_field_concept_id
     , record_id
   )
-  SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL
-  THEN 0 ELSE  (SELECT MAX(measurement_id) FROM measurement_temp) END + row_number() over(order by mt.record_id)) AS measurement_id
+  SELECT COALESCE( (SELECT MAX(measurement_id) FROM measurement_temp)
+                 , (SELECT MAX(measurement_id) FROM measurement)
+                 , 0) + row_number() over()                                                                                                                               AS measurement_id
       , mt.person_id                                                                                                                                                      AS person_id
       , mt.measurement_concept_id                                                                                                                                         AS measurement_concept_id
       , mt.measurement_date                                                                                                                                               AS measurement_date
@@ -1056,6 +1063,25 @@ CREATE TABLE naaccr_data_points_temp
 
 -- Treatment Episodes
 
+  -- Temp table with NAACCR dates
+  -- Used in joins instead full naaccr_data_points table to improve performance
+  DROP TABLE IF EXISTS tmp_naaccr_data_points_temp_dates;
+  CREATE TABLE tmp_naaccr_data_points_temp_dates AS
+  SELECT *
+  FROM naaccr_data_points_temp src
+  WHERE EXISTS
+    (
+      SELECT 1
+      FROM concept_relationship cr
+      WHERE cr.concept_id_1 = src.variable_concept_id
+        AND cr.relationship_id IN ('End date of', 'Start date of')
+    );
+  
+  CREATE INDEX idx_ndptmp_date_join ON tmp_naaccr_data_points_temp_dates (variable_concept_id, record_id);
+  
+  ANALYZE tmp_naaccr_data_points_temp_dates;
+
+
   -- populate episode_temp
 
   -- insert drugs into episode_temp
@@ -1075,8 +1101,9 @@ CREATE TABLE naaccr_data_points_temp
     , record_id
 
   )
-  SELECT ( CASE WHEN  (SELECT MAX(episode_id) FROM episode_temp) IS NULL THEN 0 ELSE
-      (SELECT MAX(episode_id) FROM episode_temp) END + row_number() over(order by ndp.record_id))                 AS episode_id
+  SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp)
+                 , (SELECT MAX(episode_id) FROM episode)
+                 , 0) + row_number() over()                                                                                                                     AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , ndp.variable_concept_id  -- 32531 Treatment regimen
       , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
@@ -1112,11 +1139,32 @@ CREATE TABLE naaccr_data_points_temp
   -- Get start date
 	INNER JOIN concept_relationship cr2 ON c1.concept_id = cr2.concept_id_1
     AND cr2.relationship_id = 'Has start date'
-  INNER JOIN naaccr_data_points_temp ndp_dates
+  INNER JOIN tmp_naaccr_data_points_temp_dates ndp_dates
     ON cr2.concept_id_2 = ndp_dates.variable_concept_id
     AND ndp.record_id = ndp_dates.record_id
 	-- filter null dates
 	AND ndp_dates.naaccr_item_value IS NOT NULL;
+
+
+  -- Temp table with concept_ids only to optimize insert query
+  DROP TABLE IF EXISTS tmp_concept_naaccr_procedures;
+  CREATE TABLE tmp_concept_naaccr_procedures AS
+  SELECT 
+    c1.concept_id     AS c1_concept_id,
+    c1.concept_code   AS c1_concept_code,
+    c2.concept_id     AS c2_concept_id,
+    c2.concept_code   AS c2_concept_code
+  FROM concept c1 
+  INNER JOIN concept_relationship cr1 
+    ON  c1.concept_id = cr1.concept_id_1 
+    AND cr1.relationship_id = 'Has Answer'
+  INNER JOIN concept c2 
+    ON  cr1.concept_id_2 = c2.concept_id 
+    AND c2.domain_id = 'Procedure'
+  WHERE c1.vocabulary_id = 'NAACCR'
+    AND c1.concept_class_id = 'NAACCR Variable' 
+  ;
+
 
   -- insert procedure (all except surgeries)
   INSERT INTO episode_temp
@@ -1135,8 +1183,9 @@ CREATE TABLE naaccr_data_points_temp
     , record_id
 
   )
-  SELECT ( CASE WHEN  (SELECT MAX(episode_id) FROM episode_temp) IS NULL THEN 0 ELSE
-      (SELECT MAX(episode_id) FROM episode_temp) END + row_number() over(order by ndp.record_id))                 AS episode_id
+  SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp)
+                 , (SELECT MAX(episode_id) FROM episode)
+                 , 0) + row_number() over()                                                                                                                       AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , ndp.variable_concept_id  -- 32531 Treatment regimen
       , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
@@ -1147,10 +1196,10 @@ CREATE TABLE naaccr_data_points_temp
 			 END AS episode_end_datetime
       , NULL                                                                                                                                                    AS episode_parent_id
       , NULL                                                                                                                                                    AS episode_number
-      , c2.concept_id                                                                                                                                           AS episode_object_concept_id
+      , c.c2_concept_id                                                                                                                                           AS episode_object_concept_id
       , 32546                                                                                                                                                   AS episode_type_concept_id --Episode derived from registry
-      , c2.concept_code                                                                                                     																		AS episode_source_value
-      , c2.concept_id
+      , c.c2_concept_code                                                                                                     																		AS episode_source_value
+      , c.c2_concept_id
       , ndp.record_id                                                                                                                                             AS record_id
   FROM
   (
@@ -1169,28 +1218,30 @@ CREATE TABLE naaccr_data_points_temp
     FROM naaccr_data_points_temp
     WHERE naaccr_item_number NOT IN ( '1290' )
   ) ndp
-  INNER JOIN concept c1 ON c1.concept_class_id = 'NAACCR Variable' AND ndp.naaccr_item_number = c1.concept_code
-	INNER JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Has Answer'
-	INNER JOIN concept c2 ON cr1.concept_id_2 = c2.concept_id AND CONCAT(c1.concept_code,'@', ndp.naaccr_item_value) = c2.concept_code AND c2.domain_id = 'Procedure'
+  INNER JOIN tmp_concept_naaccr_procedures c 
+    ON CONCAT(c.c1_concept_code,'@', ndp.naaccr_item_value) = c.c2_concept_code
+    AND ndp.naaccr_item_number = c.c1_concept_code  
   INNER JOIN concept_relationship cr2
-    ON c1.concept_id = cr2.concept_id_1
+    ON c.c1_concept_id = cr2.concept_id_1
     AND cr2.relationship_id = 'Has start date'
-  INNER JOIN naaccr_data_points_temp ndp_dates
+  INNER JOIN tmp_naaccr_data_points_temp_dates ndp_dates
     ON cr2.concept_id_2 = ndp_dates.variable_concept_id
 	-- filter null dates
 	AND ndp_dates.naaccr_item_value IS NOT NULL
     AND ndp.record_id = ndp_dates.record_id
   -- Get end date
   LEFT OUTER JOIN concept_relationship cr3
-    ON c1.concept_id = cr3.concept_id_1
+    ON c.c1_concept_id = cr3.concept_id_1
     AND cr3.relationship_id = 'Has end date'
-  LEFT OUTER JOIN naaccr_data_points_temp end_dates
+  LEFT OUTER JOIN tmp_naaccr_data_points_temp_dates end_dates
     ON cr3.concept_id_2 = end_dates.variable_concept_id
 	--ON end_dates.naaccr_item_number = '3220'
 	-- filter null dates
 	AND end_dates.naaccr_item_value IS NOT NULL
 	AND ndp.record_id = end_dates.record_id
   ;
+
+  DROP TABLE IF EXISTS tmp_concept_naaccr_procedures;
 
   -- insert surgery procedures
   -- this requires its own schema mapping (ICDO to Proc Schema)
@@ -1210,8 +1261,9 @@ CREATE TABLE naaccr_data_points_temp
     , record_id
 
   )
-  SELECT ( CASE WHEN  (SELECT MAX(episode_id) FROM episode_temp) IS NULL THEN 0 ELSE
-      (SELECT MAX(episode_id) FROM episode_temp) END + row_number() over(order by ndp.record_id))                 AS episode_id
+  SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp)
+                 , (SELECT MAX(episode_id) FROM episode)
+                 , 0) + row_number() over()                                                                                                                     AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
       , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
@@ -1256,12 +1308,14 @@ CREATE TABLE naaccr_data_points_temp
     AND CONCAT(schem_conc.concept_code, '@', 1290, '@', ndp.naaccr_item_value) = var_conc.concept_code
 
   -- hardcoded for now until update
-  INNER JOIN naaccr_data_points_temp ndp_dates
+  INNER JOIN tmp_naaccr_data_points_temp_dates ndp_dates
     ON ndp_dates.naaccr_item_number = '1200'
     AND ndp.record_id = ndp_dates.record_id
   -- filter null dates
   WHERE ndp_dates.naaccr_item_value IS NOT NULL
   ;
+
+  DROP TABLE IF EXISTS tmp_naaccr_data_points_temp_dates;
 
   -- Insert from episode_temp into domain temp tables
 
@@ -1293,8 +1347,9 @@ CREATE TABLE naaccr_data_points_temp
     , dose_unit_source_value
     , record_id
   )
-  SELECT ( CASE WHEN  (SELECT MAX(drug_exposure_id) FROM drug_exposure)
-    IS NULL THEN 0 ELSE  (SELECT MAX(drug_exposure_id) FROM drug_exposure) END + row_number() over(order by et.record_id))                             AS drug_exposure_id
+  SELECT COALESCE( (SELECT MAX(drug_exposure_id) FROM drug_exposure_temp)
+                 , (SELECT MAX(drug_exposure_id) FROM drug_exposure)
+                 , 0) + row_number() over()                             AS drug_exposure_id
     , et.person_id                                                                                                                                                                                  AS person_id
     , et.episode_object_concept_id                                                                                                                                                                  AS drug_concept_id
     , et.episode_start_datetime                                                                                                                                                               AS drug_exposure_start_date
@@ -1345,8 +1400,9 @@ CREATE TABLE naaccr_data_points_temp
    , episode_id
    , record_id
   )
-  SELECT ( CASE WHEN  (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence) IS NULL THEN 0
-  ELSE  (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence) END + row_number() over(order by et.record_id))  AS procedure_occurrence_id
+  SELECT COALESCE( (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence_temp)
+                 , (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence)
+                 , 0) + row_number() over()  AS procedure_occurrence_id
     , et.person_id                                                                                                                                                                                   AS person_id
     , et.episode_object_concept_id                                                                                                                                                                   AS procedure_concept_id
     , et.episode_start_datetime                                                                                                                                                           AS procedure_date
@@ -1417,6 +1473,10 @@ CREATE TABLE naaccr_data_points_temp
 
 	-- Treatment Episode Modifiers
 
+    CREATE INDEX idx_tmp_ep_record_id ON episode_temp (record_id);
+
+    ANALYZE episode_temp;
+
 	  INSERT INTO measurement_temp
 	  (
 	    measurement_id
@@ -1445,8 +1505,9 @@ CREATE TABLE naaccr_data_points_temp
 	  )
 
 
-	  SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL
-	  THEN 0 ELSE  (SELECT MAX(measurement_id) FROM measurement_temp) END + row_number() over(order by ndp.record_id)) AS measurement_id
+	  SELECT COALESCE( (SELECT MAX(measurement_id) FROM measurement_temp)
+                   , (SELECT MAX(measurement_id) FROM measurement)
+                   , 0) + row_number() over()                                                                                                                       AS measurement_id
 	      , ndp.person_id                                                                                                                                             AS person_id
 	      , conc.concept_id                                                                                                                                        AS measurement_concept_id
 	      , et.episode_start_datetime                                                                                                                           AS measurement_time
@@ -1458,7 +1519,7 @@ CREATE TABLE naaccr_data_points_temp
 				  WHEN ndp.type_concept_id = 32676 --'Numeric'
 						THEN
 							CASE
-							WHEN ndp.value_concept_id IS NULL
+							WHEN ndp.value_concept_id IS NULL AND ndp.naaccr_item_value ~ '^[0-9]*\.?[0-9]*$'
 							THEN
 								CAST(ndp.naaccr_item_value AS NUMERIC)
 							ELSE
@@ -1560,8 +1621,9 @@ CREATE TABLE naaccr_data_points_temp
 	  , modifier_of_field_concept_id
 	  , record_id
 	)
-	SELECT ( CASE WHEN  (SELECT MAX(measurement_id) FROM measurement_temp) IS NULL THEN 0 ELSE
-	  (SELECT MAX(measurement_id) FROM measurement_temp) END + row_number() over(order by mt.record_id)) AS measurement_id
+	SELECT COALESCE(   (SELECT MAX(measurement_id) FROM measurement_temp)
+                   , (SELECT MAX(measurement_id) FROM measurement)
+                   , 0) + row_number() over()                                                                                                                               AS measurement_id
 	      , mt.person_id                                                                                                                                                      AS person_id
 	      , mt.measurement_concept_id                                                                                                                                         AS measurement_concept_id
 	      , mt.measurement_date                                                                                                                                               AS measurement_date
@@ -1636,7 +1698,9 @@ CREATE TABLE naaccr_data_points_temp
     -- , value_as_datetime
     , record_id
   )
-  SELECT (CASE WHEN  (SELECT MAX(observation_id) FROM observation_temp) IS NULL THEN 0 ELSE  (SELECT MAX(observation_id) FROM observation_temp) END + row_number() over(order by ndp.record_id))	 AS observation_id
+  SELECT COALESCE(   (SELECT MAX(observation_id) FROM observation_temp)
+                   , (SELECT MAX(observation_id) FROM observation)
+                   , 0) + row_number() over() 	                                                                                                                             AS observation_id
         , ndp.person_id                                                                                                                                                      AS person_id
         , c1.concept_id                                                                                                                                                      AS observation_concept_id
         , CAST(ndp1.naaccr_item_value as date)                                                                                                                               AS observation_date
@@ -2073,11 +2137,9 @@ CREATE TABLE naaccr_data_points_temp
 									, observation_period_end_date
 									, period_type_concept_id
 									)
-    SELECT  ( CASE WHEN  (SELECT MAX(observation_period_id) FROM observation_period) IS NULL
-               THEN 0
-               ELSE  (SELECT MAX(observation_period_id) FROM observation_period)
-             END + row_number() over (order by obs_dates.person_id)
-             ) AS observation_period_id
+    SELECT  COALESCE(   (SELECT MAX(observation_period_id) FROM observation_period_temp)
+                      , (SELECT MAX(observation_period_id) FROM observation_period)
+                      , 0) + row_number() over ()         AS observation_period_id
    				, obs_dates.person_id
    				, obs_dates.min_date as observation_period_start_date
    				, COALESCE(ndp.max_date, obs_dates.max_date) as observation_period_end_date
