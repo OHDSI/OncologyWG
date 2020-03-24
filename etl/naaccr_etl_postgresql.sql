@@ -576,10 +576,12 @@ CREATE TABLE naaccr_data_points_temp
     AND naaccr_data_points_temp.schema_concept_id IS NULL;
 
 	-- Variables
+  -- schema-independent
+	-- Variables
   UPDATE naaccr_data_points_temp
     SET variable_concept_code = cv.variable_concept_code
     , variable_concept_id   = cv.variable_concept_id
-    FROM 
+    FROM
     (
         SELECT DISTINCT
             c1.concept_code                   AS concept_code,
@@ -594,8 +596,8 @@ CREATE TABLE naaccr_data_points_temp
                 ELSE c2.concept_id
             END                               AS variable_concept_id
   FROM concept c1
-        LEFT JOIN concept_relationship cr1 
-            ON  c1.concept_id = cr1.concept_id_1 
+        LEFT JOIN concept_relationship cr1
+            ON  c1.concept_id = cr1.concept_id_1
             AND cr1.relationship_id = 'Maps to'
         LEFT JOIN concept c2
             ON cr1.concept_id_2 = c2.concept_id
@@ -704,8 +706,6 @@ CREATE TABLE naaccr_data_points_temp
   CREATE INDEX idx_cr_ndpt_naaccr_item_number   ON naaccr_data_points_temp  (naaccr_item_number);
   CREATE INDEX idx_cr_ndpt_naaccr_item_value    ON naaccr_data_points_temp  (naaccr_item_value);
   CREATE INDEX idx_cr_ndpt_variable_concept_id  ON naaccr_data_points_temp  (variable_concept_id);
-
-  ANALYZE naaccr_data_points_temp;
 
    -- DEATH
 
@@ -1062,7 +1062,6 @@ CREATE TABLE naaccr_data_points_temp
 --
 
 -- Treatment Episodes
-
   -- Temp table with NAACCR dates
   -- Used in joins instead full naaccr_data_points table to improve performance
   DROP TABLE IF EXISTS tmp_naaccr_data_points_temp_dates;
@@ -1076,10 +1075,8 @@ CREATE TABLE naaccr_data_points_temp
       WHERE cr.concept_id_1 = src.variable_concept_id
         AND cr.relationship_id IN ('End date of', 'Start date of')
     );
-  
+
   CREATE INDEX idx_ndptmp_date_join ON tmp_naaccr_data_points_temp_dates (variable_concept_id, record_id);
-  
-  ANALYZE tmp_naaccr_data_points_temp_dates;
 
 
   -- populate episode_temp
@@ -1137,7 +1134,7 @@ CREATE TABLE naaccr_data_points_temp
 	INNER JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Has Answer'
 	INNER JOIN concept c2 ON cr1.concept_id_2 = c2.concept_id AND CONCAT(c1.concept_code,'@', ndp.naaccr_item_value) = c2.concept_code
   -- Get start date
-	INNER JOIN concept_relationship cr2 ON c1.concept_id = cr2.concept_id_1
+  INNER JOIN concept_relationship cr2 ON c1.concept_id = cr2.concept_id_1
     AND cr2.relationship_id = 'Has start date'
   INNER JOIN tmp_naaccr_data_points_temp_dates ndp_dates
     ON cr2.concept_id_2 = ndp_dates.variable_concept_id
@@ -1149,20 +1146,20 @@ CREATE TABLE naaccr_data_points_temp
   -- Temp table with concept_ids only to optimize insert query
   DROP TABLE IF EXISTS tmp_concept_naaccr_procedures;
   CREATE TABLE tmp_concept_naaccr_procedures AS
-  SELECT 
+  SELECT
     c1.concept_id     AS c1_concept_id,
     c1.concept_code   AS c1_concept_code,
     c2.concept_id     AS c2_concept_id,
     c2.concept_code   AS c2_concept_code
-  FROM concept c1 
-  INNER JOIN concept_relationship cr1 
-    ON  c1.concept_id = cr1.concept_id_1 
+  FROM concept c1
+  INNER JOIN concept_relationship cr1
+    ON  c1.concept_id = cr1.concept_id_1
     AND cr1.relationship_id = 'Has Answer'
-  INNER JOIN concept c2 
-    ON  cr1.concept_id_2 = c2.concept_id 
+  INNER JOIN concept c2
+    ON  cr1.concept_id_2 = c2.concept_id
     AND c2.domain_id = 'Procedure'
   WHERE c1.vocabulary_id = 'NAACCR'
-    AND c1.concept_class_id = 'NAACCR Variable' 
+    AND c1.concept_class_id = 'NAACCR Variable'
   ;
 
 
@@ -1218,9 +1215,9 @@ CREATE TABLE naaccr_data_points_temp
     FROM naaccr_data_points_temp
     WHERE naaccr_item_number NOT IN ( '1290' )
   ) ndp
-  INNER JOIN tmp_concept_naaccr_procedures c 
+  INNER JOIN tmp_concept_naaccr_procedures c
     ON CONCAT(c.c1_concept_code,'@', ndp.naaccr_item_value) = c.c2_concept_code
-    AND ndp.naaccr_item_number = c.c1_concept_code  
+    AND ndp.naaccr_item_number = c.c1_concept_code
   INNER JOIN concept_relationship cr2
     ON c.c1_concept_id = cr2.concept_id_1
     AND cr2.relationship_id = 'Has start date'
@@ -1473,9 +1470,7 @@ CREATE TABLE naaccr_data_points_temp
 
 	-- Treatment Episode Modifiers
 
-    CREATE INDEX idx_tmp_ep_record_id ON episode_temp (record_id);
-
-    ANALYZE episode_temp;
+  CREATE INDEX idx_tmp_ep_record_id ON episode_temp (record_id);
 
 	  INSERT INTO measurement_temp
 	  (
