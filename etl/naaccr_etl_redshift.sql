@@ -335,7 +335,33 @@ CREATE TABLE naaccr_data_points_temp
 )
 DISTKEY(person_id);
 
+DROP TABLE IF EXISTS tmp_naaccr_data_points_temp_dates;
 
+CREATE TABLE tmp_naaccr_data_points_temp_dates
+ ( person_id BIGINT NOT NULL,
+	record_id VARCHAR(255) NULL,
+	histology_site VARCHAR(255) NULL,
+	naaccr_item_number VARCHAR(255) NULL,
+	naaccr_item_value VARCHAR(255) NULL,
+	schema_concept_id INT NULL,
+	schema_concept_code VARCHAR(255),
+	variable_concept_id INT NULL,
+	variable_concept_code VARCHAR(255) NULL,
+	value_concept_id INT NULL,
+	value_concept_code VARCHAR(255) NULL,
+	type_concept_id INT NULL
+)
+DISTKEY(person_id);
+
+DROP TABLE IF EXISTS tmp_concept_naaccr_procedures;
+
+CREATE TABLE tmp_concept_naaccr_procedures
+ (c1_concept_id INT NULL,
+    c1_concept_code VARCHAR(255),
+    c2_concept_id INT NULL,
+    c2_concept_code VARCHAR(255)
+)
+DISTSTYLE ALL;
 
 
  -- PERSON
@@ -778,7 +804,7 @@ DISTKEY(person_id);
 
   SELECT COALESCE( (SELECT MAX(condition_occurrence_id) FROM condition_occurrence_temp)
                  , (SELECT MAX(condition_occurrence_id) FROM condition_occurrence)
-                 , 0) + row_number() over ()                                                                  AS condition_occurrence_id
+                 , 0) + ROW_NUMBER() OVER (ORDER BY s.person_id )                                                                  AS condition_occurrence_id
       , s.person_id                                                                                           AS person_id
       , c2.concept_id                                                                                         AS condition_concept_id
       , CAST(s.naaccr_item_value as date)  		                                                          AS condition_start_date
@@ -863,7 +889,7 @@ DISTKEY(person_id);
 
 
     SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement)
-                 , 0) + row_number() over ()                                                                                                                      AS measurement_id
+                 , 0) + ROW_NUMBER() OVER (ORDER BY ndp.person_id )                                                                                                                      AS measurement_id
         , ndp.person_id                                                                                                                                             AS person_id
         , conc.concept_id                                                                                                                                        AS measurement_concept_id
         , cot.condition_start_date                                                                                                                                AS measurement_date
@@ -875,7 +901,7 @@ DISTKEY(person_id);
 				  WHEN ndp.type_concept_id = 32676 --'Numeric'
 						THEN
 							CASE
-							WHEN ndp.value_concept_id IS NULL AND ndp.naaccr_item_value ~ '^[0-9]*\.?[0-9]*$'
+							WHEN ndp.value_concept_id IS NULL AND ndp.naaccr_item_value like '^[0-9]*\.?[0-9]*$'
 							THEN
 								CAST(ndp.naaccr_item_value AS NUMERIC)
 							ELSE
@@ -972,7 +998,7 @@ DISTKEY(person_id);
     , record_id
   )
   SELECT COALESCE((SELECT MAX(episode_id) FROM episode)
-                 , 0) + row_number() over()                                                                                                                     AS episode_id
+                 , 0) + ROW_NUMBER() OVER (ORDER BY person_id )                                                                                                                     AS episode_id
       , cot.person_id                                                                                                                                           AS person_id
       , 32528                                                                                                                                                   AS episode_concept_id  --Disease First Occurrence
       , cot.condition_start_datetime                                                                                                                            AS episode_start_datetime        --?
@@ -1031,7 +1057,7 @@ DISTKEY(person_id);
   )
   SELECT COALESCE( (SELECT MAX(measurement_id) FROM measurement_temp)
                  , (SELECT MAX(measurement_id) FROM measurement)
-                 , 0) + row_number() over()                                                                                                                               AS measurement_id
+                 , 0) + ROW_NUMBER() OVER (ORDER BY measurement_id )                                                                                                                               AS measurement_id
       , mt.person_id                                                                                                                                                      AS person_id
       , mt.measurement_concept_id                                                                                                                                         AS measurement_concept_id
       , mt.measurement_date                                                                                                                                               AS measurement_date
@@ -1064,17 +1090,17 @@ DISTKEY(person_id);
 -- Treatment Episodes
   -- Temp table with NAACCR dates
   -- Used in joins instead full naaccr_data_points table to improve performance
-  DROP TABLE IF EXISTS tmp_naaccr_data_points_temp_dates;
-  CREATE TABLE tmp_naaccr_data_points_temp_dates AS
+
+  INSERT INTO tmp_naaccr_data_points_temp_dates 
   SELECT *
   FROM naaccr_data_points_temp src
   WHERE EXISTS
-     (SELECT 1
+    (
+      SELECT 1
       FROM concept_relationship cr
       WHERE cr.concept_id_1 = src.variable_concept_id
         AND cr.relationship_id IN ('End date of', 'Start date of')
-    )
-DISTSTYLE ALL;
+    );
 
   -- redshift does not support indexes
 
@@ -1100,7 +1126,7 @@ DISTSTYLE ALL;
   )
   SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp)
                  , (SELECT MAX(episode_id) FROM episode)
-                 , 0) + row_number() over()                                                                                                                     AS episode_id
+                 , 0) + ROW_NUMBER() OVER (ORDER BY ndp.person_id )                                                                                                                     AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , ndp.variable_concept_id  -- 32531 Treatment regimen
       , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
@@ -1144,8 +1170,7 @@ DISTSTYLE ALL;
 
 
   -- Temp table with concept_ids only to optimize insert query
-  DROP TABLE IF EXISTS tmp_concept_naaccr_procedures;
-  CREATE TABLE tmp_concept_naaccr_procedures AS
+  INSERT INTO tmp_concept_naaccr_procedures
   SELECT
     c1.concept_id     AS c1_concept_id,
     c1.concept_code   AS c1_concept_code,
@@ -1182,7 +1207,7 @@ DISTSTYLE ALL;
   )
   SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp)
                  , (SELECT MAX(episode_id) FROM episode)
-                 , 0) + row_number() over()                                                                                                                       AS episode_id
+                 , 0) + ROW_NUMBER() OVER (ORDER BY ndp.person_id )                                                                                                                       AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , ndp.variable_concept_id  -- 32531 Treatment regimen
       , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
@@ -1238,7 +1263,6 @@ DISTSTYLE ALL;
 	AND ndp.record_id = end_dates.record_id
   ;
 
-  DROP TABLE IF EXISTS tmp_concept_naaccr_procedures;
 
   -- insert surgery procedures
   -- this requires its own schema mapping (ICDO to Proc Schema)
@@ -1260,7 +1284,7 @@ DISTSTYLE ALL;
   )
   SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp)
                  , (SELECT MAX(episode_id) FROM episode)
-                 , 0) + row_number() over()                                                                                                                     AS episode_id
+                 , 0) + ROW_NUMBER() OVER (ORDER BY ndp.person_id )                                                                                                                     AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
       , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
@@ -1312,8 +1336,6 @@ DISTSTYLE ALL;
   WHERE ndp_dates.naaccr_item_value IS NOT NULL
   ;
 
-  DROP TABLE IF EXISTS tmp_naaccr_data_points_temp_dates;
-
   -- Insert from episode_temp into domain temp tables
 
   -- drug
@@ -1346,7 +1368,7 @@ DISTSTYLE ALL;
   )
   SELECT COALESCE( (SELECT MAX(drug_exposure_id) FROM drug_exposure_temp)
                  , (SELECT MAX(drug_exposure_id) FROM drug_exposure)
-                 , 0) + row_number() over()                             AS drug_exposure_id
+                 , 0) + ROW_NUMBER() OVER (ORDER BY et.person_id )                             AS drug_exposure_id
     , et.person_id                                                                                                                                                                                  AS person_id
     , et.episode_object_concept_id                                                                                                                                                                  AS drug_concept_id
     , et.episode_start_datetime                                                                                                                                                               AS drug_exposure_start_date
@@ -1399,7 +1421,7 @@ DISTSTYLE ALL;
   )
   SELECT COALESCE( (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence_temp)
                  , (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence)
-                 , 0) + row_number() over()  AS procedure_occurrence_id
+                 , 0) + ROW_NUMBER() OVER (ORDER BY et.person_id )  AS procedure_occurrence_id
     , et.person_id                                                                                                                                                                                   AS person_id
     , et.episode_object_concept_id                                                                                                                                                                   AS procedure_concept_id
     , et.episode_start_datetime                                                                                                                                                           AS procedure_date
@@ -1502,7 +1524,7 @@ DISTSTYLE ALL;
 
 	  SELECT COALESCE( (SELECT MAX(measurement_id) FROM measurement_temp)
                    , (SELECT MAX(measurement_id) FROM measurement)
-                   , 0) + row_number() over()                                                                                                                       AS measurement_id
+                   , 0) + ROW_NUMBER() OVER (ORDER BY ndp.person_id )                                                                                                                       AS measurement_id
 	      , ndp.person_id                                                                                                                                             AS person_id
 	      , conc.concept_id                                                                                                                                        AS measurement_concept_id
 	      , et.episode_start_datetime                                                                                                                           AS measurement_time
@@ -1514,7 +1536,7 @@ DISTSTYLE ALL;
 				  WHEN ndp.type_concept_id = 32676 --'Numeric'
 						THEN
 							CASE
-							WHEN ndp.value_concept_id IS NULL AND ndp.naaccr_item_value ~ '^[0-9]*\.?[0-9]*$'
+							WHEN ndp.value_concept_id IS NULL AND ndp.naaccr_item_value LIKE '^[0-9]*\.?[0-9]*$'
 							THEN
 								CAST(ndp.naaccr_item_value AS NUMERIC)
 							ELSE
@@ -1618,7 +1640,7 @@ DISTSTYLE ALL;
 	)
 	SELECT COALESCE(   (SELECT MAX(measurement_id) FROM measurement_temp)
                    , (SELECT MAX(measurement_id) FROM measurement)
-                   , 0) + row_number() over()                                                                                                                               AS measurement_id
+                   , 0) + ROW_NUMBER() OVER (ORDER BY mt.person_id )                                                                                                                               AS measurement_id
 	      , mt.person_id                                                                                                                                                      AS person_id
 	      , mt.measurement_concept_id                                                                                                                                         AS measurement_concept_id
 	      , mt.measurement_date                                                                                                                                               AS measurement_date
@@ -1695,7 +1717,7 @@ DISTSTYLE ALL;
   )
   SELECT COALESCE(   (SELECT MAX(observation_id) FROM observation_temp)
                    , (SELECT MAX(observation_id) FROM observation)
-                   , 0) + row_number() over() 	                                                                                                                             AS observation_id
+                   , 0) + ROW_NUMBER() OVER (ORDER BY ndp.person_id ) 	                                                                                                                             AS observation_id
         , ndp.person_id                                                                                                                                                      AS person_id
         , c1.concept_id                                                                                                                                                      AS observation_concept_id
         , CAST(ndp1.naaccr_item_value as date)                                                                                                                               AS observation_date
@@ -2134,7 +2156,7 @@ DISTSTYLE ALL;
 									)
     SELECT  COALESCE(   (SELECT MAX(observation_period_id) FROM observation_period_temp)
                       , (SELECT MAX(observation_period_id) FROM observation_period)
-                      , 0) + row_number() over ()         AS observation_period_id
+                      , 0) + ROW_NUMBER() OVER (ORDER BY obs_dates.person_id )         AS observation_period_id
    				, obs_dates.person_id
    				, obs_dates.min_date as observation_period_start_date
    				, COALESCE(ndp.max_date, obs_dates.max_date) as observation_period_end_date
@@ -2280,5 +2302,10 @@ DROP TABLE IF EXISTS fact_relationship_temp;
 DROP TABLE IF EXISTS observation_period_temp;
 
 DROP TABLE IF EXISTS ambig_schema_discrim;
+
+DROP TABLE IF EXISTS tmp_naaccr_data_points_temp_dates;
+
+DROP TABLE IF EXISTS tmp_concept_naaccr_procedures;
+
 
 COMMIT;
