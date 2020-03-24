@@ -914,7 +914,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 				  WHEN ndp.type_concept_id = 32676 --'Numeric'
 						THEN
 							CASE
-							WHEN ndp.value_concept_id IS NULL AND ndp.naaccr_item_value like '^[0-9]*\.?[0-9]*$'
+							WHEN ndp.value_concept_id IS NULL AND ISNUMERIC(ndp.naaccr_item_value) = 1
 							THEN
 								CAST(ndp.naaccr_item_value AS NUMERIC)
 							ELSE
@@ -1549,7 +1549,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 				  WHEN ndp.type_concept_id = 32676 --'Numeric'
 						THEN
 							CASE
-							WHEN ndp.value_concept_id IS NULL AND ndp.naaccr_item_value LIKE '^[0-9]*\.?[0-9]*$'
+							WHEN ndp.value_concept_id IS NULL AND ISNUMERIC(ndp.naaccr_item_value) = 1
 							THEN
 								CAST(ndp.naaccr_item_value AS NUMERIC)
 							ELSE

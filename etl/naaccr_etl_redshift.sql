@@ -901,7 +901,7 @@ DISTSTYLE ALL;
 				  WHEN ndp.type_concept_id = 32676 --'Numeric'
 						THEN
 							CASE
-							WHEN ndp.value_concept_id IS NULL AND ndp.naaccr_item_value like '^[0-9]*\.?[0-9]*$'
+							WHEN ndp.value_concept_id IS NULL AND REGEXP_INSTR(ndp.naaccr_item_value, '^[\-\+]?(\\d*\\.)?\\d+([Ee][\-\+]?\\d+)?$') = 1
 							THEN
 								CAST(ndp.naaccr_item_value AS NUMERIC)
 							ELSE
@@ -1536,7 +1536,7 @@ DISTSTYLE ALL;
 				  WHEN ndp.type_concept_id = 32676 --'Numeric'
 						THEN
 							CASE
-							WHEN ndp.value_concept_id IS NULL AND ndp.naaccr_item_value LIKE '^[0-9]*\.?[0-9]*$'
+							WHEN ndp.value_concept_id IS NULL AND REGEXP_INSTR(ndp.naaccr_item_value, '^[\-\+]?(\\d*\\.)?\\d+([Ee][\-\+]?\\d+)?$') = 1
 							THEN
 								CAST(ndp.naaccr_item_value AS NUMERIC)
 							ELSE
