@@ -1,0 +1,183 @@
+DROP TABLE if exists concept_as_range;
+
+CREATE TABLE concept_as_range
+AS
+SELECT a.concept_code,
+       a.concept_name,
+       b.concept_code AS question_code,
+       b.concept_name AS question_name
+FROM concept_stage a
+  JOIN concept_relationship_stage
+    ON relationship_id = 'Has Answer'
+   AND concept_code_2 = concept_code
+  JOIN concept_Stage b ON concept_code_1 = b.concept_Code
+WHERE (a.concept_class_id = 'NAACCR Value'
+AND   a.concept_name ~* '(less than|at least|more|greater|equal).*\d|Stated as (a range )?\d|\d cm to \d+ cm|ng/mL|mIU/mL|U/L|U/ml|\(mm\)|points\)|\d.*or (larger|greater|more|less)|Range of values is'
+AND   b.concept_name ~* 'count|Size|Value|Distance|Measured|Rate|Sarcomatoid Features|Oncotype Dx Recurrence Score-Invasive|Thickness|Margin|Copy Number|Normalized Ratio|Number of|Range|Weight|Tumor Deposits|Labeling Index|Prognostic Index'
+AND   a.concept_code NOT IN ('melanoma_skin@2861@996','gist_stomach@2800@998','3893@X4','net_stomach@2800@998'))
+or ((b.concept_code in ('1296','676','560','446','230') and a.concept_code like '%-%') or b.concept_code = '2190')
+
+;
+
+DROP TABLE if exists value_from_permis;
+
+CREATE TABLE value_from_permis 
+AS
+WITH ds
+AS
+(
+SELECT *,
+       TRIM(SUBSTRING(concept_code,'\d+\.?\d+?\s?\-\s?\d+\.?\d+?$')) AS range_code,
+       TRIM(REGEXP_REPLACE(REGEXP_REPLACE(SUBSTRING(concept_name,'(\d*\.?\,?\s?\d+?\%?\s?(\-|to)\s?\d*\.?\,?\s?\d+?\.?\d+?)'),' ','','g'),',','','g')) AS range_name,
+       CASE
+         WHEN source_unit IS NULL THEN TRIM(SUBSTRING(concept_name,'Score|micrometers|ratio|Units\/liter|millimeter|U\/mL|mg\/dl|mm2'))
+         ELSE source_unit
+       END AS source_unit_1
+FROM dev_naaccr.permis_range
+),
+dd
+AS
+(SELECT concept_name,
+       concept_code,
+       source_unit_1 AS source_unit,
+       CASE
+         WHEN range_code = range_name THEN range_code
+         WHEN range_name IS NULL THEN range_code
+         ELSE range_name
+       END AS rang,
+       range_name,
+       range_code
+FROM ds)
+
+SELECT concept_name,
+       concept_code,
+       source_unit,
+       TRIM(SUBSTRING(rang,'(\d*\.?\d+?\s?)(\-|to)')) AS low_range,
+       '>=' AS operat
+FROM dd
+UNION
+SELECT concept_name,
+       concept_code,
+       source_unit,
+       TRIM(REGEXP_REPLACE(SUBSTRING(rang,'((\-|to)\s?\d*\.?\d+?)'),'\-|to','')) AS high_range,
+       '<='
+FROM dd;
+
+
+
+
+
+DROP TABLE if exists value_from_concept;
+
+CREATE TABLE value_from_concept 
+AS
+WITH ds AS
+(
+  SELECT *,
+         --concept_name,question_name,
+         CASE
+           WHEN concept_name ~* '\d\s?(\-|to|)\s?\d' AND NOT concept_name ~* 'codes 981-989' THEN TRIM(REGEXP_REPLACE(REGEXP_REPLACE(SUBSTRING(concept_name,'(\d*\.?\,?\s?\d+?\%?\s?(\-|to)\s?\d*\.?\,?\s?\d+?)'),' ','','g'),',','','g'))
+         END AS range_name,
+         TRIM(REGEXP_REPLACE(REGEXP_REPLACE(SUBSTRING(concept_name,'(\d*?\,?\d*\.?\,?\s?\d+\s?)\(?(\| mitoses|centimeter|milli\-|nanogram|Unit|per \d+ HPF|number of|points|%|millimeter|score|Ratio|Standardized|milligram|ng\/|mg\/|mitoses|mitosis|percent|mIU|\/cubic millimeter|milliliter|gram|cGy|Number of|micrometer|ratio|Units\/|U\/|mg\/|mm2|cm|mms|mm|ml|or)'),' ','','g'),',','','g')) AS value,
+         SUBSTRING(LOWER(concept_name),'exactly|equal to or greater|greater than or equal to|or greater|more than|greater than|at least|equivocal|less than or equal to|less than|or less or|or less\||or less of|or more|or less|or larger') AS operat,
+         CASE
+           WHEN LOWER(concept_name) ~ '\d*\.?\,?\d+?\s?(cm|%|mms|mm)?\s?(less than or equal to|less than|or less or|or less\||or less of|or less n|or less m)' THEN SUBSTRING(LOWER(concept_name),'(\d*\.?\,?\d+\s?(cm|%|mms|mm)\s?(less than or equal to|less than|or less or|or less\||or less of))')
+           ELSE SUBSTRING(LOWER(concept_name),'((less than or equal to|less than|"at least"|less)\s?\d*\.?\,?\d+)')
+         END AS higher_val,
+         CASE
+           WHEN LOWER(concept_name) ~ '\d*\.?\,?\d+?\s?(million population or more|equal to or greater|or greater|more than|greater than|at least|equivocal|or more| more|or larger)' THEN SUBSTRING(LOWER(concept_name),'(\d*\.?\,?\d+?\s?(million population or more|equal to or greater|or greater|more than|greater than|at least|equivocal|or more| more|or larger))')
+           ELSE SUBSTRING(LOWER(concept_name),'((equal to or greater|greater than or equal to|or greater|more than|greater than|at least|equivocal|or more| more|or larger)\s?\d*\.?\,?\d+)')
+         END AS lower_val,
+         TRIM(SUBSTRING(concept_name,'(mitosis per \d\d high-power field|mitoses per \d\d high-power field|mitosis per \d\d HPF|mitoses per \d\d HPF|copy number|Ratio|milligrams\/24hours|mg\/24hours|mitoses/square mm|mitosis/square mm|mitoses per square millimeter|mIU/mL|mIU/ml|ng/ml|ng/mL|mg/dl|mg/dL|millimeter|U/ml|U/mL|U/L|cm|mms|mm|\%|points|Year)')) AS source_unit_1
+  FROM dev_naaccr.concept_as_range --3810@XXXX.1
+),
+dd AS
+(
+  SELECT concept_name,
+         concept_code,
+         --concept_id,concept_name,domain_id,vocabulary_id,concept_class_id,standard_concept,concept_code,valid_start_date,valid_end_date,invalid_reason,
+         CASE
+           WHEN higher_val IS NOT NULL AND lower_val IS NOT NULL THEN SUBSTRING(lower_val,'\d*\.?\,?\d+')
+           WHEN (range_name LIKE '%-%' OR range_name LIKE '%to%') AND concept_name !~* 'Dutch grade' THEN SUBSTRING(range_name,'^(\d*\.?\,?\d+)')
+           when concept_code in ('446@0-87','676@0-89','230@0-120','1296@0-89') then SUBSTRING(concept_code, '(\d+)\-')
+           when concept_code = '2190@1' then SUBSTRING(concept_code, '\@(\d+)')
+         END AS lower_val,
+         CASE
+           WHEN higher_val IS NOT NULL AND lower_val IS NOT NULL THEN SUBSTRING(higher_val,'\d*\.?\,?\d+')
+           WHEN (range_name LIKE '%-%' OR range_name LIKE '%to%') AND concept_name !~* 'Dutch grade' THEN SUBSTRING(range_name,'(\d*\.?\,?\d+)$')
+           when concept_code in ('446@0-87','676@0-89','230@0-120','1296@0-89') then SUBSTRING(concept_code, '\-(\d+)')
+         END AS higher_val,
+         CASE
+           WHEN higher_val IS NOT NULL AND lower_val IS NULL THEN SUBSTRING(higher_val,'\d*\.?\,?\d+')
+           WHEN higher_val IS NULL AND lower_val IS NOT NULL THEN SUBSTRING(lower_val,'\d*\.?\,?\d+')
+           WHEN higher_val IS NULL AND lower_val IS NULL AND ((range_name NOT LIKE '%-%' AND range_name NOT LIKE '%to%') OR range_name IS NULL) AND concept_name !~* 'one or more|side or less|3 or more regional' THEN value
+  --else value
+  
+         END AS value_op,
+         CASE
+           WHEN higher_val IS NOT NULL AND lower_val IS NOT NULL THEN NULL
+           WHEN range_name LIKE '%-%' OR range_name LIKE '%to%' THEN NULL
+           ELSE operat
+         END AS operat,
+         source_unit_1
+  FROM ds
+)
+SELECT concept_code,
+       concept_name,
+       value_op,
+       operat,
+       source_unit
+FROM (
+--concept_id,concept_name,domain_id,vocabulary_id,concept_class_id,standard_concept,concept_code,valid_start_date,valid_end_date,invalid_reason
+
+     SELECT concept_code,concept_name,lower_val,higher_val,CASE
+--when operat is null and source_unit_1 is null then null 
+WHEN lower_val IS NOT NULL THEN lower_val ELSE value_op END AS value_op,CASE WHEN value_op IS NOT NULL AND operat ~ 'exactly' THEN '=' WHEN value_op IS NOT NULL AND operat ~ 'equal to or greater|greater than or equal to|or greater|or more|at least' THEN '>=' WHEN value_op IS NOT NULL AND operat ~ 'greater than|more than|or larger' THEN '>' WHEN value_op IS NOT NULL AND operat ~ 'less than or equal to' THEN '<=' WHEN value_op IS NOT NULL AND operat ~ 'less' THEN '<' WHEN lower_val IS NOT NULL THEN '>=' END AS operat,CASE WHEN value_op IS NULL AND lower_val IS NULL THEN NULL ELSE source_unit_1 END AS source_unit 
+     FROM dd) fd
+UNION
+SELECT concept_code,
+       concept_name,
+       value_op,
+       operat,
+       source_unit
+FROM (
+--concept_id,concept_name,domain_id,vocabulary_id,concept_class_id,standard_concept,concept_code,valid_start_date,valid_end_date,invalid_reason
+
+     SELECT concept_code,concept_name,lower_val,higher_val,CASE WHEN higher_val IS NOT NULL THEN higher_val
+--when operat is null and source_unit_1 is null then null 
+ELSE value_op END AS value_op,CASE WHEN value_op IS NOT NULL AND operat ~ 'equal to or greater|greater than or equal to|or greater|or more|at least' THEN '>=' WHEN value_op IS NOT NULL AND operat ~ 'greater than|more than|or larger' THEN '>' WHEN value_op IS NOT NULL AND operat ~ 'less than or equal to' THEN '<=' WHEN value_op IS NOT NULL AND operat ~ 'less' THEN '<' WHEN higher_val IS NOT NULL THEN '<=' END AS operat,CASE WHEN value_op IS NULL AND lower_val IS NULL THEN NULL ELSE source_unit_1 END AS source_unit 
+     FROM dd) ff
+WHERE higher_val IS NOT NULL;
+
+
+
+
+
+DROP TABLE if exists concept_numeric_stage;
+
+CREATE TABLE concept_numeric_stage 
+AS
+SELECT DISTINCT c.concept_code,
+       c.vocabulary_id,
+       value_op::FLOAT,
+       COALESCE(target_concept_id,a.source_unit::INT) AS unit_concept_id,
+       cd.concept_id AS operator_concept_id
+FROM (SELECT concept_code,
+             concept_name,
+             low_range AS value_op,
+             operat,
+             source_unit
+      FROM value_from_permis
+      UNION
+      SELECT concept_code,
+             concept_name,
+             TRIM(REGEXP_REPLACE(value_op,',','')),
+             CASE
+               WHEN operat IS NULL THEN '='
+               ELSE operat
+             END AS operat,
+             source_unit
+      FROM value_from_concept) a
+  JOIN concept_stage c USING (concept_code)
+  JOIN concept cd ON cd.concept_name = operat
+  LEFT JOIN units u ON lower (source_unit) = lower (source_units);
