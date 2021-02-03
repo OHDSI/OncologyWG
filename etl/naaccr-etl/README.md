@@ -4,7 +4,7 @@ This repository is for developing and testing the OMOP NAACCR ETL SQL.
 
 The repository is Ruby on Rails application but the OMOP NAACCR ETL SQL is pure SQL and the Ruby on Rails repository is used just to setup a test harness.
 
-The OMOP NAACCR SQL lives here: [/etl/naaccr_etl.sql](../naaccr_etl.sql).
+The OMOP NAACCR SQL lives here: [/etl/naaccr_etl.sql](../naaccr_etl_sqlserver.sql).
 
 To run the test suite locally, do the following:
 
@@ -37,7 +37,7 @@ To run the test suite locally, do the following:
     * Click the 'PATH' Variable in the 'User variables for' section.
     * Click the 'Edit' button.
     * Append the path to the psql executable to the value preceeded by a semicolon(;).  For example: `;\Program Files\PostgreSQL\10\bin` (Substitute the location/version where PostgreSQL is installed on your computuer)
-    
+
 * Download the latest OMOP vocabulary distribution
   * http://athena.ohdsi.org
 
@@ -63,7 +63,7 @@ To run the test suite locally, do the following:
     * bundle exec rake setup:compile_omop_oncology_extension_indexes
     * bundle exec rake setup:compile_omop_constraints
     * bundle exec rake setup:compile_omop_oncology_extension_constraints
-    
+
 * Inspect and write unit test in [/spec/lib/naaccr_etl_spec.rb](spec/lib/naaccr_etl_spec.rb).
 
 * Run `bundle exec rake spec` to run all the unit tests.
