@@ -35,3 +35,4 @@ yarn-debug.log*
 .yarn-integrity
 
 /db/migrate/CommonDataModel-5.3.1/PostgreSQL/VocabImport/*.csv
+/db/migrate/CommonDataModel-6.1.0/PostgreSQL/VocabImport/*.csv
