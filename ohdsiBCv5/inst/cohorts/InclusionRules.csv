@@ -1,0 +1,9 @@
+"cohortName","ruleSequence","ruleName","cohortId"
+"FINALbladdercancerlivermetastasisIndexChemo",0,"Bladder Cancer",3231
+"FINALbladdercancerlivermetastasisIndexChemo",1,"hx of cancer",3231
+"FINALbladdercancerlivermetastasisIndexmBC",0,"hx of cancer",3232
+"FINALbladdercancerlivermetastasisIndexmBC",1,"Bladder Cancer",3232
+"FINALbladdercancermetastaticIndexChemo",0,"Bladder Cancer",3233
+"FINALbladdercancermetastaticIndexChemo",1,"hx of cancer",3233
+"FINALbladdercancermetastaticIndexmBC",0,"Bladder Cancer",3234
+"FINALbladdercancermetastaticIndexmBC",1,"hx of cancer",3234
