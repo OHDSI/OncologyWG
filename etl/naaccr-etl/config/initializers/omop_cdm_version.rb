@@ -1,1 +1,1 @@
-ENV['OMOP_CDM_VERSION'] ||= '5.3.1'
+ENV['OMOP_CDM_VERSION'] ||= '6.1.0'

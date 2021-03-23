@@ -375,6 +375,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
            , month_of_birth
            , day_of_birth
            , birth_datetime
+           , death_datetime
            , race_concept_id
            , ethnicity_concept_id
            , location_id
@@ -394,6 +395,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 		,EXTRACT(MONTH FROM dob)
 		,EXTRACT(DAY FROM dob)
 		,dob
+        ,max_dth_date
 		,COALESCE(race.race_concept_id, 0)
 		,COALESCE(ethn.ethnicity_concept_id, 0)
 		,NULL
@@ -480,6 +482,21 @@ CREATE TABLE tmp_concept_naaccr_procedures
 	WHERE naaccr_item_number = '190'    -- spanish/hispanic origin
    ) ethn
    ON per.person_id = ethn.person_id
+   LEFT OUTER JOIN (
+        SELECT ndp.person_id
+             ,CAST(MAX(ndp.naaccr_item_value) as date) max_dth_date
+        FROM naaccr_data_points ndp
+                 INNER JOIN naaccr_data_points ndp2
+                            ON ndp.naaccr_item_number = '1750'		-- date of last contact
+                                AND ndp2.naaccr_item_number = '1760'	-- vital status
+                                AND ndp.naaccr_item_value IS NOT NULL
+                                AND CHAR_LENGTH(ndp.naaccr_item_value) = '8'
+                                AND ndp2.naaccr_item_value = '0' --'0'='Dead'
+                                AND ndp.record_id = ndp2.record_id
+                                AND ndp.person_id IS NOT NULL
+        GROUP BY ndp.person_id
+    ) death
+    ON per.person_id = death.person_id
    ;
 
 
@@ -733,47 +750,6 @@ CREATE TABLE tmp_concept_naaccr_procedures
   CREATE INDEX idx_cr_ndpt_naaccr_item_value    ON naaccr_data_points_temp  (naaccr_item_value);
   CREATE INDEX idx_cr_ndpt_variable_concept_id  ON naaccr_data_points_temp  (variable_concept_id);
 
-   -- DEATH
-
-	INSERT INTO death
-           (
-             person_id
-           , death_date
-           , death_datetime
-           , death_type_concept_id
-           , cause_concept_id
-           , cause_source_value
-           , cause_source_concept_id
-           )
-	SELECT
-		person_id
-		,max_dth_date
-		,max_dth_date
-		,0 -- TODO
-		,0 -- TODO
-		,NULL
-		,0
-	FROM
-	(
-		SELECT ndp.person_id
-				,CAST(MAX(ndp.naaccr_item_value) as date) max_dth_date
-		FROM naaccr_data_points ndp
-		INNER JOIN naaccr_data_points ndp2
-		  ON ndp.naaccr_item_number = '1750'		-- date of last contact
-		  AND ndp2.naaccr_item_number = '1760'	-- vital status
-		  AND ndp.naaccr_item_value IS NOT NULL
-		  AND CHAR_LENGTH(ndp.naaccr_item_value) = '8'
-		  AND ndp2.naaccr_item_value = '0' --'0'='Dead'
-		  AND ndp.record_id = ndp2.record_id
-      AND ndp.person_id IS NOT NULL
-		GROUP BY ndp.person_id
-	) x
-	WHERE x.person_id NOT IN (SELECT person_id from DEATH)
-	;
-
-
-
-
 --- DIAGNOSIS
 
 
@@ -819,7 +795,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , s.histology_site                                                                                      AS condition_source_value
       , d.concept_id                                                                                          AS condition_source_concept_id
       , NULL                                                                                                  AS condition_status_source_value
-      , NULL                                                                                                  AS condition_status_concept_id
+      , 0                                                                                                AS condition_status_concept_id
       , s.record_id                                                                                           AS record_id
   FROM
 
@@ -2201,13 +2177,15 @@ CREATE TABLE tmp_concept_naaccr_procedures
 				GROUP BY person_id
 			UNION
 				SELECT person_id
-						, Min(death_date)
-						, Max(death_date)
-				FROM death
+						, Min(death_datetime) as min_date
+						, Max(death_datetime) as max_date
+				FROM person
 				GROUP BY person_id
 			) T
+            WHERE min_date IS NOT NULL AND max_date IS NOT NULL
 			GROUP BY t.PERSON_ID
-		) obs_dates
+
+        ) obs_dates
 		LEFT OUTER JOIN
 		-- end date -> date of last contact
 		(
