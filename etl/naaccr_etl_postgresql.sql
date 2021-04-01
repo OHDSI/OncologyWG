@@ -119,9 +119,9 @@ CREATE TABLE measurement_temp
   measurement_id                BIGINT       NOT NULL ,
   person_id                     BIGINT       NOT NULL ,
   measurement_concept_id        INT       NOT NULL ,
-  measurement_date              DATE         NOT NULL ,
+  measurement_date              DATE         NULL ,
   measurement_time              VARCHAR(10)  NULL ,
-  measurement_datetime          TIMESTAMP    NULL ,
+  measurement_datetime          TIMESTAMP    NOT NULL ,
   measurement_type_concept_id   INT       NOT NULL ,
   operator_concept_id           INT       NULL ,
   value_as_number               NUMERIC      NULL ,
@@ -133,7 +133,7 @@ CREATE TABLE measurement_temp
   visit_occurrence_id           BIGINT       NULL ,
   visit_detail_id               BIGINT       NULL ,
   measurement_source_value      VARCHAR(50)   NULL ,
-  measurement_source_concept_id INT       NULL ,
+  measurement_source_concept_id INT       NOT NULL ,
   unit_source_value             VARCHAR(50)  NULL ,
   value_source_value            VARCHAR(50)  NULL ,
   modifier_of_event_id          BIGINT       NULL ,
@@ -253,7 +253,7 @@ CREATE TABLE observation_period_temp
     unit_source_value               VARCHAR(50)  NULL,
     qualifier_source_value		      VARCHAR(255) NULL,
     -- observation_event_id         BIGINT       NULL ,
-    -- obs_event_field_concept_id   BIGINT       NULL ,
+    obs_event_field_concept_id   BIGINT      NOT NULL ,
     -- value_as_datetime            BIGINT       NULL ,
     record_id                       VARCHAR(255) NULL
   );
@@ -732,45 +732,6 @@ CREATE TABLE tmp_concept_naaccr_procedures
   CREATE INDEX idx_cr_ndpt_naaccr_item_number   ON naaccr_data_points_temp  (naaccr_item_number);
   CREATE INDEX idx_cr_ndpt_naaccr_item_value    ON naaccr_data_points_temp  (naaccr_item_value);
   CREATE INDEX idx_cr_ndpt_variable_concept_id  ON naaccr_data_points_temp  (variable_concept_id);
-
-   -- DEATH
-
-	INSERT INTO death
-           (
-             person_id
-           , death_date
-           , death_datetime
-           , death_type_concept_id
-           , cause_concept_id
-           , cause_source_value
-           , cause_source_concept_id
-           )
-	SELECT
-		person_id
-		,max_dth_date
-		,max_dth_date
-		,0 -- TODO
-		,0 -- TODO
-		,NULL
-		,0
-	FROM
-	(
-		SELECT ndp.person_id
-				,CAST(MAX(ndp.naaccr_item_value) as date) max_dth_date
-		FROM naaccr_data_points ndp
-		INNER JOIN naaccr_data_points ndp2
-		  ON ndp.naaccr_item_number = '1750'		-- date of last contact
-		  AND ndp2.naaccr_item_number = '1760'	-- vital status
-		  AND ndp.naaccr_item_value IS NOT NULL
-		  AND CHAR_LENGTH(ndp.naaccr_item_value) = '8'
-		  AND ndp2.naaccr_item_value = '0' --'0'='Dead'
-		  AND ndp.record_id = ndp2.record_id
-      AND ndp.person_id IS NOT NULL
-		GROUP BY ndp.person_id
-	) x
-	WHERE x.person_id NOT IN (SELECT person_id from DEATH)
-	;
-
 
 
 
@@ -1711,7 +1672,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , unit_source_value
     , qualifier_source_value
     -- , observation_event_id
-    -- , obs_event_field_concept_id
+    , obs_event_field_concept_id
     -- , value_as_datetime
     , record_id
   )
@@ -1736,8 +1697,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
         , NULL                                                                                                                                                               AS unit_source_value
         , NULL		                                                                                                                                                           AS qualifier_source_value
   --    , NULL                                                                                                                            						                       AS observation_event_id
-  --    , NULL                                                                                                                                              		             AS obs_event_field_concept_id
-  --	  , NULL																																					                                                                                     AS value_as_datetime
+        , 0                                                                                                                                              		             AS obs_event_field_concept_id
+  --	, NULL																																					                                                                                     AS value_as_datetime
         , ndp.record_id              AS record_id
 
 	FROM naaccr_data_points_temp AS ndp
@@ -1832,7 +1793,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , condition_source_value
       , condition_source_concept_id
       , condition_status_source_value
-      , condition_status_concept_id
+      , coalesce(condition_status_concept_id, 4208085)
     FROM condition_occurrence_temp
     ;
 
@@ -2084,7 +2045,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , unit_source_value
     , qualifier_source_value
     -- , observation_event_id
-    -- , obs_event_field_concept_id
+    , obs_event_field_concept_id
     -- , value_as_datetime
   )
   SELECT
@@ -2107,7 +2068,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , unit_source_value
     , qualifier_source_value
     -- , observation_event_id
-    -- , obs_event_field_concept_id
+    , obs_event_field_concept_id
     -- , value_as_datetime
     FROM observation_temp;
 
@@ -2198,12 +2159,6 @@ CREATE TABLE tmp_concept_naaccr_procedures
 						, Min(measurement_date)
 						, Max(measurement_date)
 				FROM measurement
-				GROUP BY person_id
-			UNION
-				SELECT person_id
-						, Min(death_date)
-						, Max(death_date)
-				FROM death
 				GROUP BY person_id
 			) T
 			GROUP BY t.PERSON_ID
