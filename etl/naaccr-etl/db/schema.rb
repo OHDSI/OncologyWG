@@ -24,10 +24,10 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
   end
 
   create_table "care_site", id: false, force: :cascade do |t|
-    t.integer "care_site_id", null: false
+    t.bigint "care_site_id", null: false
     t.string "care_site_name", limit: 255
-    t.integer "place_of_service_concept_id"
-    t.integer "location_id"
+    t.integer "place_of_service_concept_id", null: false
+    t.bigint "location_id"
     t.string "care_site_source_value", limit: 50
     t.string "place_of_service_source_value", limit: 50
   end
@@ -49,33 +49,6 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
     t.bigint "cdm_event_id", null: false
     t.integer "cdm_field_concept_id", null: false
     t.string "record_id", limit: 255, null: false
-  end
-
-  create_table "cohort", id: false, force: :cascade do |t|
-    t.integer "cohort_definition_id", null: false
-    t.integer "subject_id", null: false
-    t.date "cohort_start_date", null: false
-    t.date "cohort_end_date", null: false
-  end
-
-  create_table "cohort_attribute", id: false, force: :cascade do |t|
-    t.integer "cohort_definition_id", null: false
-    t.integer "subject_id", null: false
-    t.date "cohort_start_date", null: false
-    t.date "cohort_end_date", null: false
-    t.integer "attribute_definition_id", null: false
-    t.decimal "value_as_number"
-    t.integer "value_as_concept_id"
-  end
-
-  create_table "cohort_definition", id: false, force: :cascade do |t|
-    t.integer "cohort_definition_id", null: false
-    t.string "cohort_definition_name", limit: 255, null: false
-    t.text "cohort_definition_description"
-    t.integer "definition_type_concept_id", null: false
-    t.text "cohort_definition_syntax"
-    t.integer "subject_concept_id", null: false
-    t.date "cohort_initiation_date"
   end
 
   create_table "concept", id: false, force: :cascade do |t|
@@ -127,71 +100,57 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
   end
 
   create_table "condition_era", id: false, force: :cascade do |t|
-    t.integer "condition_era_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "condition_era_id", null: false
+    t.bigint "person_id", null: false
     t.integer "condition_concept_id", null: false
-    t.date "condition_era_start_date", null: false
-    t.date "condition_era_end_date", null: false
+    t.datetime "condition_era_start_datetime", null: false
+    t.datetime "condition_era_end_datetime", null: false
     t.integer "condition_occurrence_count"
   end
 
   create_table "condition_occurrence", id: false, force: :cascade do |t|
-    t.integer "condition_occurrence_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "condition_occurrence_id", null: false
+    t.bigint "person_id", null: false
     t.integer "condition_concept_id", null: false
     t.date "condition_start_date", null: false
     t.datetime "condition_start_datetime"
     t.date "condition_end_date"
     t.datetime "condition_end_datetime"
     t.integer "condition_type_concept_id", null: false
+    t.integer "condition_status_concept_id", null: false
     t.string "stop_reason", limit: 20
     t.integer "provider_id"
     t.integer "visit_occurrence_id"
     t.integer "visit_detail_id"
     t.string "condition_source_value", limit: 50
-    t.integer "condition_source_concept_id"
+    t.integer "condition_source_concept_id", null: false
     t.string "condition_status_source_value", limit: 50
-    t.integer "condition_status_concept_id"
   end
 
   create_table "cost", id: false, force: :cascade do |t|
-    t.integer "cost_id", null: false
-    t.integer "cost_event_id", null: false
-    t.string "cost_domain_id", limit: 20, null: false
+    t.bigint "cost_id", null: false
+    t.bigint "person_id", null: false
+    t.bigint "cost_event_id", null: false
+    t.integer "cost_event_field_concept_id", null: false
+    t.integer "cost_concept_id", null: false
     t.integer "cost_type_concept_id", null: false
-    t.integer "currency_concept_id"
-    t.decimal "total_charge"
-    t.decimal "total_cost"
-    t.decimal "total_paid"
-    t.decimal "paid_by_payer"
-    t.decimal "paid_by_patient"
-    t.decimal "paid_patient_copay"
-    t.decimal "paid_patient_coinsurance"
-    t.decimal "paid_patient_deductible"
-    t.decimal "paid_by_primary"
-    t.decimal "paid_ingredient_cost"
-    t.decimal "paid_dispensing_fee"
-    t.integer "payer_plan_period_id"
-    t.decimal "amount_allowed"
-    t.integer "revenue_code_concept_id"
-    t.string "reveue_code_source_value", limit: 50
-    t.integer "drg_concept_id"
+    t.integer "currency_concept_id", null: false
+    t.decimal "cost"
+    t.date "incurred_date", null: false
+    t.date "billed_date"
+    t.date "paid_date"
+    t.integer "revenue_code_concept_id", null: false
+    t.integer "drg_concept_id", null: false
+    t.string "cost_source_value", limit: 50
+    t.integer "cost_source_concept_id", null: false
+    t.string "revenue_code_source_value", limit: 50
     t.string "drg_source_value", limit: 3
-  end
-
-  create_table "death", id: false, force: :cascade do |t|
-    t.integer "person_id", null: false
-    t.date "death_date", null: false
-    t.datetime "death_datetime"
-    t.integer "death_type_concept_id", null: false
-    t.integer "cause_concept_id"
-    t.string "cause_source_value", limit: 50
-    t.integer "cause_source_concept_id"
+    t.bigint "payer_plan_period_id"
   end
 
   create_table "device_exposure", id: false, force: :cascade do |t|
-    t.integer "device_exposure_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "device_exposure_id", null: false
+    t.bigint "person_id", null: false
     t.integer "device_concept_id", null: false
     t.date "device_exposure_start_date", null: false
     t.datetime "device_exposure_start_datetime"
@@ -204,7 +163,7 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
     t.integer "visit_occurrence_id"
     t.integer "visit_detail_id"
     t.string "device_source_value", limit: 100
-    t.integer "device_source_concept_id"
+    t.integer "device_source_concept_id", null: false
   end
 
   create_table "domain", id: false, force: :cascade do |t|
@@ -214,28 +173,28 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
   end
 
   create_table "dose_era", id: false, force: :cascade do |t|
-    t.integer "dose_era_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "dose_era_id", null: false
+    t.bigint "person_id", null: false
     t.integer "drug_concept_id", null: false
     t.integer "unit_concept_id", null: false
     t.decimal "dose_value", null: false
-    t.date "dose_era_start_date", null: false
-    t.date "dose_era_end_date", null: false
+    t.datetime "dose_era_start_datetime", null: false
+    t.datetime "dose_era_end_datetime", null: false
   end
 
   create_table "drug_era", id: false, force: :cascade do |t|
-    t.integer "drug_era_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "drug_era_id", null: false
+    t.bigint "person_id", null: false
     t.integer "drug_concept_id", null: false
-    t.date "drug_era_start_date", null: false
-    t.date "drug_era_end_date", null: false
+    t.datetime "drug_era_start_datetime", null: false
+    t.datetime "drug_era_end_datetime", null: false
     t.integer "drug_exposure_count"
     t.integer "gap_days"
   end
 
   create_table "drug_exposure", id: false, force: :cascade do |t|
-    t.integer "drug_exposure_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "drug_exposure_id", null: false
+    t.bigint "person_id", null: false
     t.integer "drug_concept_id", null: false
     t.date "drug_exposure_start_date", null: false
     t.datetime "drug_exposure_start_datetime"
@@ -248,13 +207,13 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
     t.decimal "quantity"
     t.integer "days_supply"
     t.text "sig"
-    t.integer "route_concept_id"
+    t.integer "route_concept_id", null: false
     t.string "lot_number", limit: 50
     t.integer "provider_id"
     t.integer "visit_occurrence_id"
     t.integer "visit_detail_id"
     t.string "drug_source_value", limit: 50
-    t.integer "drug_source_concept_id"
+    t.integer "drug_source_concept_id", null: false
     t.string "route_source_value", limit: 50
     t.string "dose_unit_source_value", limit: 50
   end
@@ -296,26 +255,39 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
 
   create_table "fact_relationship", id: false, force: :cascade do |t|
     t.integer "domain_concept_id_1", null: false
-    t.integer "fact_id_1", null: false
+    t.bigint "fact_id_1", null: false
     t.integer "domain_concept_id_2", null: false
-    t.integer "fact_id_2", null: false
+    t.bigint "fact_id_2", null: false
     t.integer "relationship_concept_id", null: false
   end
 
   create_table "location", id: false, force: :cascade do |t|
-    t.integer "location_id", null: false
+    t.bigint "location_id", null: false
     t.string "address_1", limit: 50
     t.string "address_2", limit: 50
     t.string "city", limit: 50
     t.string "state", limit: 2
     t.string "zip", limit: 9
     t.string "county", limit: 20
+    t.string "country", limit: 100
     t.string "location_source_value", limit: 50
+    t.decimal "latitude"
+    t.decimal "longitude"
+  end
+
+  create_table "location_history", id: false, force: :cascade do |t|
+    t.bigint "location_history_id", null: false
+    t.bigint "location_id", null: false
+    t.integer "relationship_type_concept_id", null: false
+    t.string "domain_id", limit: 50, null: false
+    t.bigint "entity_id", null: false
+    t.date "start_date", null: false
+    t.date "end_date"
   end
 
   create_table "measurement", id: false, force: :cascade do |t|
-    t.integer "measurement_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "measurement_id", null: false
+    t.bigint "person_id", null: false
     t.integer "measurement_concept_id", null: false
     t.date "measurement_date", null: false
     t.datetime "measurement_datetime"
@@ -331,7 +303,7 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
     t.integer "visit_occurrence_id"
     t.integer "visit_detail_id"
     t.string "measurement_source_value", limit: 50
-    t.integer "measurement_source_concept_id"
+    t.integer "measurement_source_concept_id", null: false
     t.string "unit_source_value", limit: 50
     t.string "value_source_value", limit: 50
     t.bigint "modifier_of_event_id"
@@ -359,8 +331,10 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
   end
 
   create_table "note", id: false, force: :cascade do |t|
-    t.integer "note_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "note_id", null: false
+    t.bigint "person_id", null: false
+    t.bigint "note_event_id"
+    t.integer "note_event_field_concept_id", null: false
     t.date "note_date", null: false
     t.datetime "note_datetime"
     t.integer "note_type_concept_id", null: false
@@ -376,25 +350,25 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
   end
 
   create_table "note_nlp", id: false, force: :cascade do |t|
-    t.integer "note_nlp_id", null: false
-    t.integer "note_id", null: false
-    t.integer "section_concept_id"
+    t.bigint "note_nlp_id", null: false
+    t.bigint "note_id", null: false
+    t.integer "section_concept_id", null: false
     t.string "snippet", limit: 250
     t.string "offset", limit: 250
     t.string "lexical_variant", limit: 250, null: false
-    t.integer "note_nlp_concept_id"
-    t.integer "note_nlp_source_concept_id"
+    t.integer "note_nlp_concept_id", null: false
     t.string "nlp_system", limit: 250
     t.date "nlp_date", null: false
     t.datetime "nlp_datetime"
     t.string "term_exists", limit: 1
     t.string "term_temporal", limit: 50
     t.string "term_modifiers", limit: 2000
+    t.integer "note_nlp_source_concept_id", null: false
   end
 
   create_table "observation", id: false, force: :cascade do |t|
-    t.integer "observation_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "observation_id", null: false
+    t.bigint "person_id", null: false
     t.integer "observation_concept_id", null: false
     t.date "observation_date", null: false
     t.datetime "observation_datetime"
@@ -405,49 +379,57 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
     t.integer "qualifier_concept_id"
     t.integer "unit_concept_id"
     t.integer "provider_id"
-    t.integer "visit_occurrence_id"
-    t.integer "visit_detail_id"
+    t.bigint "visit_occurrence_id"
+    t.bigint "visit_detail_id"
     t.string "observation_source_value", limit: 50
-    t.integer "observation_source_concept_id"
+    t.integer "observation_source_concept_id", null: false
     t.string "unit_source_value", limit: 50
     t.string "qualifier_source_value", limit: 50
+    t.bigint "observation_event_id"
+    t.integer "obs_event_field_concept_id", null: false
+    t.datetime "value_as_datetime"
   end
 
   create_table "observation_period", id: false, force: :cascade do |t|
-    t.integer "observation_period_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "observation_period_id", null: false
+    t.bigint "person_id", null: false
     t.date "observation_period_start_date", null: false
     t.date "observation_period_end_date", null: false
     t.integer "period_type_concept_id", null: false
   end
 
   create_table "payer_plan_period", id: false, force: :cascade do |t|
-    t.integer "payer_plan_period_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "payer_plan_period_id", null: false
+    t.bigint "person_id", null: false
+    t.bigint "contract_person_id"
     t.date "payer_plan_period_start_date", null: false
     t.date "payer_plan_period_end_date", null: false
-    t.integer "payer_concept_id"
+    t.integer "payer_concept_id", null: false
+    t.integer "plan_concept_id", null: false
+    t.integer "contract_concept_id", null: false
+    t.integer "sponsor_concept_id", null: false
+    t.integer "stop_reason_concept_id", null: false
     t.string "payer_source_value", limit: 50
-    t.integer "payer_source_concept_id"
-    t.integer "plan_concept_id"
+    t.integer "payer_source_concept_id", null: false
     t.string "plan_source_value", limit: 50
-    t.integer "plan_source_concept_id"
-    t.integer "sponsor_concept_id"
+    t.integer "plan_source_concept_id", null: false
+    t.string "contract_source_value", limit: 50
+    t.integer "contract_source_concept_id", null: false
     t.string "sponsor_source_value", limit: 50
-    t.integer "sponsor_source_concept_id"
+    t.integer "sponsor_source_concept_id", null: false
     t.string "family_source_value", limit: 50
-    t.integer "stop_reason_concept_id"
     t.string "stop_reason_source_value", limit: 50
-    t.integer "stop_reason_source_concept_id"
+    t.integer "stop_reason_source_concept_id", null: false
   end
 
   create_table "person", id: false, force: :cascade do |t|
-    t.integer "person_id", null: false
+    t.bigint "person_id", null: false
     t.integer "gender_concept_id", null: false
     t.integer "year_of_birth", null: false
     t.integer "month_of_birth"
     t.integer "day_of_birth"
     t.datetime "birth_datetime"
+    t.datetime "death_datetime"
     t.integer "race_concept_id", null: false
     t.integer "ethnicity_concept_id", null: false
     t.integer "location_id"
@@ -455,44 +437,44 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
     t.integer "care_site_id"
     t.string "person_source_value", limit: 50
     t.string "gender_source_value", limit: 50
-    t.integer "gender_source_concept_id"
+    t.integer "gender_source_concept_id", null: false
     t.string "race_source_value", limit: 50
-    t.integer "race_source_concept_id"
+    t.integer "race_source_concept_id", null: false
     t.string "ethnicity_source_value", limit: 50
-    t.integer "ethnicity_source_concept_id"
+    t.integer "ethnicity_source_concept_id", null: false
   end
 
   create_table "procedure_occurrence", id: false, force: :cascade do |t|
-    t.integer "procedure_occurrence_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "procedure_occurrence_id", null: false
+    t.bigint "person_id", null: false
     t.integer "procedure_concept_id", null: false
     t.date "procedure_date", null: false
     t.datetime "procedure_datetime"
     t.integer "procedure_type_concept_id", null: false
-    t.integer "modifier_concept_id"
+    t.integer "modifier_concept_id", null: false
     t.integer "quantity"
     t.integer "provider_id"
     t.integer "visit_occurrence_id"
     t.integer "visit_detail_id"
     t.string "procedure_source_value", limit: 50
-    t.integer "procedure_source_concept_id"
+    t.integer "procedure_source_concept_id", null: false
     t.string "modifier_source_value", limit: 50
   end
 
   create_table "provider", id: false, force: :cascade do |t|
-    t.integer "provider_id", null: false
+    t.bigint "provider_id", null: false
     t.string "provider_name", limit: 255
     t.string "npi", limit: 20
     t.string "dea", limit: 20
-    t.integer "specialty_concept_id"
-    t.integer "care_site_id"
+    t.integer "specialty_concept_id", null: false
+    t.bigint "care_site_id"
     t.integer "year_of_birth"
-    t.integer "gender_concept_id"
+    t.integer "gender_concept_id", null: false
     t.string "provider_source_value", limit: 50
     t.string "specialty_source_value", limit: 50
     t.integer "specialty_source_concept_id"
     t.string "gender_source_value", limit: 50
-    t.integer "gender_source_concept_id"
+    t.integer "gender_source_concept_id", null: false
   end
 
   create_table "relationship", id: false, force: :cascade do |t|
@@ -517,16 +499,16 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
   end
 
   create_table "specimen", id: false, force: :cascade do |t|
-    t.integer "specimen_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "specimen_id", null: false
+    t.bigint "person_id", null: false
     t.integer "specimen_concept_id", null: false
     t.integer "specimen_type_concept_id", null: false
     t.date "specimen_date", null: false
     t.datetime "specimen_datetime"
     t.decimal "quantity"
     t.integer "unit_concept_id"
-    t.integer "anatomic_site_concept_id"
-    t.integer "disease_status_concept_id"
+    t.integer "anatomic_site_concept_id", null: false
+    t.integer "disease_status_concept_id", null: false
     t.string "specimen_source_id", limit: 50
     t.string "specimen_source_value", limit: 50
     t.string "unit_source_value", limit: 50
@@ -534,9 +516,37 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
     t.string "disease_status_source_value", limit: 50
   end
 
+  create_table "survey_conduct", id: false, force: :cascade do |t|
+    t.bigint "survey_conduct_id", null: false
+    t.bigint "person_id", null: false
+    t.integer "survey_concept_id", null: false
+    t.date "survey_start_date"
+    t.datetime "survey_start_datetime"
+    t.date "survey_end_date", null: false
+    t.datetime "survey_end_datetime"
+    t.bigint "provider_id"
+    t.integer "assisted_concept_id", null: false
+    t.integer "respondent_type_concept_id", null: false
+    t.integer "timing_concept_id", null: false
+    t.integer "collection_method_concept_id", null: false
+    t.string "assisted_source_value", limit: 50
+    t.string "respondent_type_source_value", limit: 100
+    t.string "timing_source_value", limit: 100
+    t.string "collection_method_source_value", limit: 100
+    t.string "survey_source_value", limit: 100
+    t.integer "survey_source_concept_id", null: false
+    t.string "survey_source_identifier", limit: 100
+    t.integer "validated_survey_concept_id", null: false
+    t.string "validated_survey_source_value", limit: 100
+    t.string "survey_version_number", limit: 20
+    t.bigint "visit_occurrence_id"
+    t.bigint "visit_detail_id"
+    t.bigint "response_visit_occurrence_id"
+  end
+
   create_table "visit_detail", id: false, force: :cascade do |t|
-    t.integer "visit_detail_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "visit_detail_id", null: false
+    t.bigint "person_id", null: false
     t.integer "visit_detail_concept_id", null: false
     t.date "visit_detail_start_date", null: false
     t.datetime "visit_detail_start_datetime"
@@ -545,20 +555,20 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
     t.integer "visit_detail_type_concept_id", null: false
     t.integer "provider_id"
     t.integer "care_site_id"
-    t.integer "admitting_source_concept_id"
-    t.integer "discharge_to_concept_id"
-    t.integer "preceding_visit_detail_id"
+    t.integer "discharge_to_concept_id", null: false
+    t.integer "admitted_from_concept_id", null: false
+    t.string "admitted_from_source_value", limit: 50
     t.string "visit_detail_source_value", limit: 50
-    t.integer "visit_detail_source_concept_id"
-    t.string "admitting_source_value", limit: 50
+    t.integer "visit_detail_source_concept_id", null: false
     t.string "discharge_to_source_value", limit: 50
-    t.integer "visit_detail_parent_id"
-    t.integer "visit_occurrence_id", null: false
+    t.bigint "preceding_visit_detail_id"
+    t.bigint "visit_detail_parent_id"
+    t.bigint "visit_occurrence_id", null: false
   end
 
   create_table "visit_occurrence", id: false, force: :cascade do |t|
-    t.integer "visit_occurrence_id", null: false
-    t.integer "person_id", null: false
+    t.bigint "visit_occurrence_id", null: false
+    t.bigint "person_id", null: false
     t.integer "visit_concept_id", null: false
     t.date "visit_start_date", null: false
     t.datetime "visit_start_datetime"
@@ -568,11 +578,11 @@ ActiveRecord::Schema.define(version: 2020_01_22_110557) do
     t.integer "provider_id"
     t.integer "care_site_id"
     t.string "visit_source_value", limit: 50
-    t.integer "visit_source_concept_id"
-    t.integer "admitting_source_concept_id"
-    t.string "admitting_source_value", limit: 50
-    t.integer "discharge_to_concept_id"
+    t.integer "visit_source_concept_id", null: false
+    t.integer "admitted_from_concept_id", null: false
+    t.string "admitted_from_source_value", limit: 50
     t.string "discharge_to_source_value", limit: 50
+    t.integer "discharge_to_concept_id", null: false
     t.integer "preceding_visit_occurrence_id"
   end
 

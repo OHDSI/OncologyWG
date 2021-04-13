@@ -1,0 +1,1 @@
+***OMOP Common Data Model v6.0 Specifications 11October2018***

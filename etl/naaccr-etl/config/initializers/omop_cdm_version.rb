@@ -1,0 +1,1 @@
+ENV['OMOP_CDM_VERSION'] ||= '6.1.0'

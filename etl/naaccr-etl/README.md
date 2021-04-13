@@ -49,11 +49,11 @@ To run the test suite locally, do the following:
 
 * Run the following rake tasks to prepare the testing environment.
   * Mac/Linux
-    * RAILS_ENV=test bundle exec rake db:migrate
-    * RAILS_ENV=test bundle exec rake setup:load_omop_vocabulary_tables
-    * RAILS_ENV=test bundle exec rake setup:compile_omop_indexes
+    * OMOP_CDM_VERSION=6.1.0 RAILS_ENV=test bundle exec rake db:migrate
+    * OMOP_CDM_VERSION=6.1.0 RAILS_ENV=test bundle exec rake setup:load_omop_vocabulary_tables
+    * OMOP_CDM_VERSION=6.1.0 RAILS_ENV=test bundle exec rake setup:compile_omop_indexes
     * RAILS_ENV=test bundle exec rake setup:compile_omop_oncology_extension_indexes
-    * RAILS_ENV=test bundle exec rake setup:compile_omop_constraints
+    * OMOP_CDM_VERSION=6.1.0 RAILS_ENV=test bundle exec rake setup:compile_omop_constraints
     * RAILS_ENV=test bundle exec rake setup:compile_omop_oncology_extension_constraints
   * Windows
     * set RAILS_ENV=test
