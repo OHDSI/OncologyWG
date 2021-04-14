@@ -780,7 +780,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , s.histology_site                                                                                      AS condition_source_value
       , d.concept_id                                                                                          AS condition_source_concept_id
       , NULL                                                                                                  AS condition_status_source_value
-      , NULL                                                                                                  AS condition_status_concept_id
+      , 0                                                                                                AS condition_status_concept_id
       , s.record_id                                                                                           AS record_id
   FROM
 
@@ -2162,7 +2162,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 				GROUP BY person_id
 			) T
 			GROUP BY t.PERSON_ID
-		) obs_dates
+        ) obs_dates
 		LEFT OUTER JOIN
 		-- end date -> date of last contact
 		(
