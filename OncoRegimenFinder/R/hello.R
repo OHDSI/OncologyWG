@@ -13,11 +13,15 @@
 #   Check Package:             'Ctrl + Shift + E'
 #   Test Package:              'Ctrl + Shift + T'
 
-create_regimens <- function(connectionDetails, cdmDatabaseSchema, writeDatabaseSchema, cohortTable = cohortTable, regimenTable = regimenTable, regimenIngredientTable = regimenIngredientTable, vocabularyTable = vocabularyTable, drug_classification_id_input, date_lag_input, sample_size = 999999999999, regimen_repeats = 5, generateVocabTable = F){
+create_regimens <- function(connectionDetails, cdmDatabaseSchema, vocabDatabaseSchema=cdmDatabaseSchema, writeDatabaseSchema, cohortTable = cohortTable,
+                            regimenTable = regimenTable, regimenIngredientTable = regimenIngredientTable,
+                            vocabularyTable = vocabularyTable, drug_classification_id_input, date_lag_input,
+                            sample_size = 999999999999, regimen_repeats = 5, generateVocabTable = F){
 
   connection <-  DatabaseConnector::connect(connectionDetails)
+  dbms <- connectionDetails$dbms
 
-  sql <- SqlRender::loadRenderTranslateSql("CohortBuild.sql", packageName = "OncoRegimenFinder", dbms = "redshift", cdmDatabaseSchema = cdmDatabaseSchema, writeDatabaseSchema = writeDatabaseSchema, cohortTable = cohortTable, regimenTable = regimenTable, drug_classification_id_input = drug_classification_id_input)
+  sql <- SqlRender::loadRenderTranslateSql("CohortBuild.sql", packageName = "OncoRegimenFinder", dbms = dbms, cdmDatabaseSchema = cdmDatabaseSchema, writeDatabaseSchema = writeDatabaseSchema, cohortTable = cohortTable, regimenTable = regimenTable, drug_classification_id_input = drug_classification_id_input)
 
   DatabaseConnector::executeSql(connection, sql)
 
@@ -56,7 +60,7 @@ create_regimens <- function(connectionDetails, cdmDatabaseSchema, writeDatabaseS
 
     DatabaseConnector::executeSql(connection, sql)
 
-    sql <- SqlRender::loadRenderTranslateSql("RegimenCalc2.sql", packageName = "OncoRegimenFinder", dbms = "redshift",
+    sql <- SqlRender::loadRenderTranslateSql("RegimenCalc2.sql", packageName = "OncoRegimenFinder", dbms = dbms,
                              writeDatabaseSchema = writeDatabaseSchema, regimenTable = paste0(regimenTable,"_sampled"), date_lag_input = date_lag_input)
     # sql <- SqlRender::translate(sql,targetDialect = connectionDetails$dbms)
 
@@ -74,13 +78,13 @@ create_regimens <- function(connectionDetails, cdmDatabaseSchema, writeDatabaseS
   if(generateVocabTable){
 
 
-    sql <- SqlRender::loadRenderTranslateSql("RegimenVoc.sql", packageName = "OncoRegimenFinder", dbms = "redshift", cdmDatabaseSchema = cdmDatabaseSchema, writeDatabaseSchema = writeDatabaseSchema, vocabularyTable = vocabularyTable)
+    sql <- SqlRender::loadRenderTranslateSql("RegimenVoc.sql", packageName = "OncoRegimenFinder", dbms = dbms, cdmDatabaseSchema = cdmDatabaseSchema, writeDatabaseSchema = writeDatabaseSchema, vocabularyTable = vocabularyTable,  vocabDatabaseSchema =  vocabDatabaseSchema)
     sql <- SqlRender::translate(sql,targetDialect = connectionDetails$dbms)
     DatabaseConnector::executeSql(connection, sql)
 
   }
 
-  sql <- SqlRender::loadRenderTranslateSql("RegimenFormat.sql", packageName = "OncoRegimenFinder", dbms = "redshift", writeDatabaseSchema = writeDatabaseSchema, cohortTable = cohortTable, regimenTable = paste0(regimenTable,"_f"), regimenIngredientTable = regimenIngredientTable, vocabularyTable = vocabularyTable)
+  sql <- SqlRender::loadRenderTranslateSql("RegimenFormat.sql", packageName = "OncoRegimenFinder", dbms = dbms, writeDatabaseSchema = writeDatabaseSchema, cohortTable = cohortTable, regimenTable = paste0(regimenTable,"_f"), regimenIngredientTable = regimenIngredientTable, vocabularyTable = vocabularyTable)
 
   DatabaseConnector::executeSql(connection, sql)
 
