@@ -1,0 +1,111 @@
+---
+title: "Creating Oncology Regimens"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{using-createRegimens}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+```{r setup}
+library(OncologyRegimenFinder)
+
+```
+
+
+
+```{r}
+# Load a SQLite database with a trimmed down vocabulary
+
+library(RSQLite)
+library(dplyr)
+library(DatabaseConnector)
+
+connectionDetails <- createConnectionDetails("sqlite", server = system.file("sqlite/testdb.sqlite", package = "OncologyRegimenFinder"))
+
+```
+
+
+I will create a drug era table as input for each example. It appears to me that OncoRegimenFinder does not use drug_exposure as input.
+
+
+Drug ingredient concept ids
+- carboplatin 1344905
+- cisplatin 1397599
+- gemcitabine 1314924
+- etoposide 1350504
+
+
+```{r}
+
+con <- connect(connectionDetails)
+```
+
+```{r}
+
+drug_era <- tribble(
+  ~drug_era_id, ~person_id, ~drug_concept_id, ~drug_era_start_date, ~drug_era_end_date,
+  1,            1,          1344905,          "2020-01-01",         "2020-02-01",
+  2,            1,          1350504,          "2020-01-01",         "2020-02-01",
+  2,            1,          1350504,          "2020-01-11",         "2020-01-11",
+  2,            1,          1314924,          "2020-01-12",         "2020-01-18"
+) %>% mutate(across(matches("date"), lubridate::ymd))
+
+
+
+dbWriteTable(con, "drug_era", drug_era, overwrite = TRUE)
+
+dbExecute(con, "drop table if exists main.regimen")
+dbExecute(con, "drop table if exists main.regimenIngredient")
+dbExecute(con, "drop table if exists main.regimenVocabulary")
+dbExecute(con, "drop table if exists main.cohort")
+
+dbGetQuery(con, "select * from drug_era") %>%
+  mutate(across(matches("date"), ~as.Date(., origin = "1970-01-01")))
+
+
+dbGetQuery(con, "select * from concept limit 10")
+
+
+```
+
+
+
+
+
+
+Run the regimenFinderAlgorithm
+
+
+
+```{r}
+
+
+
+library(OncologuyRegimenFinder)
+
+createRegimens(connectionDetails = connectionDetails,
+                cdmDatabaseSchema = "main", 
+                writeDatabaseSchema = "main", 
+                cohortTable = "cohort", 
+                regimenTable = "regimen",
+                regimenIngredientTable = "regimenIngredient",
+                vocabularyTable = "regimenVocabulary", 
+                cancerConceptId = 4115276,
+                dateLagInput = 30,
+                generateVocabTable = F,
+                generateRawEvents = F)
+
+
+
+dbGetQuery(con, "select * from regimenIngredient") %>% mutate(across(matches("date"), ~as.Date(., origin = "1970-01-01")))
+
+```
