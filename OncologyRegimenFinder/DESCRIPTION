@@ -1,0 +1,17 @@
+Package: OncologyRegimenFinder
+Type: Package
+Title: Oncology Regimen Finder
+Version: 0.1.0
+Author: OncologyWG
+Maintainer: The package maintainer <OHDSI@somewhere.net>
+Description: Creates oncology regimen table using aggregation function 
+License: Apache License (>= 2)
+Depends:
+	DatabaseConnector (>= 3.0.0),
+	SqlRender (>= 1.6.7)
+Imports:
+  DatabaseConnector (>= 3.0.0),
+	SqlRender (>= 1.6.7)
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.2
