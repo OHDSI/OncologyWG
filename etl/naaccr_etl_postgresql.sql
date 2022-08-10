@@ -611,16 +611,28 @@ CREATE TABLE tmp_concept_naaccr_procedures
     (
         SELECT DISTINCT
             c1.concept_code                   AS concept_code,
+			-- c1.concept_code					  AS variable_concept_code,
+			-- c1.concept_id					  AS variable_concept_id
             CASE
-                WHEN COALESCE(c1.standard_concept, '') = 'S'
-                THEN c1.concept_code
-                ELSE c2.concept_code
+                WHEN c2.domain_id = 'Episode'
+                THEN c2.concept_code
+                ELSE c1.concept_code
             END                               AS variable_concept_code,
             CASE
-                WHEN COALESCE(c1.standard_concept, '') = 'S'
-                THEN c1.concept_id
-                ELSE c2.concept_id
+                WHEN c2.domain_id = 'Episode'
+                THEN c2.concept_id
+                ELSE c1.concept_id
             END                               AS variable_concept_id
+            -- CASE
+            --     WHEN COALESCE(c2.standard_concept, '') = 'S'
+            --     THEN c1.concept_code
+            --     ELSE c2.concept_code
+            -- END                               AS variable_concept_code,
+            -- CASE
+            --     WHEN COALESCE(c1.standard_concept, '') = 'S'
+            --     THEN c1.concept_id
+            --     ELSE c2.concept_id
+            -- END                               AS variable_concept_id
   FROM concept c1
         LEFT JOIN concept_relationship cr1
             ON  c1.concept_id = cr1.concept_id_1
@@ -891,7 +903,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
     SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement)
                  , 0) + row_number() over (order by ndp.person_id)                                                                                                                      AS measurement_id
         , ndp.person_id                                                                                                                                             AS person_id
-        , conc.concept_id                                                                                                                                        AS measurement_concept_id
+        , ndp.variable_concept_id
         , cot.condition_start_date                                                                                                                                AS measurement_date
         , NULL                                                                                                                                                    AS measurement_time
         , cot.condition_start_datetime                                                                                                                            AS measurement_datetime
@@ -957,13 +969,13 @@ CREATE TABLE tmp_concept_naaccr_procedures
       INNER JOIN condition_occurrence_temp cot
       ON ndp.record_id = cot.record_id
 
-    -- Get standard concept
-    INNER JOIN concept_relationship cr
-      on ndp.variable_concept_id = cr.concept_id_1
-      and cr.relationship_id = 'Maps to'
-    INNER JOIN concept conc
-      on cr.concept_id_2 = conc.concept_id
-      AND conc.domain_id = 'Measurement'
+    -- -- Get standard concept
+    -- INNER JOIN concept_relationship cr
+    --   on ndp.variable_concept_id = cr.concept_id_1
+    --   and cr.relationship_id = 'Maps to'
+    -- INNER JOIN concept conc
+    --   on cr.concept_id_2 = conc.concept_id
+    --   AND conc.domain_id = 'Measurement'
 
     -- Get Unit
     LEFT OUTER JOIN concept_relationship unit_cr

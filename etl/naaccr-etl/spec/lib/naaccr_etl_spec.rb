@@ -704,6 +704,7 @@ describe NaaccrEtl do
         , site: 'C61.9' \
         , histology_site:  @histology_site \
       )
+      @condition_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
       @condition_concept = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
       NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
     end
@@ -717,7 +718,7 @@ describe NaaccrEtl do
       expect(condition_occurrence.condition_start_datetime).to eq(Date.parse(@diagnosis_date))
       expect(condition_occurrence.condition_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
       expect(condition_occurrence.condition_source_value).to eq(@histology_site)
-      expect(condition_occurrence.condition_source_concept_id).to eq(@condition_concept.concept_id)
+      expect(condition_occurrence.condition_source_concept_id).to eq(@condition_source_concept.concept_id)
       expect(CdmSourceProvenance.where(cdm_field_concept_id: 1147127).count).to eq(1)
       cdm_source_provenance = CdmSourceProvenance.where(cdm_field_concept_id: 1147127).first
       expect(cdm_source_provenance.cdm_event_id).to eq(condition_occurrence.condition_occurrence_id)
@@ -735,7 +736,7 @@ describe NaaccrEtl do
       expect(episode.episode_object_concept_id).to eq(@condition_concept.concept_id)
       expect(episode.episode_type_concept_id).to eq(32546)
       expect(episode.episode_source_value).to eq(@histology_site)
-      expect(episode.episode_source_concept_id).to eq(@condition_concept.concept_id)
+      expect(episode.episode_source_concept_id).to eq(@condition_source_concept.concept_id)
       expect(ConditionOccurrence.count).to eq(1)
       condition_occurrence = ConditionOccurrence.first
       #1147127 = ‘condition_occurrence.condition_occurrence_id’ concept
@@ -945,7 +946,7 @@ describe NaaccrEtl do
         , site: @site \
         , histology_site: @histology_site \
       )
-      @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_standard)
+      @measurement_concept =  NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_standard)
       @measurement_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_standard)
       @measurement_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number_standard}@#{@naaccr_item_value}")
       @condition_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
@@ -953,6 +954,7 @@ describe NaaccrEtl do
     end
 
     it 'pointing to CONDITION_OCCURRENCE', focus: false do
+      pending 'waiting to move to new Cancer Modifier vocabulary'
       expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
       measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
       expect(measurement.person_id).to eq(@person_1.person_id)
@@ -972,6 +974,7 @@ describe NaaccrEtl do
     end
 
     it 'pointing to EPISODE', focus: false do
+      pending 'waiting to move to new Cancer Modifier vocabulary'
       expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(1)
       measurement = Measurement.where(modifier_of_field_concept_id: 1000000003).first
       expect(measurement.person_id).to eq(@person_1.person_id)
@@ -1018,7 +1021,8 @@ describe NaaccrEtl do
         , site: 'C61.9' \
         , histology_site: @histology_site \
       )
-      @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      # @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      @measurement_concept =  NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)      
       @unit_concept = NaaccrEtl::SpecSetup.unit_concept(@measurement_concept.concept_id)
       @measurement_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
       @condition_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
@@ -1095,7 +1099,7 @@ describe NaaccrEtl do
         , site: 'C61.9' \
         , histology_site: @histology_site \
       )
-      @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      @measurement_concept =  NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
       @unit_concept = NaaccrEtl::SpecSetup.unit_concept(@measurement_concept.concept_id)
       @measurement_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
       @measurement_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number}@#{@naaccr_item_value}")
@@ -1175,7 +1179,7 @@ describe NaaccrEtl do
         , site: 'C61.9' \
         , histology_site: @histology_site \
       )
-      @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      @measurement_concept =  NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
       @unit_concept = NaaccrEtl::SpecSetup.unit_concept(@measurement_concept.concept_id)
       @measurement_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
       @measurement_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number}@#{@naaccr_item_value}")
@@ -2887,7 +2891,7 @@ describe NaaccrEtl do
       expect(episode_1.episode_concept_id).to eq(32528) #32528='Disease First Occurrence'
       expect(episode_1.episode_start_datetime).to eq(Date.parse(@diagnosis_date_1))
       expect(episode_1.episode_end_datetime).to be_nil
-      expect(episode_1.episode_object_concept_id).to eq(@condition_source_concept_1.concept_id)
+      expect(episode_1.episode_object_concept_id).to eq(@condition_concept_1.concept_id)
       expect(episode_1.episode_type_concept_id).to eq(32546)
       expect(episode_1.episode_source_value).to eq(@histology_site_1)
       expect(episode_1.episode_source_concept_id).to eq(@condition_source_concept_1.concept_id)
@@ -2898,7 +2902,7 @@ describe NaaccrEtl do
       expect(episode_2.episode_concept_id).to eq(32528) #32528='Disease First Occurrence'
       expect(episode_2.episode_start_datetime).to eq(Date.parse(@diagnosis_date_2))
       expect(episode_2.episode_end_datetime).to be_nil
-      expect(episode_2.episode_object_concept_id).to eq(@condition_source_concept_2.concept_id)
+      expect(episode_2.episode_object_concept_id).to eq(@condition_concept_2.concept_id)
       expect(episode_2.episode_type_concept_id).to eq(32546)
       expect(episode_2.episode_source_value).to eq(@histology_site_2)
       expect(episode_2.episode_source_concept_id).to eq(@condition_source_concept_2.concept_id)
