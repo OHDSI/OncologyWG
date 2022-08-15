@@ -833,7 +833,62 @@ CREATE TABLE tmp_concept_naaccr_procedures
         AND c2.domain_id = 'Condition'
     ;
 
+--begin
+--   condition modifiers
 
+  INSERT INTO measurement_temp
+  (
+   	  measurement_id
+    , person_id
+    , measurement_concept_id
+    , measurement_date
+    , measurement_time
+    , measurement_datetime
+    , measurement_type_concept_id
+    , operator_concept_id
+    , value_as_number
+    , value_as_concept_id
+    , unit_concept_id
+    , range_low
+    , range_high
+    , provider_id
+    , visit_occurrence_id
+    , visit_detail_id
+    , measurement_source_value
+    , measurement_source_concept_id
+    , unit_source_value
+    , value_source_value
+    , modifier_of_event_id
+    , modifier_of_field_concept_id
+    , record_id
+  )
+
+
+  SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement), 0) + row_number() over (order by cot.person_id)                                                AS measurement_id
+      , cot.person_id                                                                                                                                           AS person_id
+      , 32528 																																					AS measurement_concept_id  --'Disease First Occurrence'
+      , cot.condition_start_date                                                                                                                                AS measurement_date
+      , NULL                                                                                                                                                    AS measurement_time
+      , cot.condition_start_datetime                                                                                                                            AS measurement_datetime
+      , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
+      , NULL                                                                                                                            						AS operator_concept_id
+      , NULL 																																					AS value_as_number
+      , NULL                                                                                                                          							AS value_as_concept_id
+      , NULL                                                                                                  													AS unit_concept_id
+      , NULL                                                                                                                                                    AS range_low
+      , NULL                                                                                                                                                    AS range_high
+      , NULL                                                                                                                                                    AS provider_id
+      , NULL                                                                                                                                                    AS visit_occurrence_id
+      , NULL                                                                                                                                                    AS visit_detail_id
+      , NULL                                                                                                                                         			AS measurement_source_value
+      ,32528                                                                                                                                         		    AS measurement_source_concept_id --'Disease First Occurrence'
+      , NULL                                                                                                                                                    AS unit_source_value
+      , NULL                                                                                                                                         			AS value_source_value
+      , cot.condition_occurrence_id                                                                                                                             AS modifier_of_event_id
+      , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
+      , cot.record_id                                                                                                                                           AS record_id
+  FROM condition_occurrence_temp cot;
+--end
 
   --   condition modifiers
 
@@ -865,7 +920,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
     )
 
 
-    SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement)
+    SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement_temp)
                  , 0) + row_number() over (order by ndp.person_id)                                                                                                                      AS measurement_id
         , ndp.person_id                                                                                                                                             AS person_id
         , ndp.variable_concept_id
