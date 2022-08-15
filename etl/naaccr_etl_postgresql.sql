@@ -42,14 +42,12 @@ Contents:
 		-hardcode episode_object_concept_id for drugs to hemonc
 		-treatment episode modifiers
 	Connect treatment episodes to disease episodes via parent_id
-	Observations
 	Insert temp tables into OMOP
 		-episode
 		-procedure
 		-drug_exposure
 		-episode_event
 		-measurement
-		-observation
 		-fact_relationship
 	Update Observation_Perod
 	Cleanup temp tables
@@ -71,9 +69,6 @@ WHERE drug_type_concept_id = 32534;
 
 DELETE FROM procedure_occurrence
 WHERE procedure_type_concept_id = 32534;
-
-DELETE FROM observation
-WHERE observation_type_concept_id = 32534;
 
 DELETE FROM fact_relationship
 WHERE domain_concept_id_1 = 32527;
@@ -228,36 +223,6 @@ CREATE TABLE observation_period_temp
 	observation_period_end_date date NOT NULL,
 	period_type_concept_id int NOT NULL
  );
-
-
-  DROP TABLE IF EXISTS observation_temp;
-
-  CREATE TABLE observation_temp
-  (
-    observation_id                  BIGINT       NULL,
-    person_id                       BIGINT       NOT NULL,
-    observation_concept_id          INT          NOT NULL,
-    observation_date                DATE         NULL,
-    observation_datetime            TIMESTAMP     NULL,
-    observation_type_concept_id     INT          NULL,
-    value_as_number                 NUMERIC      NULL,
-    value_as_string				          VARCHAR(255) NULL,
-    value_as_concept_id             INT          NULL,
-    qualifier_concept_id			      INT          NULL,
-    unit_concept_id                 INT          NULL,
-    provider_id                     BIGINT       NULL,
-    visit_occurrence_id             BIGINT       NULL,
-    visit_detail_id                 BIGINT       NULL,
-    observation_source_value        VARCHAR(50)  NULL,
-    observation_source_concept_id   INT          NULL,
-    unit_source_value               VARCHAR(50)  NULL,
-    qualifier_source_value		      VARCHAR(255) NULL,
-    -- observation_event_id         BIGINT       NULL ,
-    -- obs_event_field_concept_id   BIGINT       NULL ,
-    -- value_as_datetime            BIGINT       NULL ,
-    record_id                       VARCHAR(255) NULL
-  );
-
 
   DROP TABLE IF EXISTS fact_relationship_temp;
 
@@ -988,114 +953,6 @@ CREATE TABLE tmp_concept_naaccr_procedures
       AND ndp.value_concept_id = conc_num.concept_id
     ;
 
-
-
-  -- Diagnosis episodes
-
-
-
-  INSERT INTO episode_temp
-  (
-    episode_id
-    , person_id
-    , episode_concept_id
-    , episode_start_datetime
-    , episode_end_datetime
-    , episode_parent_id
-    , episode_number
-    , episode_object_concept_id
-    , episode_type_concept_id
-    , episode_source_value
-    , episode_source_concept_id
-    , record_id
-  )
-  SELECT COALESCE((SELECT MAX(episode_id) FROM episode)
-                 , 0) + row_number() over(order by person_id)                                                                                                                     AS episode_id
-      , cot.person_id                                                                                                                                           AS person_id
-      , 32528                                                                                                                                                   AS episode_concept_id  --Disease First Occurrence
-      , cot.condition_start_datetime                                                                                                                            AS episode_start_datetime        --?
-      , NULL                                                                                                                                                    AS episode_end_datetime          --?
-      , NULL                                                                                                                                                    AS episode_parent_id
-      , NULL                                                                                                                                                    AS episode_number
-      , cot.condition_concept_id                                                                                                                                AS episode_object_concept_id
-      , 32546                                                                                                                                                   AS episode_type_concept_id --Episode derived from registry
-      , cot.condition_source_value                                                                                                                              AS episode_source_value
-      , cot.condition_source_concept_id                                                                                                                         AS episode_source_concept_id
-      , cot.record_id                                                                                                                                           AS record_id
-  FROM condition_occurrence_temp cot;
-
-
-  INSERT INTO episode_event_temp
-  (
-    episode_id
-    , event_id
-    , episode_event_field_concept_id
-
-  )
-  SELECT  et.episode_id                     AS episode_id
-      , cot.condition_occurrence_id       AS event_id
-      , 1147127                           AS episode_event_field_concept_id --condition_occurrence.condition_occurrence_id
-  FROM condition_occurrence_temp cot
-  JOIN episode_temp et
-    ON cot.record_id = et.record_id
-  ;
-
-  --Step 7: Copy Condition Occurrence Measurements for Disease Episode
-  INSERT INTO measurement_temp
-  (
-    measurement_id
-    , person_id
-    , measurement_concept_id
-    , measurement_date
-    , measurement_time
-    , measurement_datetime
-    , measurement_type_concept_id
-    , operator_concept_id
-    , value_as_number
-    , value_as_concept_id
-    , unit_concept_id
-    , range_low
-    , range_high
-    , provider_id
-    , visit_occurrence_id
-    , visit_detail_id
-    , measurement_source_value
-    , measurement_source_concept_id
-    , unit_source_value
-    , value_source_value
-    , modifier_of_event_id
-    , modifier_of_field_concept_id
-    , record_id
-  )
-  SELECT COALESCE( (SELECT MAX(measurement_id) FROM measurement_temp)
-                 , (SELECT MAX(measurement_id) FROM measurement)
-                 , 0) + row_number() over(order by measurement_id)                                                                                                                               AS measurement_id
-      , mt.person_id                                                                                                                                                      AS person_id
-      , mt.measurement_concept_id                                                                                                                                         AS measurement_concept_id
-      , mt.measurement_date                                                                                                                                               AS measurement_date
-      , mt.measurement_time                                                                                                                                               AS measurement_time
-      , mt.measurement_datetime                                                                                                                                           AS measurement_datetime
-      , mt.measurement_type_concept_id                                                                                                                                    AS measurement_type_concept_id
-      , mt.operator_concept_id                                                                                                                                            AS operator_concept_id
-      , mt.value_as_number                                                                                                                                                AS value_as_number
-      , mt.value_as_concept_id                                                                                                                                            AS value_as_concept_id
-      , mt.unit_concept_id                                                                                                                                                AS unit_concept_id
-      , mt.range_low                                                                                                                                                      AS range_low
-      , mt.range_high                                                                                                                                                     AS range_high
-      , mt.provider_id                                                                                                                                                    AS provider_id
-      , mt.visit_occurrence_id                                                                                                                                            AS visit_occurrence_id
-      , mt.visit_detail_id                                                                                                                                                AS visit_detail_id
-      , mt.measurement_source_value                                                                                                                                       AS measurement_source_value
-      , mt.measurement_source_concept_id                                                                                                                                  AS measurement_source_concept_id
-      , mt.unit_source_value                                                                                                                                              AS unit_source_value
-      , mt.value_source_value                                                                                                                                             AS value_source_value
-      , et.episode_id                                                                                                                                                     AS modifier_of_event_id
-      , 1000000003                                                                                                                                                        AS modifier_field_concept_id -- ‘episode.episode_id’ concept
-      , mt.record_id                                                                                                                                                     AS record_id
-  FROM measurement_temp mt
-  JOIN episode_temp et
-  ON mt.record_id = et.record_id
-  ;
 --
 --
 
@@ -1700,113 +1557,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 	) det
 	WHERE record_id        = det.rec_id
 	AND episode_concept_id = 32531; --Treatment Regimen
-
-	 --Step 17: Observation
-	 INSERT INTO observation_temp
-  (
-      observation_id
-    , person_id
-    , observation_concept_id
-    , observation_date
-    , observation_datetime
-    , observation_type_concept_id
-    , value_as_number
-    , value_as_string
-    , value_as_concept_id
-    , unit_concept_id
-    , qualifier_concept_id
-    , provider_id
-    , visit_occurrence_id
-    , visit_detail_id
-    , observation_source_value
-    , observation_source_concept_id
-    , unit_source_value
-    , qualifier_source_value
-    -- , observation_event_id
-    -- , obs_event_field_concept_id
-    -- , value_as_datetime
-    , record_id
-  )
-  SELECT COALESCE(   (SELECT MAX(observation_id) FROM observation_temp)
-                   , (SELECT MAX(observation_id) FROM observation)
-                   , 0) + row_number() over(order by ndp.person_id) 	                                                                                                                             AS observation_id
-        , ndp.person_id                                                                                                                                                      AS person_id
-        , c1.concept_id                                                                                                                                                      AS observation_concept_id
-        , CAST(ndp1.naaccr_item_value as date)                                                                                                                               AS observation_date
-        , CAST(ndp1.naaccr_item_value as date)                                                                                                                               AS observation_datetime
-        , 32534                                                                                                                                                              AS observation_type_concept_id
-        , NULL																							                                                                                                                 AS value_as_number
-        , NULL		                                                                                                                                                           AS value_as_concept_id
-  	    , NULL																																					                                                                                     AS value_as_string
-        , NULL																			                                                                                                                         AS unit_concept_id
-  	    , NULL																																					                                                                                     AS qualifier_concept_id
-        , NULL                                                                                                                                                               AS provider_id
-        , NULL                                                                                                                                                               AS visit_occurrence_id
-        , NULL                                                                                                                                                               AS visit_detail_id
-        , ndp.value_concept_code                                                                                                                                                     AS observation_source_value
-        , ndp.value_concept_id                                                                                                                                                       AS observation_source_concept_id
-        , NULL                                                                                                                                                               AS unit_source_value
-        , NULL		                                                                                                                                                           AS qualifier_source_value
-  --    , NULL                                                                                                                            						                       AS observation_event_id
-  --    , NULL                                                                                                                                              		             AS obs_event_field_concept_id
-  --	  , NULL																																					                                                                                     AS value_as_datetime
-        , ndp.record_id              AS record_id
-
-	FROM naaccr_data_points_temp AS ndp
-	INNER JOIN concept_relationship cr1
-		ON ndp.value_concept_id = cr1.concept_id_1
-		AND cr1.relationship_id = 'Maps to'
-    INNER JOIN concept AS c1
-		ON cr1.concept_id_2 = c1.concept_id
-		AND c1.vocabulary_id = 'NAACCR'
-		AND c1.concept_class_id = 'NAACCR Value'
-		AND c1.domain_id = 'Observation'
-		AND c1.standard_concept = 'S'
-	INNER JOIN naaccr_data_points_temp ndp1
-		ON ndp.record_id = ndp1.record_id
-		AND ndp1.naaccr_item_number = '390'
-	INNER JOIN episode_temp ep
-		ON ndp.record_id = ep.record_id
-		-- disease first occurrence
-		AND ep.episode_concept_id = 32528;
-
-
-  INSERT INTO fact_relationship_temp
-  (
-      domain_concept_id_1
-    , fact_id_1
-    , domain_concept_id_2
-    , fact_id_2
-    , relationship_concept_id
-    , record_id
-  )
-  SELECT
-      32527                             AS domain_concept_id_1			  -- Episode
-    , ep.episode_id                     AS fact_id_1
-    , 27                                AS domain_concept_id_2				-- Observation
-    , ob.observation_id                 AS fact_id_2
-    , 44818750                          AS relationship_concept_id  	-- Has occurrence
-	, NULL record_id
-  FROM episode_temp ep
-  INNER JOIN observation_temp ob
-	ON ep.person_id = ob.person_id
-	AND ep.record_id = ob.record_id
-	AND ep.episode_concept_id = 32528;			-- Disease First Occurrence
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	
 -- INSERT TEMP TABLES
 
   -- assumes there is no IDENTITY on condition_occurrence_id
@@ -2074,66 +1825,6 @@ CREATE TABLE tmp_concept_naaccr_procedures
         , record_id
     FROM measurement_temp;
 
-  -- move from observation_temp to observation
-  INSERT INTO observation
-  (
-      observation_id
-    , person_id
-    , observation_concept_id
-    , observation_date
-    , observation_datetime
-    , observation_type_concept_id
-    , value_as_number
-    , value_as_string
-    , value_as_concept_id
-    , qualifier_concept_id
-    , unit_concept_id
-    , provider_id
-    , visit_occurrence_id
-    , visit_detail_id
-    , observation_source_value
-    , observation_source_concept_id
-    , unit_source_value
-    , qualifier_source_value
-    -- , observation_event_id
-    -- , obs_event_field_concept_id
-    -- , value_as_datetime
-  )
-  SELECT
-      observation_id
-    , person_id
-    , observation_concept_id
-    , observation_date
-    , observation_datetime
-    , observation_type_concept_id
-    , value_as_number
-    , value_as_string
-    , value_as_concept_id
-    , qualifier_concept_id
-    , unit_concept_id
-    , provider_id
-    , visit_occurrence_id
-    , visit_detail_id
-    , observation_source_value
-    , observation_source_concept_id
-    , unit_source_value
-    , qualifier_source_value
-    -- , observation_event_id
-    -- , obs_event_field_concept_id
-    -- , value_as_datetime
-    FROM observation_temp;
-
-	INSERT INTO cdm_source_provenance
-    (
-      cdm_event_id
-    , cdm_field_concept_id
-    , record_id
-    )
-    SELECT  observation_id
-        , 1147165   --observaton.observation_id
-        , record_id
-    FROM observation_temp;
-
   -- move from fact_relationship_temp to fact_relationship
   INSERT INTO fact_relationship
   (
@@ -2306,8 +1997,6 @@ DROP TABLE IF EXISTS episode_event_temp;
 DROP TABLE IF EXISTS procedure_occurrence_temp;
 
 DROP TABLE IF EXISTS drug_exposure_temp;
-
-DROP TABLE IF EXISTS observation_temp;
 
 DROP TABLE IF EXISTS fact_relationship_temp;
 
