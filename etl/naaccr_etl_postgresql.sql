@@ -753,11 +753,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 
 --- DIAGNOSIS
 
-
-
   -- Condition Occurrence
-
-
   INSERT INTO condition_occurrence_temp
   (
     condition_occurrence_id
@@ -833,8 +829,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
         AND c2.domain_id = 'Condition'
     ;
 
---begin
---   condition modifiers
+  -- Insert Initial Diagnosis Condition Modifier
 
   INSERT INTO measurement_temp
   (
@@ -888,7 +883,6 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
       , cot.record_id                                                                                                                                           AS record_id
   FROM condition_occurrence_temp cot;
---end
 
   --   condition modifiers
 
@@ -1008,8 +1002,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
       AND ndp.value_concept_id = conc_num.concept_id
     ;
 
---
---
+
 
 -- Treatment Episodes
   -- Temp table with NAACCR dates
