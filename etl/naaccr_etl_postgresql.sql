@@ -829,7 +829,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
         AND c2.domain_id = 'Condition'
     ;
 
-  -- Insert Initial Diagnosis Condition Modifier
+  -- Initial Diagnosis Condition Modifier
 
   INSERT INTO measurement_temp
   (
@@ -884,6 +884,162 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , cot.record_id                                                                                                                                           AS record_id
   FROM condition_occurrence_temp cot;
 
+
+  -- Staging Cancer Modifiers
+
+  INSERT INTO measurement_temp
+     (
+         measurement_id
+       , person_id
+       , measurement_concept_id
+       , measurement_date
+       , measurement_time
+       , measurement_datetime
+       , measurement_type_concept_id
+       , operator_concept_id
+       , value_as_number
+       , value_as_concept_id
+       , unit_concept_id
+       , range_low
+       , range_high
+       , provider_id
+       , visit_occurrence_id
+       , visit_detail_id
+       , measurement_source_value
+       , measurement_source_concept_id
+       , unit_source_value
+       , value_source_value
+       , modifier_of_event_id
+       , modifier_of_field_concept_id
+       , record_id
+     )
+
+ 	/*
+ 	 EXAMPLE OF TNM INSERT
+ 	 using TNM PATH T
+ 	*/
+     SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement_temp), 0) + row_number() over (order by conc.person_id)   AS measurement_id
+         , cot.person_id                      	AS person_id
+         , conc.concept_id                    	AS measurement_concept_id
+         , cot.condition_start_date           	AS measurement_date
+         , NULL                               	AS measurement_time
+         , cot.condition_start_datetime       	AS measurement_datetime
+         , 32534								AS measurement_type_concept_id -- 'Tumor registry' concept
+         , NULL							    	AS operator_concept_id
+         , NULL									AS value_as_number
+         , NULL									AS value_as_concept_id
+         , NULL									AS unit_concept_id
+         , NULL									AS range_low
+         , NULL									AS range_high
+         , NULL                              	AS provider_id
+         , NULL                              	AS visit_occurrence_id
+         , NULL                              	AS visit_detail_id
+         , tnm_concept_code                  	AS measurement_source_value
+         , conc.concept_id		            	AS measurement_source_concept_id
+         , NULL                              	AS unit_source_value
+         , tnm_value_raw  						AS value_source_value
+         , cot.condition_occurrence_id			AS modifier_of_event_id
+         , 1147127								AS modifier_field_concept_id -- 'condition_occurrence.condition_occurrence_id' concept
+         , cot.record_id						AS record_id
+     FROM condition_occurrence_temp cot
+
+ 	-- GET TNM CONCEPT
+ 	INNER JOIN 
+     (
+ 	 -- get record_id + concept_code + concept_id 
+	
+ 		SELECT record_id, person_id, tnm.tnm_concept_code, conc.concept_id, tnm.tnm_value_raw
+ 		FROM
+ 		( 
+ 			-- hardcode 'p-' to start for PATH to match concept code of target
+ 			-- Get the TNM concept code to join 
+ 			-- X = TNM value 
+ 			-- Y = TNM edition
+ 			SELECT    x.record_id
+					, x.person_id 
+ 					, x.tnm_value_raw
+ 					, CONCAT(tnm_type_indicator, y.tnm_edition, 'th_AJCC/UICC-', x.tnm_value) as tnm_concept_code
+ 			FROM
+ 			(
+ 				-- Get the TNM VALUE, one for each,  unioned (need split for concept code derivation) 
+
+ 				--  T ----------------------------------
+ 				SELECT DISTINCT   record_id
+								, person_id
+ 								, CONCAT(substring(naaccr_item_value, 1,1), '-') as tnm_type_indicator
+ 								, CONCAT('T',substring(naaccr_item_value, 2, 10)) as tnm_value
+ 								, naaccr_item_value as tnm_value_raw
+ 				FROM naaccr_data_points_temp
+ 				WHERE naaccr_item_number in ( 
+ 					  '880'
+ 					, '940'
+ 					, '1001'
+ 					, '1011'
+ 				)
+ 				-- filter out null records
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0 
+ 				AND naaccr_item_value <> '88'
+ 				UNION
+			
+ 				-- N ----------------------------------------
+ 				SELECT DISTINCT   record_id
+								, person_id							
+ 								, CONCAT(substring(naaccr_item_value, 1,1), '-') as tnm_type_indicator
+ 								, CONCAT('N',substring(naaccr_item_value, 2, 10)) as tnm_value
+ 								, naaccr_item_value as tnm_value_raw
+ 				FROM naaccr_data_points_temp
+ 				WHERE naaccr_item_number in ( 
+ 					  '890'
+ 					, '950'
+ 					, '1002'
+ 					, '1012'
+ 				)
+ 				-- filter out null records
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0 
+ 				AND naaccr_item_value <> '88'
+ 				UNION 
+
+ 				-- M ------------------------------------
+ 				SELECT DISTINCT   record_id
+								, person_id				
+ 								, CONCAT(substring(naaccr_item_value, 1,1), '-') as tnm_type_indicator
+ 								, CONCAT('M',substring(naaccr_item_value, 2, 10)) as tnm_value
+ 								, naaccr_item_value as tnm_value_raw
+ 				FROM naaccr_data_points_temp
+ 				WHERE naaccr_item_number in ( 
+ 					  '900'
+ 					, '960'
+ 					, '1003'
+ 					, '1013'
+ 				)
+ 				-- filter out null records
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0 
+ 				AND naaccr_item_value <> '88'
+ 				) x
+ 			INNER JOIN 
+ 			(
+ 				-- Get the TNM EDITION
+ 				SELECT DISTINCT record_id
+ 								-- hacky way to try to get rid of preceeding 0 if it exists 
+								, person_id								
+ 								, CAST(CAST(naaccr_item_value as int)as varchar) as  tnm_edition
+ 				FROM naaccr_data_points_temp
+ 				WHERE naaccr_item_number = '1060' -- TNM Edition Number
+ 				-- filter out null records
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0 
+ 				AND naaccr_item_value <> '88'
+ 				) y
+ 				ON x.record_id = y.record_id
+ 			) tnm
+ 			INNER JOIN concept conc
+ 				ON conc.vocabulary_id = 'Cancer Modifier'
+ 				AND conc.concept_class_id = 'Staging/Grading'
+ 				AND tnm.tnm_concept_code = conc.concept_code
+ 	) conc
+ 	ON cot.record_id = conc.record_id
+ 	;
+	
+
   --   condition modifiers
 
     INSERT INTO measurement_temp
@@ -914,8 +1070,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
     )
 
 
-    SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement_temp)
-                 , 0) + row_number() over (order by ndp.person_id)                                                                                                                      AS measurement_id
+    SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement_temp), 0) + row_number() over (order by ndp.person_id)                                                                                                                      AS measurement_id
         , ndp.person_id                                                                                                                                             AS person_id
         , ndp.variable_concept_id
         , cot.condition_start_date                                                                                                                                AS measurement_date
