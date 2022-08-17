@@ -861,7 +861,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 
   SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement), 0) + row_number() over (order by cot.person_id)                                                AS measurement_id
       , cot.person_id                                                                                                                                           AS person_id
-      , 32528 																																					AS measurement_concept_id  --'Disease First Occurrence'
+      , 32528 																																				  AS measurement_concept_id  --'Disease First Occurrence'
       , cot.condition_start_date                                                                                                                                AS measurement_date
       , NULL                                                                                                                                                    AS measurement_time
       , cot.condition_start_datetime                                                                                                                            AS measurement_datetime
@@ -974,7 +974,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
  					  '880'
  					, '940'
  					, '1001'
- 					, '1011'
+ 					, '1011'					
  				)
  				-- filter out null records
  				AND CHAR_LENGTH(naaccr_item_value) > 0 

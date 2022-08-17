@@ -726,7 +726,7 @@ describe NaaccrEtl do
       expect(cdm_source_provenance.record_id).to eq(@record_id)
     end
     
-    it "creates an entry in the MEASURMENT table marking the entry in CONDITION_OCCURENCE as an 'initial diagnosis'", focus: false do      
+    it "creates an entry in the MEASURMENT table marking the entry in CONDITION_OCCURRENCE as an 'initial diagnosis'", focus: false do      
       expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
       measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
       expect(measurement.person_id).to eq(@person_1.person_id)
