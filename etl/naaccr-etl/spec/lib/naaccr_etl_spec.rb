@@ -8,7 +8,7 @@ describe NaaccrEtl do
   end
 
   after(:each) do
-    # NaaccrEtl::SpecSetup.teardown
+    NaaccrEtl::SpecSetup.teardown
   end
 
   describe "For a person that does not have an entry in the PERSON table" do
@@ -704,6 +704,7 @@ describe NaaccrEtl do
         , site: 'C61.9' \
         , histology_site:  @histology_site \
       )
+      @condition_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
       @condition_concept = NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
       NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
     end
@@ -717,29 +718,31 @@ describe NaaccrEtl do
       expect(condition_occurrence.condition_start_datetime).to eq(Date.parse(@diagnosis_date))
       expect(condition_occurrence.condition_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
       expect(condition_occurrence.condition_source_value).to eq(@histology_site)
-      expect(condition_occurrence.condition_source_concept_id).to eq(@condition_concept.concept_id)
+      expect(condition_occurrence.condition_source_concept_id).to eq(@condition_source_concept.concept_id)
       expect(CdmSourceProvenance.where(cdm_field_concept_id: 1147127).count).to eq(1)
       cdm_source_provenance = CdmSourceProvenance.where(cdm_field_concept_id: 1147127).first
       expect(cdm_source_provenance.cdm_event_id).to eq(condition_occurrence.condition_occurrence_id)
       expect(cdm_source_provenance.cdm_field_concept_id).to eq(1147127) #1147127=condition_occurrence.condition_occurrence_id
       expect(cdm_source_provenance.record_id).to eq(@record_id)
     end
-
-    it "creates an entry in the EPISODE table", focus: false do
-      expect(Episode.count).to eq(1)
-      episode = Episode.first
-      expect(episode.person_id).to eq(@person_1.person_id)
-      expect(episode.episode_concept_id).to eq(32528) #32528='Disease First Occurrence'
-      expect(episode.episode_start_datetime).to eq(Date.parse(@diagnosis_date))
-      expect(episode.episode_end_datetime).to be_nil
-      expect(episode.episode_object_concept_id).to eq(@condition_concept.concept_id)
-      expect(episode.episode_type_concept_id).to eq(32546)
-      expect(episode.episode_source_value).to eq(@histology_site)
-      expect(episode.episode_source_concept_id).to eq(@condition_concept.concept_id)
+    
+    it "creates an entry in the MEASURMENT table marking the entry in CONDITION_OCCURRENCE as an 'initial diagnosis'", focus: false do      
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
+      measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
+      expect(measurement.person_id).to eq(@person_1.person_id)
+      expect(measurement.measurement_concept_id).to eq(32528) #'Disease First Occurrence'
+      expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_time).to be_nil
+      expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement.value_as_concept_id).to be_nil
+      expect(measurement.measurement_source_value).to be_nil
+      expect(measurement.measurement_source_concept_id).to eq(32528)
+      expect(measurement.value_source_value).to be_nil
       expect(ConditionOccurrence.count).to eq(1)
       condition_occurrence = ConditionOccurrence.first
-      #1147127 = ‘condition_occurrence.condition_occurrence_id’ concept
-      expect(EpisodeEvent.where(episode_id: episode.episode_id, event_id: condition_occurrence.condition_occurrence_id, episode_event_field_concept_id: 1147127).count).to eq(1)
+      expect(measurement.modifier_of_event_id).to eq(condition_occurrence.condition_occurrence_id)
+      expect(measurement.modifier_of_field_concept_id).to eq(1147127) #‘condition_occurrence.condition_occurrence_id’ concept
     end
   end
 
@@ -774,17 +777,23 @@ describe NaaccrEtl do
       expect(condition_occurrence.condition_source_concept_id).to eq(@condition_source_concept.concept_id)
     end
 
-    it "creates an entry in the EPISODE table ", focus: false do
-      expect(Episode.count).to eq(1)
-      episode = Episode.first
-      expect(episode.person_id).to eq(@person_1.person_id)
-      expect(episode.episode_concept_id).to eq(32528) #32528='Disease First Occurrence'
-      expect(episode.episode_start_datetime).to eq(Date.parse(@diagnosis_date))
-      expect(episode.episode_end_datetime).to be_nil
-      expect(episode.episode_object_concept_id).to eq(@condition_concept.concept_id)
-      expect(episode.episode_type_concept_id).to eq(32546)
-      expect(episode.episode_source_value).to eq(@histology_site)
-      expect(episode.episode_source_concept_id).to eq(@condition_source_concept.concept_id)
+    it "creates an entry in the MEASURMENT table marking the entry in CONDITION_OCCURENCE as an 'initial diagnosis'", focus: false do      
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
+      measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
+      expect(measurement.person_id).to eq(@person_1.person_id)
+      expect(measurement.measurement_concept_id).to eq(32528) #'Disease First Occurrence'
+      expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_time).to be_nil
+      expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement.value_as_concept_id).to be_nil
+      expect(measurement.measurement_source_value).to be_nil
+      expect(measurement.measurement_source_concept_id).to eq(32528)
+      expect(measurement.value_source_value).to be_nil
+      expect(ConditionOccurrence.count).to eq(1)
+      condition_occurrence = ConditionOccurrence.first
+      expect(measurement.modifier_of_event_id).to eq(condition_occurrence.condition_occurrence_id)
+      expect(measurement.modifier_of_field_concept_id).to eq(1147127) #‘condition_occurrence.condition_occurrence_id’ concept
     end
   end
 
@@ -823,22 +832,94 @@ describe NaaccrEtl do
       expect(cdm_source_provenance.cdm_field_concept_id).to eq(1147127) #1147127=condition_occurrence.condition_occurrence_id
       expect(cdm_source_provenance.record_id).to eq(@record_id)
     end
-
-    it "creates an entry in the EPISODE table", focus: false do
-      expect(Episode.count).to eq(1)
-      episode = Episode.first
-      expect(episode.person_id).to eq(@person_1.person_id)
-      expect(episode.episode_concept_id).to eq(32528) #32528='Disease First Occurrence'
-      expect(episode.episode_start_datetime).to eq(Date.parse(@diagnosis_date))
-      expect(episode.episode_end_datetime).to be_nil
-      expect(episode.episode_object_concept_id).to eq(@condition_concept.concept_id)
-      expect(episode.episode_type_concept_id).to eq(32546)
-      expect(episode.episode_source_value).to eq(@histology_site)
-      expect(episode.episode_source_concept_id).to eq(@condition_concept.concept_id)
+    
+    it "creates an entry in the MEASURMENT table marking the entry in CONDITION_OCCURENCE as an 'initial diagnosis'", focus: false do      
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
+      measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
+      expect(measurement.person_id).to eq(@person_1.person_id)
+      expect(measurement.measurement_concept_id).to eq(32528) #'Disease First Occurrence'
+      expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_time).to be_nil
+      expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement.value_as_concept_id).to be_nil
+      expect(measurement.measurement_source_value).to be_nil
+      expect(measurement.measurement_source_concept_id).to eq(32528)
+      expect(measurement.value_source_value).to be_nil
       expect(ConditionOccurrence.count).to eq(1)
       condition_occurrence = ConditionOccurrence.first
-      #1147127 = ‘condition_occurrence.condition_occurrence_id’ concept
-      expect(EpisodeEvent.where(episode_id: episode.episode_id, event_id: condition_occurrence.condition_occurrence_id, episode_event_field_concept_id: 1147127).count).to eq(1)
+      expect(measurement.modifier_of_event_id).to eq(condition_occurrence.condition_occurrence_id)
+      expect(measurement.modifier_of_field_concept_id).to eq(1147127) #‘condition_occurrence.condition_occurrence_id’ concept
+    end
+  end
+
+  describe "Creating entries in MEASUREMENT table for a Staging  diagnosis modifier mapped to the 'Cancer Modifier' vocabulary" do
+    before(:each) do
+      @diagnosis_date = '20170630'
+      @histology_site = '8140/3-C61.9'
+      @naaccr_item_number = '1011'          #AJCC TNM Path T
+      @naaccr_item_value = 'p2'             
+
+      @naaccr_item_number_tnm_edition_number = '1060'          #TNM Edition Number
+      @naaccr_item_value_tnm_edition_number = '07'             #Seventh Edition (published 2009), recommended for use with cases diagnosed 2010-2017
+      @cancer_modifier_concept_code = 'p-7th_AJCC/UICC-T2'
+      
+      #390=Date of Diagnosis.
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: '390' \
+        , naaccr_item_value: @diagnosis_date \
+        , histology: '8140/3' \
+        , site: 'C61.9' \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number \
+        , naaccr_item_value: @naaccr_item_value  \
+        , histology: '8140/3' \
+        , site: 'C61.9' \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_tnm_edition_number \
+        , naaccr_item_value: @naaccr_item_value_tnm_edition_number  \
+        , histology: '8140/3' \
+        , site: 'C61.9' \
+        , histology_site: @histology_site \
+      )
+
+  
+      @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'Cancer Modifier', concept_code: @cancer_modifier_concept_code)
+      @measurement_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'Cancer Modifier', concept_code: @cancer_modifier_concept_code)
+      @measurement_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number}@#{@naaccr_item_value}")
+      @condition_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+    end
+
+    it 'pointing to CONDITION_OCCURRENCE', focus: true do
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
+      measurement = Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).first
+      expect(measurement.person_id).to eq(@person_1.person_id)
+      expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
+      expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_time).to be_nil
+      expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement.value_as_concept_id).to be_nil
+      expect(measurement.measurement_source_value).to eq(@cancer_modifier_concept_code)
+      expect(measurement.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
+      expect(measurement.value_source_value).to eq(@naaccr_item_value)
+      expect(ConditionOccurrence.count).to eq(1)
+      condition_occurrence = ConditionOccurrence.first
+      expect(measurement.modifier_of_event_id).to eq(condition_occurrence.condition_occurrence_id)
+      expect(measurement.modifier_of_field_concept_id).to eq(1147127) #‘condition_occurrence.condition_occurrence_id’ concept
     end
   end
 
@@ -876,9 +957,9 @@ describe NaaccrEtl do
       NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
     end
 
-    it 'pointing to CONDITION_OCCURRENCE' do
-      expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
-      measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
+    it 'pointing to CONDITION_OCCURRENCE', focus: false do
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
+      measurement = Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).first
       expect(measurement.person_id).to eq(@person_1.person_id)
       expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
       expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
@@ -893,25 +974,6 @@ describe NaaccrEtl do
       condition_occurrence = ConditionOccurrence.first
       expect(measurement.modifier_of_event_id).to eq(condition_occurrence.condition_occurrence_id)
       expect(measurement.modifier_of_field_concept_id).to eq(1147127) #‘condition_occurrence.condition_occurrence_id’ concept
-    end
-
-    it 'pointing to EPISODE' do
-      expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(1)
-      measurement = Measurement.where(modifier_of_field_concept_id: 1000000003).first
-      expect(measurement.person_id).to eq(@person_1.person_id)
-      expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
-      expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
-      expect(measurement.measurement_time).to be_nil
-      expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
-      expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
-      expect(measurement.value_as_concept_id).to eq(@measurement_value_as_concept.concept_id)
-      expect(measurement.measurement_source_value).to eq(@naaccr_item_number)
-      expect(measurement.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
-      expect(measurement.value_source_value).to eq(@naaccr_item_value)
-      expect(Episode.count).to eq(1)
-      episode = Episode.first
-      expect(measurement.modifier_of_event_id).to eq(episode.episode_id)
-      expect(measurement.modifier_of_field_concept_id).to eq(1000000003) #‘‘episode.episode_id’ concept
     end
   end
 
@@ -945,7 +1007,7 @@ describe NaaccrEtl do
         , site: @site \
         , histology_site: @histology_site \
       )
-      @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_standard)
+      @measurement_concept =  NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_standard)
       @measurement_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number_standard)
       @measurement_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number_standard}@#{@naaccr_item_value}")
       @condition_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
@@ -953,6 +1015,7 @@ describe NaaccrEtl do
     end
 
     it 'pointing to CONDITION_OCCURRENCE', focus: false do
+      pending 'waiting to move to new Cancer Modifier vocabulary'
       expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
       measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
       expect(measurement.person_id).to eq(@person_1.person_id)
@@ -972,6 +1035,7 @@ describe NaaccrEtl do
     end
 
     it 'pointing to EPISODE', focus: false do
+      pending 'waiting to move to new Cancer Modifier vocabulary'
       expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(1)
       measurement = Measurement.where(modifier_of_field_concept_id: 1000000003).first
       expect(measurement.person_id).to eq(@person_1.person_id)
@@ -1018,7 +1082,8 @@ describe NaaccrEtl do
         , site: 'C61.9' \
         , histology_site: @histology_site \
       )
-      @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      # @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      @measurement_concept =  NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)      
       @unit_concept = NaaccrEtl::SpecSetup.unit_concept(@measurement_concept.concept_id)
       @measurement_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
       @condition_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
@@ -1027,8 +1092,8 @@ describe NaaccrEtl do
     end
 
     it 'pointing to CONDITION_OCCURRENCE', focus: false do
-      expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
-      measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
+      measurement = Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).first
       expect(measurement.person_id).to eq(@person_1.person_id)
       expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
       expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
@@ -1045,26 +1110,6 @@ describe NaaccrEtl do
       condition_occurrence = ConditionOccurrence.first
       expect(measurement.modifier_of_event_id).to eq(condition_occurrence.condition_occurrence_id)
       expect(measurement.modifier_of_field_concept_id).to eq(1147127) #‘condition_occurrence.condition_occurrence_id’ concept
-    end
-
-    it 'pointing to EPISODE', focus: false do
-      expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(1)
-      measurement = Measurement.where(modifier_of_field_concept_id: 1000000003).first
-      expect(measurement.person_id).to eq(@person_1.person_id)
-      expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
-      expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
-      expect(measurement.measurement_time).to be_nil
-      expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
-      expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
-      expect(measurement.value_as_number).to eq(@naaccr_item_value.to_f)
-      expect(measurement.unit_concept_id).to eq(@unit_concept.concept_id)
-      expect(measurement.measurement_source_value).to eq(@naaccr_item_number)
-      expect(measurement.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
-      expect(measurement.value_source_value).to eq(@naaccr_item_value)
-      expect(Episode.count).to eq(1)
-      episode = Episode.first
-      expect(measurement.modifier_of_event_id).to eq(episode.episode_id)
-      expect(measurement.modifier_of_field_concept_id).to eq(1000000003) #‘‘episode.episode_id’ concept
     end
   end
 
@@ -1095,7 +1140,7 @@ describe NaaccrEtl do
         , site: 'C61.9' \
         , histology_site: @histology_site \
       )
-      @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      @measurement_concept =  NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
       @unit_concept = NaaccrEtl::SpecSetup.unit_concept(@measurement_concept.concept_id)
       @measurement_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
       @measurement_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number}@#{@naaccr_item_value}")
@@ -1104,8 +1149,8 @@ describe NaaccrEtl do
     end
 
     it 'pointing to CONDITION_OCCURRENCE', focus: false do
-      expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
-      measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
+      measurement = Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).first
       expect(measurement.person_id).to eq(@person_1.person_id)
       expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
       expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
@@ -1122,27 +1167,6 @@ describe NaaccrEtl do
       condition_occurrence = ConditionOccurrence.first
       expect(measurement.modifier_of_event_id).to eq(condition_occurrence.condition_occurrence_id)
       expect(measurement.modifier_of_field_concept_id).to eq(1147127) #‘condition_occurrence.condition_occurrence_id’ concept
-    end
-
-    it 'pointing to EPISODE', focus: false do
-      expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(1)
-      measurement = Measurement.where(modifier_of_field_concept_id: 1000000003).first
-      expect(measurement.person_id).to eq(@person_1.person_id)
-      expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
-      expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
-      expect(measurement.measurement_time).to be_nil
-      expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
-      expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
-      expect(measurement.value_as_concept_id).to eq(@measurement_value_as_concept.concept_id)
-      expect(measurement.value_as_number).to be_nil
-      expect(measurement.unit_concept_id).to eq(@unit_concept.concept_id)
-      expect(measurement.measurement_source_value).to eq(@naaccr_item_number)
-      expect(measurement.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
-      expect(measurement.value_source_value).to eq(@naaccr_item_value)
-      expect(Episode.count).to eq(1)
-      episode = Episode.first
-      expect(measurement.modifier_of_event_id).to eq(episode.episode_id)
-      expect(measurement.modifier_of_field_concept_id).to eq(1000000003) #‘‘episode.episode_id’ concept
     end
   end
 
@@ -1175,7 +1199,7 @@ describe NaaccrEtl do
         , site: 'C61.9' \
         , histology_site: @histology_site \
       )
-      @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
+      @measurement_concept =  NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
       @unit_concept = NaaccrEtl::SpecSetup.unit_concept(@measurement_concept.concept_id)
       @measurement_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'NAACCR', concept_code: @naaccr_item_number)
       @measurement_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number}@#{@naaccr_item_value}")
@@ -1186,12 +1210,12 @@ describe NaaccrEtl do
 
     it 'pointing to CONDITION_OCCURRENCE', focus: false do
       expect(@concept_numerics.size).to eq(2)
-      expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(@concept_numerics.size)       #1147127 = 'condition_occurrence.condition_occurrence_id'
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).count).to eq(@concept_numerics.size)       #1147127 = 'condition_occurrence.condition_occurrence_id'
       expect(ConditionOccurrence.count).to eq(1)
       condition_occurrence = ConditionOccurrence.first
 
       @concept_numerics.each do |concept_numeric|
-        measurement = Measurement.where(modifier_of_field_concept_id: 1147127, value_as_number: concept_numeric.value_as_number).first
+        measurement = Measurement.where(modifier_of_field_concept_id: 1147127, value_as_number: concept_numeric.value_as_number, measurement_concept_id: @measurement_concept.concept_id).first
         expect(measurement.person_id).to eq(@person_1.person_id)
         expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
         expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
@@ -1207,31 +1231,6 @@ describe NaaccrEtl do
         expect(measurement.value_source_value).to eq(@naaccr_item_value)
         expect(measurement.modifier_of_event_id).to eq(condition_occurrence.condition_occurrence_id)
         expect(measurement.modifier_of_field_concept_id).to eq(1147127) #‘condition_occurrence.condition_occurrence_id’ concept
-      end
-    end
-
-    it 'pointing to EPISODE', focus: false do
-      expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(2)
-      expect(Episode.count).to eq(1)
-      episode = Episode.first
-
-      @concept_numerics.each do |concept_numeric|
-        measurement = Measurement.where(modifier_of_field_concept_id: 1000000003, value_as_number: concept_numeric.value_as_number).first
-        expect(measurement.person_id).to eq(@person_1.person_id)
-        expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
-        expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
-        expect(measurement.measurement_time).to be_nil
-        expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
-        expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
-        expect(measurement.operator_concept_id).to eq(concept_numeric.operator_concept_id)
-        expect(measurement.value_as_concept_id).to eq(@measurement_value_as_concept.concept_id)
-        expect(measurement.value_as_number).to eq(concept_numeric.value_as_number)
-        expect(measurement.unit_concept_id).to eq(@unit_concept.concept_id)
-        expect(measurement.measurement_source_value).to eq(@naaccr_item_number)
-        expect(measurement.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
-        expect(measurement.value_source_value).to eq(@naaccr_item_value)
-        expect(measurement.modifier_of_event_id).to eq(episode.episode_id)
-        expect(measurement.modifier_of_field_concept_id).to eq(1000000003) #‘‘episode.episode_id’ concept
       end
     end
   end
@@ -1311,7 +1310,7 @@ describe NaaccrEtl do
 
     it 'pointing to CONDITION_OCCURRENCE', focus: false do
       expect(ConditionOccurrence.count).to eq(2)
-      expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(2) #1147127 = 'condition_occurrence.condition_occurrence_id'
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: [@measurement_concept_1.concept_id, @measurement_concept_2.concept_id]).count).to eq(2) #1147127 = 'condition_occurrence.condition_occurrence_id'
 
       condition_occurrence_1 = ConditionOccurrence.where(person_id: @person_1.person_id, condition_concept_id: @condition_concept_1.concept_id).first
       #1147127 = 'condition_occurrence.condition_occurrence_id'
@@ -1327,32 +1326,6 @@ describe NaaccrEtl do
 
       condition_occurrence_2 = ConditionOccurrence.where(person_id: @person_2.person_id, condition_concept_id: @condition_concept_2.concept_id).first
       measurement_2 = Measurement.where(person_id: @person_2.person_id, modifier_of_field_concept_id: 1147127, modifier_of_event_id: condition_occurrence_2.condition_occurrence_id, measurement_concept_id: @measurement_concept_2.concept_id, value_as_concept_id: @measurement_value_as_concept_2.concept_id).first
-      expect(measurement_2.measurement_date).to eq(Date.parse(@diagnosis_date_2))
-      expect(measurement_2.measurement_time).to be_nil
-      expect(measurement_2.measurement_datetime).to eq(Date.parse(@diagnosis_date_2))
-      expect(measurement_2.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
-      expect(measurement_2.measurement_source_value).to eq("#{@naaccr_schema_concept_code_2}@#{@naaccr_item_number}")
-      expect(measurement_2.measurement_source_concept_id).to eq(@measurement_concept_2.concept_id)
-      expect(measurement_2.value_source_value).to eq(@naaccr_item_value_2)
-    end
-
-    it 'pointing to EPISODE', focus: false do
-      expect(ConditionOccurrence.count).to eq(2)
-      expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(2) #1000000003 = ‘episode.episode_id’ concept
-
-      condition_occurrence_1 = ConditionOccurrence.where(person_id: @person_1.person_id, condition_concept_id: @condition_concept_1.concept_id).first
-      #1000000003 = ‘episode.episode_id’ concept
-      measurement_1 = Measurement.where(person_id: @person_1.person_id, modifier_of_field_concept_id: 1000000003, modifier_of_event_id: condition_occurrence_1.condition_occurrence_id,  measurement_concept_id: @measurement_concept_1.concept_id, value_as_concept_id: @measurement_value_as_concept_1.concept_id).first
-      expect(measurement_1.measurement_date).to eq(Date.parse(@diagnosis_date_1))
-      expect(measurement_1.measurement_time).to be_nil
-      expect(measurement_1.measurement_datetime).to eq(Date.parse(@diagnosis_date_1))
-      expect(measurement_1.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
-      expect(measurement_1.measurement_source_value).to eq("#{@naaccr_schema_concept_code_1}@#{@naaccr_item_number}")
-      expect(measurement_1.measurement_source_concept_id).to eq(@measurement_concept_1.concept_id)
-      expect(measurement_1.value_source_value).to eq(@naaccr_item_value_1)
-
-      condition_occurrence_2 = ConditionOccurrence.where(person_id: @person_2.person_id, condition_concept_id: @condition_concept_2.concept_id).first
-      measurement_2 = Measurement.where(person_id: @person_2.person_id, modifier_of_field_concept_id: 1000000003, modifier_of_event_id: condition_occurrence_2.condition_occurrence_id, measurement_concept_id: @measurement_concept_2.concept_id, value_as_concept_id: @measurement_value_as_concept_2.concept_id).first
       expect(measurement_2.measurement_date).to eq(Date.parse(@diagnosis_date_2))
       expect(measurement_2.measurement_time).to be_nil
       expect(measurement_2.measurement_datetime).to eq(Date.parse(@diagnosis_date_2))
@@ -1439,7 +1412,7 @@ describe NaaccrEtl do
 
     it 'pointing to CONDITION_OCCURRENCE', focus: false do
       expect(ConditionOccurrence.count).to eq(2)
-      expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(2) #1147127 = 'condition_occurrence.condition_occurrence_id'
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).count).to eq(2) #1147127 = 'condition_occurrence.condition_occurrence_id'
 
       condition_occurrence_1 = ConditionOccurrence.where(person_id: @person_1.person_id, condition_concept_id: @condition_concept.concept_id).first
       #1147127 = 'condition_occurrence.condition_occurrence_id'
@@ -1454,32 +1427,6 @@ describe NaaccrEtl do
 
       condition_occurrence_2 = ConditionOccurrence.where(person_id: @person_2.person_id, condition_concept_id: @condition_concept.concept_id).first
       measurement_2 = Measurement.where(person_id: @person_2.person_id, modifier_of_field_concept_id: 1147127, modifier_of_event_id: condition_occurrence_2.condition_occurrence_id, measurement_concept_id: @measurement_concept.concept_id, value_as_concept_id: @measurement_value_as_concept.concept_id).first
-      expect(measurement_2.measurement_date).to eq(Date.parse(@diagnosis_date_2))
-      expect(measurement_2.measurement_time).to be_nil
-      expect(measurement_2.measurement_datetime).to eq(Date.parse(@diagnosis_date_2))
-      expect(measurement_2.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
-      expect(measurement_2.measurement_source_value).to eq(@naaccr_item_number)
-      expect(measurement_2.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
-      expect(measurement_2.value_source_value).to eq(@naaccr_item_value)
-    end
-
-    it 'pointing to EPISODE', focus: false do
-      expect(ConditionOccurrence.count).to eq(2)
-      expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(2) #1000000003 = ‘episode.episode_id’ concept
-
-      condition_occurrence_1 = ConditionOccurrence.where(person_id: @person_1.person_id, condition_concept_id: @condition_concept.concept_id).first
-      #1000000003 = ‘episode.episode_id’ concept
-      measurement_1 = Measurement.where(person_id: @person_1.person_id, modifier_of_field_concept_id: 1000000003, modifier_of_event_id: condition_occurrence_1.condition_occurrence_id,  measurement_concept_id: @measurement_concept.concept_id, value_as_concept_id: @measurement_value_as_concept.concept_id).first
-      expect(measurement_1.measurement_date).to eq(Date.parse(@diagnosis_date_1))
-      expect(measurement_1.measurement_time).to be_nil
-      expect(measurement_1.measurement_datetime).to eq(Date.parse(@diagnosis_date_1))
-      expect(measurement_1.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
-      expect(measurement_1.measurement_source_value).to eq(@naaccr_item_number)
-      expect(measurement_1.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
-      expect(measurement_1.value_source_value).to eq(@naaccr_item_value)
-
-      condition_occurrence_2 = ConditionOccurrence.where(person_id: @person_2.person_id, condition_concept_id: @condition_concept.concept_id).first
-      measurement_2 = Measurement.where(person_id: @person_2.person_id, modifier_of_field_concept_id: 1000000003, modifier_of_event_id: condition_occurrence_2.condition_occurrence_id, measurement_concept_id: @measurement_concept.concept_id, value_as_concept_id: @measurement_value_as_concept.concept_id).first
       expect(measurement_2.measurement_date).to eq(Date.parse(@diagnosis_date_2))
       expect(measurement_2.measurement_time).to be_nil
       expect(measurement_2.measurement_datetime).to eq(Date.parse(@diagnosis_date_2))
@@ -1526,8 +1473,8 @@ describe NaaccrEtl do
       end
 
       it 'pointing to CONDITION_OCCURRENCE', focus: false do
-        expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
-        measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
+        expect(Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
+        measurement = Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).first
         expect(measurement.person_id).to eq(@person_1.person_id)
         expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
         expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
@@ -1542,25 +1489,6 @@ describe NaaccrEtl do
         condition_occurrence = ConditionOccurrence.first
         expect(measurement.modifier_of_event_id).to eq(condition_occurrence.condition_occurrence_id)
         expect(measurement.modifier_of_field_concept_id).to eq(1147127) #‘condition_occurrence.condition_occurrence_id’ concept
-      end
-
-      it 'pointing to EPISODE' do
-        expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(1)
-        measurement = Measurement.where(modifier_of_field_concept_id: 1000000003).first
-        expect(measurement.person_id).to eq(@person_1.person_id)
-        expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
-        expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
-        expect(measurement.measurement_time).to be_nil
-        expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
-        expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
-        expect(measurement.value_as_concept_id).to eq(@measurement_value_as_concept.concept_id)
-        expect(measurement.measurement_source_value).to eq(@naaccr_item_number)
-        expect(measurement.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
-        expect(measurement.value_source_value).to eq(@naaccr_item_value)
-        expect(Episode.count).to eq(1)
-        episode = Episode.first
-        expect(measurement.modifier_of_event_id).to eq(episode.episode_id)
-        expect(measurement.modifier_of_field_concept_id).to eq(1000000003) #‘‘episode.episode_id’ concept
       end
     end
 
@@ -1669,7 +1597,7 @@ describe NaaccrEtl do
 
       it 'pointing to CONDITION_OCCURRENCE', focus: false do
         expect(ConditionOccurrence.count).to eq(2)
-        expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(4) #1147127 = 'condition_occurrence.condition_occurrence_id'
+        expect(Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: [@measurement_concept.concept_id, @measurement_discriminator_concept_1.concept_id, @measurement_discriminator_concept_2.concept_id]).count).to eq(4) #1147127 = 'condition_occurrence.condition_occurrence_id'
 
         condition_occurrence_1 = ConditionOccurrence.where(person_id: @person_1.person_id, condition_concept_id: @condition_concept.concept_id).first
         #1147127 = 'condition_occurrence.condition_occurrence_id'
@@ -1702,50 +1630,6 @@ describe NaaccrEtl do
         expect(measurement_2.value_source_value).to eq(@naaccr_item_value)
 
         measurement_4 = Measurement.where(person_id: @person_2.person_id, modifier_of_field_concept_id: 1147127, modifier_of_event_id: condition_occurrence_2.condition_occurrence_id,  measurement_concept_id: @measurement_discriminator_concept_2.concept_id).first
-        expect(measurement_4.measurement_date).to eq(Date.parse(@diagnosis_date_2))
-        expect(measurement_4.measurement_time).to be_nil
-        expect(measurement_4.measurement_datetime).to eq(Date.parse(@diagnosis_date_2))
-        expect(measurement_4.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
-        expect(measurement_4.measurement_source_value).to eq(@naaccr_item_number_discriminator_2)
-        expect(measurement_4.measurement_source_concept_id).to eq(@measurement_discriminator_source_concept_2.concept_id)
-        expect(measurement_4.value_source_value).to eq(@naaccr_item_value_discriminator_2)
-      end
-
-      it 'pointing to EPISODE', focus: false do
-        expect(ConditionOccurrence.count).to eq(2)
-        expect(Measurement.where(modifier_of_field_concept_id: 1000000003).count).to eq(4) #1000000003 = ‘episode.episode_id’ concept
-
-        condition_occurrence_1 = ConditionOccurrence.where(person_id: @person_1.person_id, condition_concept_id: @condition_concept.concept_id).first
-        #1000000003 = ‘episode.episode_id’ concept
-        measurement_1 = Measurement.where(person_id: @person_1.person_id, modifier_of_field_concept_id: 1000000003, modifier_of_event_id: condition_occurrence_1.condition_occurrence_id,  measurement_concept_id: @measurement_concept.concept_id, value_as_concept_id: @measurement_value_as_concept_1.concept_id).first
-        expect(measurement_1.measurement_date).to eq(Date.parse(@diagnosis_date_1))
-        expect(measurement_1.measurement_time).to be_nil
-        expect(measurement_1.measurement_datetime).to eq(Date.parse(@diagnosis_date_1))
-        expect(measurement_1.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
-        expect(measurement_1.measurement_source_value).to eq(@naaccr_item_number)
-        expect(measurement_1.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
-        expect(measurement_1.value_source_value).to eq(@naaccr_item_value)
-
-        measurement_3 = Measurement.where(person_id: @person_1.person_id, modifier_of_field_concept_id: 1000000003, modifier_of_event_id: condition_occurrence_1.condition_occurrence_id,  measurement_concept_id: @measurement_discriminator_concept_1.concept_id).first
-        expect(measurement_3.measurement_date).to eq(Date.parse(@diagnosis_date_1))
-        expect(measurement_3.measurement_time).to be_nil
-        expect(measurement_3.measurement_datetime).to eq(Date.parse(@diagnosis_date_1))
-        expect(measurement_3.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
-        expect(measurement_3.measurement_source_value).to eq(@naaccr_item_number_discriminator_1)
-        expect(measurement_3.measurement_source_concept_id).to eq(@measurement_discriminator_source_concept_1.concept_id)
-        expect(measurement_3.value_source_value).to eq(@naaccr_item_value_discriminator_1)
-
-        condition_occurrence_2 = ConditionOccurrence.where(person_id: @person_2.person_id, condition_concept_id: @condition_concept.concept_id).first
-        measurement_2 = Measurement.where(person_id: @person_2.person_id, modifier_of_field_concept_id: 1000000003, modifier_of_event_id: condition_occurrence_2.condition_occurrence_id, measurement_concept_id: @measurement_concept.concept_id, value_as_concept_id: @measurement_value_as_concept_2.concept_id).first
-        expect(measurement_2.measurement_date).to eq(Date.parse(@diagnosis_date_2))
-        expect(measurement_2.measurement_time).to be_nil
-        expect(measurement_2.measurement_datetime).to eq(Date.parse(@diagnosis_date_2))
-        expect(measurement_2.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
-        expect(measurement_2.measurement_source_value).to eq(@naaccr_item_number)
-        expect(measurement_2.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
-        expect(measurement_2.value_source_value).to eq(@naaccr_item_value)
-
-        measurement_4 = Measurement.where(person_id: @person_2.person_id, modifier_of_field_concept_id: 1000000003, modifier_of_event_id: condition_occurrence_2.condition_occurrence_id,  measurement_concept_id: @measurement_discriminator_concept_2.concept_id).first
         expect(measurement_4.measurement_date).to eq(Date.parse(@diagnosis_date_2))
         expect(measurement_4.measurement_time).to be_nil
         expect(measurement_4.measurement_datetime).to eq(Date.parse(@diagnosis_date_2))
@@ -1948,20 +1832,6 @@ describe NaaccrEtl do
       #1147094 = drug_exposure.drug_exposure_id
       expect(EpisodeEvent.where(episode_id: episode_brm.episode_id, event_id: drug_exposure_brm.drug_exposure_id, episode_event_field_concept_id: 1147094).count).to eq(1)
     end
-
-    it "links back to the corresponding 'Disease episode", focus: false do
-      #32528='Disease First Occurrence'
-      episode_disease = Episode.where(episode_concept_id: 32528, episode_object_concept_id: @condition_concept.concept_id).first
-
-      episode_chemo = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_source_concept_chemo.concept_id).first
-      expect(episode_chemo.episode_parent_id).to eq(episode_disease.episode_id)
-
-      episode_hormone = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_source_concept_hormone.concept_id).first
-      expect(episode_hormone.episode_parent_id).to eq(episode_disease.episode_id)
-
-      episode_brm = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_source_concept_brm.concept_id).first
-      expect(episode_brm.episode_parent_id).to eq(episode_disease.episode_id)
-    end
   end
 
   describe "For 'Radiation' treatments" do
@@ -2136,20 +2006,6 @@ describe NaaccrEtl do
       #1147082 = procedure_occurrence.procedure_occurrence_id
       expect(EpisodeEvent.where(episode_id: episode_phase_3_radiation.episode_id, event_id: procedure_occurrence_phase_3_radiation.procedure_occurrence_id, episode_event_field_concept_id: 1147082).count).to eq(1)
     end
-
-    it "links back to the corresponding 'Disease episode", focus: false do
-      #32528='Disease First Occurrence'
-      episode_disease = Episode.where(episode_concept_id: 32528, episode_object_concept_id: @condition_concept.concept_id).first
-
-      episode_phase_1_radiation = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_phase_1_radiation.concept_id).first
-      expect(episode_phase_1_radiation.episode_parent_id).to eq(episode_disease.episode_id)
-
-      episode_phase_2_radiation = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_phase_2_radiation.concept_id).first
-      expect(episode_phase_2_radiation.episode_parent_id).to eq(episode_disease.episode_id)
-
-      episode_phase_3_radiation = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_phase_3_radiation.concept_id).first
-      expect(episode_phase_2_radiation.episode_parent_id).to eq(episode_disease.episode_id)
-    end
   end
 
   describe "For 'Surgery' treatments" do
@@ -2300,16 +2156,6 @@ describe NaaccrEtl do
       procedure_occurrence_surgery_2 = ProcedureOccurrence.where(procedure_concept_id: @episode_object_concept_surgery_2.concept_id).first
       #1147082 = procedure_occurrence.procedure_occurrence_id
       expect(EpisodeEvent.where(episode_id: episode_surgery_2.episode_id, event_id: procedure_occurrence_surgery_2.procedure_occurrence_id, episode_event_field_concept_id: 1147082).count).to eq(1)
-    end
-
-    it "links back to the corresponding 'Disease episode", focus: false do
-      #32528='Disease First Occurrence'
-      episode_disease_1 = Episode.where(episode_concept_id: 32528, episode_object_concept_id: @condition_concept_1.concept_id).first
-      episode_surgery_1 = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_surgery_1.concept_id).first
-      expect(episode_surgery_1.episode_parent_id).to eq(episode_disease_1.episode_id)
-      episode_disease_2 = Episode.where(episode_concept_id: 32528, episode_object_concept_id: @condition_concept_2.concept_id).first
-      episode_surgery_2 = Episode.where(episode_concept_id: 32531, episode_source_concept_id: @episode_object_concept_surgery_2.concept_id).first
-      expect(episode_surgery_2.episode_parent_id).to eq(episode_disease_2.episode_id)
     end
   end
 
@@ -2858,68 +2704,6 @@ describe NaaccrEtl do
       @condition_source_concept_2 = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'ICDO3', concept_code: @histology_site_2)
 
       NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
-    end
-
-    it "creates an entry in the OBSERVATION table", focus: false do
-      expect(Observation.where(person_id: @person_1.person_id).count).to eq(1)
-      observation_1 = Observation.where(person_id: @person_1.person_id).first
-      expect(observation_1.observation_concept_id).to eq(@observation_concept_1.concept_id)
-      expect(observation_1.person_id).to eq(@person_1.person_id)
-      expect(observation_1.observation_date).to eq(Date.parse(@diagnosis_date_1))
-      expect(observation_1.observation_datetime).to eq(Date.parse(@diagnosis_date_1))
-      expect(observation_1.observation_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
-      expect(observation_1.observation_source_value).to eq(@observation_concept_1.concept_code)
-      expect(observation_1.observation_source_concept_id).to eq(@observation_concept_1.concept_id)
-
-      expect(Observation.where(person_id: @person_2.person_id).count).to eq(1)
-      observation_2 = Observation.where(person_id: @person_2.person_id).first
-      expect(observation_2.observation_concept_id).to eq(@observation_concept_2.concept_id)
-      expect(observation_2.person_id).to eq(@person_2.person_id)
-      expect(observation_2.observation_date).to eq(Date.parse(@diagnosis_date_2))
-      expect(observation_2.observation_datetime).to eq(Date.parse(@diagnosis_date_2))
-      expect(observation_2.observation_type_concept_id).to eq(32534) #32534=‘Tumor registry’ type concept
-      expect(observation_2.observation_source_value).to eq(@observation_concept_2.concept_code)
-      expect(observation_2.observation_source_concept_id).to eq(@observation_concept_2.concept_id)
-
-      expect(Episode.where(person_id: @person_1.person_id).count).to eq(1)
-      episode_1 = Episode.where(person_id: @person_1.person_id).first
-      expect(episode_1.person_id).to eq(@person_1.person_id)
-      expect(episode_1.episode_concept_id).to eq(32528) #32528='Disease First Occurrence'
-      expect(episode_1.episode_start_datetime).to eq(Date.parse(@diagnosis_date_1))
-      expect(episode_1.episode_end_datetime).to be_nil
-      expect(episode_1.episode_object_concept_id).to eq(@condition_source_concept_1.concept_id)
-      expect(episode_1.episode_type_concept_id).to eq(32546)
-      expect(episode_1.episode_source_value).to eq(@histology_site_1)
-      expect(episode_1.episode_source_concept_id).to eq(@condition_source_concept_1.concept_id)
-
-      expect(Episode.where(person_id: @person_2.person_id).count).to eq(1)
-      episode_2 = Episode.where(person_id: @person_2.person_id).first
-      expect(episode_2.person_id).to eq(@person_2.person_id)
-      expect(episode_2.episode_concept_id).to eq(32528) #32528='Disease First Occurrence'
-      expect(episode_2.episode_start_datetime).to eq(Date.parse(@diagnosis_date_2))
-      expect(episode_2.episode_end_datetime).to be_nil
-      expect(episode_2.episode_object_concept_id).to eq(@condition_source_concept_2.concept_id)
-      expect(episode_2.episode_type_concept_id).to eq(32546)
-      expect(episode_2.episode_source_value).to eq(@histology_site_2)
-      expect(episode_2.episode_source_concept_id).to eq(@condition_source_concept_2.concept_id)
-
-      expect(FactRelationship.count).to eq(2)
-      fact_relationship_1 = FactRelationship.where(domain_concept_id_1: 32527, fact_id_1: episode_1.episode_id).first
-
-      expect(fact_relationship_1.domain_concept_id_1).to eq(32527) #32527=Episode
-      expect(fact_relationship_1.fact_id_1).to eq(episode_1.episode_id)
-      expect(fact_relationship_1.domain_concept_id_2).to eq(27) #27=Observation
-      expect(fact_relationship_1.fact_id_2).to eq(observation_1.observation_id)
-      expect(fact_relationship_1.relationship_concept_id).to eq(44818750) #44818750=Has occurrence
-
-      expect(FactRelationship.count).to eq(2)
-      fact_relationship_2 = FactRelationship.where(domain_concept_id_1: 32527, fact_id_1: episode_2.episode_id).first
-
-      expect(fact_relationship_2.domain_concept_id_1).to eq(32527) #32527=Episode
-      expect(fact_relationship_2.fact_id_1).to eq(episode_2.episode_id)
-      expect(fact_relationship_2.domain_concept_id_2).to eq(27) #27=Observation
-      expect(fact_relationship_2.fact_id_2).to eq(observation_2.observation_id)
-      expect(fact_relationship_2.relationship_concept_id).to eq(44818750) #44818750=Has occurrence
     end
   end
 end
