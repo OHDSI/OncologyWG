@@ -37,8 +37,11 @@ namespace :vocabulary do
             concept_relationship_stage[:mapping_note] = mapping_from_file['mapping notes']
             concept_relationship_stages << concept_relationship_stage            
           else
-            puts "we did not find the concept Cancer Modifier concept"
-            puts mapping_from_file['Maps To']
+            if mapping_from_file['Maps To'] == '0'
+            else              
+              puts "we did not find the concept Cancer Modifier concept"
+              puts mapping_from_file['Maps To']
+            end
           end        
         else
           puts "we did not find the concept NAACCR concept"
@@ -47,7 +50,7 @@ namespace :vocabulary do
       end
     end
 
-    File.open 'lib/setup/data_out/sample_concept_relationship_stage.csv', 'w' do |f|
+    File.open 'lib/setup/data_out/concept_relationship_stage.csv', 'w' do |f|
       f.print '"concept_code_1"'
       f.print ','
       f.print '"vocabulary_id_1"'      
