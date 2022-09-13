@@ -224,6 +224,7 @@ CREATE TABLE observation_period_temp
 	period_type_concept_id int NOT NULL
  );
 
+
   DROP TABLE IF EXISTS fact_relationship_temp;
 
   CREATE TABLE fact_relationship_temp
@@ -753,7 +754,11 @@ CREATE TABLE tmp_concept_naaccr_procedures
 
 --- DIAGNOSIS
 
+
+
   -- Condition Occurrence
+
+
   INSERT INTO condition_occurrence_temp
   (
     condition_occurrence_id
@@ -884,7 +889,6 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , cot.record_id                                                                                                                                           AS record_id
   FROM condition_occurrence_temp cot;
 
-
   -- Staging Cancer Modifiers
 
   INSERT INTO measurement_temp
@@ -944,24 +948,24 @@ CREATE TABLE tmp_concept_naaccr_procedures
      FROM condition_occurrence_temp cot
 
  	-- GET TNM CONCEPT
- 	INNER JOIN 
+ 	INNER JOIN
      (
- 	 -- get record_id + concept_code + concept_id 
-	
+ 	 -- get record_id + concept_code + concept_id
+
  		SELECT record_id, person_id, tnm.tnm_concept_code, conc.concept_id, tnm.tnm_value_raw
  		FROM
- 		( 
+ 		(
  			-- hardcode 'p-' to start for PATH to match concept code of target
- 			-- Get the TNM concept code to join 
- 			-- X = TNM value 
+ 			-- Get the TNM concept code to join
+ 			-- X = TNM value
  			-- Y = TNM edition
  			SELECT    x.record_id
-					, x.person_id 
+					, x.person_id
  					, x.tnm_value_raw
  					, CONCAT(tnm_type_indicator, y.tnm_edition, 'th_AJCC/UICC-', x.tnm_value) as tnm_concept_code
  			FROM
  			(
- 				-- Get the TNM VALUE, one for each,  unioned (need split for concept code derivation) 
+ 				-- Get the TNM VALUE, one for each,  unioned (need split for concept code derivation)
 
  				--  T ----------------------------------
  				SELECT DISTINCT   record_id
@@ -970,63 +974,63 @@ CREATE TABLE tmp_concept_naaccr_procedures
  								, CONCAT('T',substring(naaccr_item_value, 2, 10)) as tnm_value
  								, naaccr_item_value as tnm_value_raw
  				FROM naaccr_data_points_temp
- 				WHERE naaccr_item_number in ( 
+ 				WHERE naaccr_item_number in (
  					  '880'
  					, '940'
  					, '1001'
- 					, '1011'					
+ 					, '1011'
  				)
  				-- filter out null records
- 				AND CHAR_LENGTH(naaccr_item_value) > 0 
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
  				AND naaccr_item_value <> '88'
  				UNION
-			
+
  				-- N ----------------------------------------
  				SELECT DISTINCT   record_id
-								, person_id							
+								, person_id
  								, CONCAT(substring(naaccr_item_value, 1,1), '-') as tnm_type_indicator
  								, CONCAT('N',substring(naaccr_item_value, 2, 10)) as tnm_value
  								, naaccr_item_value as tnm_value_raw
  				FROM naaccr_data_points_temp
- 				WHERE naaccr_item_number in ( 
+ 				WHERE naaccr_item_number in (
  					  '890'
  					, '950'
  					, '1002'
  					, '1012'
  				)
  				-- filter out null records
- 				AND CHAR_LENGTH(naaccr_item_value) > 0 
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
  				AND naaccr_item_value <> '88'
- 				UNION 
+ 				UNION
 
  				-- M ------------------------------------
  				SELECT DISTINCT   record_id
-								, person_id				
+								, person_id
  								, CONCAT(substring(naaccr_item_value, 1,1), '-') as tnm_type_indicator
  								, CONCAT('M',substring(naaccr_item_value, 2, 10)) as tnm_value
  								, naaccr_item_value as tnm_value_raw
  				FROM naaccr_data_points_temp
- 				WHERE naaccr_item_number in ( 
+ 				WHERE naaccr_item_number in (
  					  '900'
  					, '960'
  					, '1003'
  					, '1013'
  				)
  				-- filter out null records
- 				AND CHAR_LENGTH(naaccr_item_value) > 0 
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
  				AND naaccr_item_value <> '88'
  				) x
- 			INNER JOIN 
+ 			INNER JOIN
  			(
  				-- Get the TNM EDITION
  				SELECT DISTINCT record_id
- 								-- hacky way to try to get rid of preceeding 0 if it exists 
-								, person_id								
+ 								-- hacky way to try to get rid of preceeding 0 if it exists
+								, person_id
  								, CAST(CAST(naaccr_item_value as int)as varchar) as  tnm_edition
  				FROM naaccr_data_points_temp
  				WHERE naaccr_item_number = '1060' -- TNM Edition Number
  				-- filter out null records
- 				AND CHAR_LENGTH(naaccr_item_value) > 0 
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
  				AND naaccr_item_value <> '88'
  				) y
  				ON x.record_id = y.record_id
@@ -1038,7 +1042,6 @@ CREATE TABLE tmp_concept_naaccr_procedures
  	) conc
  	ON cot.record_id = conc.record_id
  	;
-	
 
   --   condition modifiers
 
@@ -1138,13 +1141,13 @@ CREATE TABLE tmp_concept_naaccr_procedures
       INNER JOIN condition_occurrence_temp cot
       ON ndp.record_id = cot.record_id
 
-    -- -- Get standard concept
-    -- INNER JOIN concept_relationship cr
-    --   on ndp.variable_concept_id = cr.concept_id_1
-    --   and cr.relationship_id = 'Maps to'
-    -- INNER JOIN concept conc
-    --   on cr.concept_id_2 = conc.concept_id
-    --   AND conc.domain_id = 'Measurement'
+--    -- Get standard concept
+--    INNER JOIN concept_relationship cr
+--      on ndp.variable_concept_id = cr.concept_id_1
+--      and cr.relationship_id = 'Maps to'
+--    INNER JOIN concept conc
+--      on cr.concept_id_2 = conc.concept_id
+--      AND conc.domain_id = 'Measurement'
 
     -- Get Unit
     LEFT OUTER JOIN concept_relationship unit_cr
@@ -1760,7 +1763,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 	) det
 	WHERE record_id        = det.rec_id
 	AND episode_concept_id = 32531; --Treatment Regimen
-	
+
 -- INSERT TEMP TABLES
 
   -- assumes there is no IDENTITY on condition_occurrence_id
@@ -2027,6 +2030,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
         , 1147138   --measurement.measurement_id
         , record_id
     FROM measurement_temp;
+
 
   -- move from fact_relationship_temp to fact_relationship
   INSERT INTO fact_relationship
