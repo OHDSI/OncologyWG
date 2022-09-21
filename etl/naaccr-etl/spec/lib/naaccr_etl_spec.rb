@@ -730,14 +730,14 @@ describe NaaccrEtl do
       expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
       measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
       expect(measurement.person_id).to eq(@person_1.person_id)
-      expect(measurement.measurement_concept_id).to eq(32528) #'Disease First Occurrence'
+      expect(measurement.measurement_concept_id).to eq(734306) #'Disease First Occurrence'
       expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
       expect(measurement.measurement_time).to be_nil
       expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
       expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
       expect(measurement.value_as_concept_id).to be_nil
       expect(measurement.measurement_source_value).to be_nil
-      expect(measurement.measurement_source_concept_id).to eq(32528)
+      expect(measurement.measurement_source_concept_id).to eq(734306)
       expect(measurement.value_source_value).to be_nil
       expect(ConditionOccurrence.count).to eq(1)
       condition_occurrence = ConditionOccurrence.first
@@ -781,14 +781,14 @@ describe NaaccrEtl do
       expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
       measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
       expect(measurement.person_id).to eq(@person_1.person_id)
-      expect(measurement.measurement_concept_id).to eq(32528) #'Disease First Occurrence'
+      expect(measurement.measurement_concept_id).to eq(734306) #'Disease First Occurrence'
       expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
       expect(measurement.measurement_time).to be_nil
       expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
       expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
       expect(measurement.value_as_concept_id).to be_nil
       expect(measurement.measurement_source_value).to be_nil
-      expect(measurement.measurement_source_concept_id).to eq(32528)
+      expect(measurement.measurement_source_concept_id).to eq(734306)
       expect(measurement.value_source_value).to be_nil
       expect(ConditionOccurrence.count).to eq(1)
       condition_occurrence = ConditionOccurrence.first
@@ -837,14 +837,14 @@ describe NaaccrEtl do
       expect(Measurement.where(modifier_of_field_concept_id: 1147127).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
       measurement = Measurement.where(modifier_of_field_concept_id: 1147127).first
       expect(measurement.person_id).to eq(@person_1.person_id)
-      expect(measurement.measurement_concept_id).to eq(32528) #'Disease First Occurrence'
+      expect(measurement.measurement_concept_id).to eq(734306) #'Disease First Occurrence'
       expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
       expect(measurement.measurement_time).to be_nil
       expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
       expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
       expect(measurement.value_as_concept_id).to be_nil
       expect(measurement.measurement_source_value).to be_nil
-      expect(measurement.measurement_source_concept_id).to eq(32528)
+      expect(measurement.measurement_source_concept_id).to eq(734306)
       expect(measurement.value_source_value).to be_nil
       expect(ConditionOccurrence.count).to eq(1)
       condition_occurrence = ConditionOccurrence.first

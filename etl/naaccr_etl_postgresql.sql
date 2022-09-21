@@ -895,7 +895,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 
   SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement), 0) + row_number() over (order by cot.person_id)                                                AS measurement_id
       , cot.person_id                                                                                                                                           AS person_id
-      , 32528 																																				  AS measurement_concept_id  --'Disease First Occurrence'
+      , 734306 																																				  AS measurement_concept_id  --'Disease First Occurrence'
       , cot.condition_start_date                                                                                                                                AS measurement_date
       , NULL                                                                                                                                                    AS measurement_time
       , cot.condition_start_datetime                                                                                                                            AS measurement_datetime
@@ -910,7 +910,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , NULL                                                                                                                                                    AS visit_occurrence_id
       , NULL                                                                                                                                                    AS visit_detail_id
       , NULL                                                                                                                                         			AS measurement_source_value
-      ,32528                                                                                                                                         		    AS measurement_source_concept_id --'Disease First Occurrence'
+      ,734306                                                                                                                                         		    AS measurement_source_concept_id --'Disease First Occurrence'
       , NULL                                                                                                                                                    AS unit_source_value
       , NULL                                                                                                                                         			AS value_source_value
       , cot.condition_occurrence_id                                                                                                                             AS modifier_of_event_id

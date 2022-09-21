@@ -895,7 +895,7 @@ DISTSTYLE ALL;
 
   SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement), 0) + ROW_NUMBER() OVER (ORDER BY cot.person_id )                                                AS measurement_id
       , cot.person_id                                                                                                                                           AS person_id
-      , 32528 																																				  AS measurement_concept_id  --'Disease First Occurrence'
+      , 734306 																																				  AS measurement_concept_id  --'Disease First Occurrence'
       , cot.condition_start_date                                                                                                                                AS measurement_date
       , NULL                                                                                                                                                    AS measurement_time
       , cot.condition_start_datetime                                                                                                                            AS measurement_datetime
@@ -910,7 +910,7 @@ DISTSTYLE ALL;
       , NULL                                                                                                                                                    AS visit_occurrence_id
       , NULL                                                                                                                                                    AS visit_detail_id
       , NULL                                                                                                                                         			AS measurement_source_value
-      ,32528                                                                                                                                         		    AS measurement_source_concept_id --'Disease First Occurrence'
+      ,734306                                                                                                                                         		    AS measurement_source_concept_id --'Disease First Occurrence'
       , NULL                                                                                                                                                    AS unit_source_value
       , NULL                                                                                                                                         			AS value_source_value
       , cot.condition_occurrence_id                                                                                                                             AS modifier_of_event_id
