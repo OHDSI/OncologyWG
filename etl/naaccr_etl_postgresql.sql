@@ -224,6 +224,7 @@ CREATE TABLE observation_period_temp
 	period_type_concept_id int NOT NULL
  );
 
+
   DROP TABLE IF EXISTS fact_relationship_temp;
 
   CREATE TABLE fact_relationship_temp
@@ -294,7 +295,9 @@ CREATE TABLE naaccr_data_points_temp
 	schema_concept_id INT NULL,
 	schema_concept_code VARCHAR(255),
 	variable_concept_id INT NULL,
-	variable_concept_code VARCHAR(255) NULL,
+	variable_concept_code VARCHAR(255) NULL,  
+  source_variable_concept_id INT NULL,
+  source_variable_concept_code VARCHAR(255) NULL,    
 	value_concept_id INT NULL,
 	value_concept_code VARCHAR(255) NULL,
 	type_concept_id INT NULL
@@ -313,6 +316,8 @@ CREATE TABLE tmp_naaccr_data_points_temp_dates
 	schema_concept_code VARCHAR(255),
 	variable_concept_id INT NULL,
 	variable_concept_code VARCHAR(255) NULL,
+  source_variable_concept_id INT NULL,
+  source_variable_concept_code VARCHAR(255) NULL,    
 	value_concept_id INT NULL,
 	value_concept_code VARCHAR(255) NULL,
 	type_concept_id INT NULL
@@ -694,6 +699,31 @@ CREATE TABLE tmp_concept_naaccr_procedures
       WHERE c.vocabulary_id = 'NAACCR'
   );
 
+
+  UPDATE naaccr_data_points_temp
+    SET variable_concept_code = cv.variable_concept_code
+      , variable_concept_id   = cv.variable_concept_id
+      , source_variable_concept_id = cv.source_variable_concept_id
+      , source_variable_concept_code = cv.source_variable_concept_code
+    FROM
+    (
+        SELECT DISTINCT
+            c1.concept_code          AS source_variable_concept_code,
+            c1.concept_id            AS source_variable_concept_id,
+            c2.concept_code          AS variable_concept_code,
+            c2.concept_id            AS variable_concept_id
+  FROM concept c1
+        LEFT JOIN concept_relationship cr1
+            ON  c1.concept_id = cr1.concept_id_1
+            AND cr1.relationship_id = 'Maps to'
+        LEFT JOIN concept c2
+            ON cr1.concept_id_2 = c2.concept_id
+  WHERE c1.vocabulary_id = 'NAACCR'
+  AND c1.concept_class_id = 'NAACCR Value'
+  AND c2.vocabulary_id = 'Cancer Modifier'  
+    ) cv
+    WHERE naaccr_data_points_temp.value_concept_code = cv.source_variable_concept_code;
+    
   -- Type
 
   UPDATE naaccr_data_points_temp
@@ -753,7 +783,11 @@ CREATE TABLE tmp_concept_naaccr_procedures
 
 --- DIAGNOSIS
 
+
+
   -- Condition Occurrence
+
+
   INSERT INTO condition_occurrence_temp
   (
     condition_occurrence_id
@@ -861,7 +895,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 
   SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement), 0) + row_number() over (order by cot.person_id)                                                AS measurement_id
       , cot.person_id                                                                                                                                           AS person_id
-      , 32528 																																				  AS measurement_concept_id  --'Disease First Occurrence'
+      , 734306 																																				  AS measurement_concept_id  --'Disease First Occurrence'
       , cot.condition_start_date                                                                                                                                AS measurement_date
       , NULL                                                                                                                                                    AS measurement_time
       , cot.condition_start_datetime                                                                                                                            AS measurement_datetime
@@ -876,14 +910,13 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , NULL                                                                                                                                                    AS visit_occurrence_id
       , NULL                                                                                                                                                    AS visit_detail_id
       , NULL                                                                                                                                         			AS measurement_source_value
-      ,32528                                                                                                                                         		    AS measurement_source_concept_id --'Disease First Occurrence'
+      ,734306                                                                                                                                         		    AS measurement_source_concept_id --'Disease First Occurrence'
       , NULL                                                                                                                                                    AS unit_source_value
       , NULL                                                                                                                                         			AS value_source_value
       , cot.condition_occurrence_id                                                                                                                             AS modifier_of_event_id
       , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
       , cot.record_id                                                                                                                                           AS record_id
   FROM condition_occurrence_temp cot;
-
 
   -- Staging Cancer Modifiers
 
@@ -944,24 +977,24 @@ CREATE TABLE tmp_concept_naaccr_procedures
      FROM condition_occurrence_temp cot
 
  	-- GET TNM CONCEPT
- 	INNER JOIN 
+ 	INNER JOIN
      (
- 	 -- get record_id + concept_code + concept_id 
-	
+ 	 -- get record_id + concept_code + concept_id
+
  		SELECT record_id, person_id, tnm.tnm_concept_code, conc.concept_id, tnm.tnm_value_raw
  		FROM
- 		( 
+ 		(
  			-- hardcode 'p-' to start for PATH to match concept code of target
- 			-- Get the TNM concept code to join 
- 			-- X = TNM value 
+ 			-- Get the TNM concept code to join
+ 			-- X = TNM value
  			-- Y = TNM edition
  			SELECT    x.record_id
-					, x.person_id 
+					, x.person_id
  					, x.tnm_value_raw
  					, CONCAT(tnm_type_indicator, y.tnm_edition, 'th_AJCC/UICC-', x.tnm_value) as tnm_concept_code
  			FROM
  			(
- 				-- Get the TNM VALUE, one for each,  unioned (need split for concept code derivation) 
+ 				-- Get the TNM VALUE, one for each,  unioned (need split for concept code derivation)
 
  				--  T ----------------------------------
  				SELECT DISTINCT   record_id
@@ -970,63 +1003,63 @@ CREATE TABLE tmp_concept_naaccr_procedures
  								, CONCAT('T',substring(naaccr_item_value, 2, 10)) as tnm_value
  								, naaccr_item_value as tnm_value_raw
  				FROM naaccr_data_points_temp
- 				WHERE naaccr_item_number in ( 
+ 				WHERE naaccr_item_number in (
  					  '880'
  					, '940'
  					, '1001'
- 					, '1011'					
+ 					, '1011'
  				)
  				-- filter out null records
- 				AND CHAR_LENGTH(naaccr_item_value) > 0 
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
  				AND naaccr_item_value <> '88'
  				UNION
-			
+
  				-- N ----------------------------------------
  				SELECT DISTINCT   record_id
-								, person_id							
+								, person_id
  								, CONCAT(substring(naaccr_item_value, 1,1), '-') as tnm_type_indicator
  								, CONCAT('N',substring(naaccr_item_value, 2, 10)) as tnm_value
  								, naaccr_item_value as tnm_value_raw
  				FROM naaccr_data_points_temp
- 				WHERE naaccr_item_number in ( 
+ 				WHERE naaccr_item_number in (
  					  '890'
  					, '950'
  					, '1002'
  					, '1012'
  				)
  				-- filter out null records
- 				AND CHAR_LENGTH(naaccr_item_value) > 0 
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
  				AND naaccr_item_value <> '88'
- 				UNION 
+ 				UNION
 
  				-- M ------------------------------------
  				SELECT DISTINCT   record_id
-								, person_id				
+								, person_id
  								, CONCAT(substring(naaccr_item_value, 1,1), '-') as tnm_type_indicator
  								, CONCAT('M',substring(naaccr_item_value, 2, 10)) as tnm_value
  								, naaccr_item_value as tnm_value_raw
  				FROM naaccr_data_points_temp
- 				WHERE naaccr_item_number in ( 
+ 				WHERE naaccr_item_number in (
  					  '900'
  					, '960'
  					, '1003'
  					, '1013'
  				)
  				-- filter out null records
- 				AND CHAR_LENGTH(naaccr_item_value) > 0 
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
  				AND naaccr_item_value <> '88'
  				) x
- 			INNER JOIN 
+ 			INNER JOIN
  			(
  				-- Get the TNM EDITION
  				SELECT DISTINCT record_id
- 								-- hacky way to try to get rid of preceeding 0 if it exists 
-								, person_id								
+ 								-- hacky way to try to get rid of preceeding 0 if it exists
+								, person_id
  								, CAST(CAST(naaccr_item_value as int)as varchar) as  tnm_edition
  				FROM naaccr_data_points_temp
  				WHERE naaccr_item_number = '1060' -- TNM Edition Number
  				-- filter out null records
- 				AND CHAR_LENGTH(naaccr_item_value) > 0 
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
  				AND naaccr_item_value <> '88'
  				) y
  				ON x.record_id = y.record_id
@@ -1038,7 +1071,6 @@ CREATE TABLE tmp_concept_naaccr_procedures
  	) conc
  	ON cot.record_id = conc.record_id
  	;
-	
 
   --   condition modifiers
 
@@ -1138,13 +1170,13 @@ CREATE TABLE tmp_concept_naaccr_procedures
       INNER JOIN condition_occurrence_temp cot
       ON ndp.record_id = cot.record_id
 
-    -- -- Get standard concept
-    -- INNER JOIN concept_relationship cr
-    --   on ndp.variable_concept_id = cr.concept_id_1
-    --   and cr.relationship_id = 'Maps to'
-    -- INNER JOIN concept conc
-    --   on cr.concept_id_2 = conc.concept_id
-    --   AND conc.domain_id = 'Measurement'
+--    -- Get standard concept
+--    INNER JOIN concept_relationship cr
+--      on ndp.variable_concept_id = cr.concept_id_1
+--      and cr.relationship_id = 'Maps to'
+--    INNER JOIN concept conc
+--      on cr.concept_id_2 = conc.concept_id
+--      AND conc.domain_id = 'Measurement'
 
     -- Get Unit
     LEFT OUTER JOIN concept_relationship unit_cr
@@ -1157,8 +1189,109 @@ CREATE TABLE tmp_concept_naaccr_procedures
       AND ndp.value_concept_id = conc_num.concept_id
     ;
 
+    -- condition modifiers to Cancer Modifier
+    INSERT INTO measurement_temp
+    (
+      measurement_id
+      , person_id
+      , measurement_concept_id
+      , measurement_date
+      , measurement_time
+      , measurement_datetime
+      , measurement_type_concept_id
+      , operator_concept_id
+      , value_as_number
+      , value_as_concept_id
+      , unit_concept_id
+      , range_low
+      , range_high
+      , provider_id
+      , visit_occurrence_id
+      , visit_detail_id
+      , measurement_source_value
+      , measurement_source_concept_id
+      , unit_source_value
+      , value_source_value
+      , modifier_of_event_id
+      , modifier_of_field_concept_id
+      , record_id
+    )
+    SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement_temp), 0) + row_number() over (order by ndp.person_id)                                                                                                                      AS measurement_id
+        , ndp.person_id                                                                                                                                             AS person_id
+        , ndp.variable_concept_id
+        , cot.condition_start_date                                                                                                                                AS measurement_date
+        , NULL                                                                                                                                                    AS measurement_time
+        , cot.condition_start_datetime                                                                                                                            AS measurement_datetime
+        , 32534                                                                                                                                                   AS measurement_type_concept_id -- ‘Tumor registry’ concept
+        , conc_num.operator_concept_id                                                                                                                            AS operator_concept_id
+        , NULL value_as_number
+        , NULl    AS value_as_concept_id
+        , NULL AS unit_concept_id
+        , NULL                                                                                                                                                    AS range_low
+        , NULL                                                                                                                                                    AS range_high
+        , NULL                                                                                                                                                    AS provider_id
+        , NULL                                                                                                                                                    AS visit_occurrence_id
+        , NULL                                                                                                                                                    AS visit_detail_id
+        , ndp.source_variable_concept_code                                                                                                                                         AS measurement_source_value
+        , ndp.source_variable_concept_id                                                                                                                                         AS measurement_source_concept_id
+        , NULL                                                                                                                                                    AS unit_source_value
+        , NULL                                                                                                                                                     AS value_source_value
+        , cot.condition_occurrence_id                                                                                                                             AS modifier_of_event_id
+        , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
+        , ndp.record_id                                                                                                                                             AS record_id
+    FROM
+    (
+      SELECT person_id
+        	 , record_id
+        	 , histology_site
+        	 , naaccr_item_number
+        	 , naaccr_item_value
+        	 , schema_concept_id
+        	 , schema_concept_code
+        	 , variable_concept_id
+        	 , variable_concept_code
+           , source_variable_concept_id
+           , source_variable_concept_code 
+        	 , value_concept_id
+        	 , value_concept_code
+        	 , type_concept_id
+      FROM naaccr_data_points_temp
+      -- concept is modifier of a diagnosis item (child of site/hist)
+      WHERE source_variable_concept_id IN (  SELECT DISTINCT cr2.concept_id_2
+                      FROM concept_relationship cr1 JOIN concept c1 ON cr1.concept_id_1 = c1.concept_id
+                                                    JOIN concept_relationship cr2 ON c1.concept_id = cr2.concept_id_1 AND cr2.relationship_id = 'Has Answer'
+                      WHERE cr1.relationship_id = 'Has parent item'
+                      AND cr1.concept_id_2 in (35918588 -- primary site
+                                ,35918916 -- histology
+                                )
+                      )                    
+      -- filter empty values
+      AND CHAR_LENGTH(naaccr_item_value) > 0    
+     ) ndp
 
+     -- Get condition_occurrence record
+      INNER JOIN condition_occurrence_temp cot
+      ON ndp.record_id = cot.record_id
 
+--    -- Get standard concept
+--    INNER JOIN concept_relationship cr
+--      on ndp.variable_concept_id = cr.concept_id_1
+--      and cr.relationship_id = 'Maps to'
+--    INNER JOIN concept conc
+--      on cr.concept_id_2 = conc.concept_id
+--      AND conc.domain_id = 'Measurement'
+
+    -- Get Unit
+    LEFT OUTER JOIN concept_relationship unit_cr
+      ON ndp.variable_concept_id = unit_cr.concept_id_1
+      and unit_cr.relationship_id = 'Has unit'
+
+    -- Get numeric value
+    LEFT OUTER JOIN concept_numeric conc_num
+      ON ndp.type_concept_id = 32676 --'Numeric'
+      AND ndp.value_concept_id = conc_num.concept_id
+    ;
+    
 -- Treatment Episodes
   -- Temp table with NAACCR dates
   -- Used in joins instead full naaccr_data_points table to improve performance
@@ -1760,7 +1893,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 	) det
 	WHERE record_id        = det.rec_id
 	AND episode_concept_id = 32531; --Treatment Regimen
-	
+
 -- INSERT TEMP TABLES
 
   -- assumes there is no IDENTITY on condition_occurrence_id
@@ -2027,6 +2160,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
         , 1147138   --measurement.measurement_id
         , record_id
     FROM measurement_temp;
+
 
   -- move from fact_relationship_temp to fact_relationship
   INSERT INTO fact_relationship

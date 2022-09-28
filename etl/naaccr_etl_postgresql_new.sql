@@ -83,20 +83,12 @@ DELETE FROM cdm_source_provenance;
 -- Create temporary tables
 
 
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE condition_occurrence_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE condition_occurrence_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
+DROP TABLE IF EXISTS condition_occurrence_temp;
 
 CREATE TABLE condition_occurrence_temp
 (
-  condition_occurrence_id        NUMBER(19)        NOT NULL ,
-  person_id                     NUMBER(19)        NOT NULL ,
+  condition_occurrence_id        BIGINT        NOT NULL ,
+  person_id                     BIGINT        NOT NULL ,
   condition_concept_id          INT        NOT NULL ,
   condition_start_date          DATE          NOT NULL ,
   condition_start_datetime      TIMESTAMP     NULL ,
@@ -104,8 +96,8 @@ CREATE TABLE condition_occurrence_temp
   condition_end_datetime        TIMESTAMP     NULL ,
   condition_type_concept_id     INT        NOT NULL ,
   stop_reason                   VARCHAR(20)    NULL ,
-  provider_id                   NUMBER(19)        NULL ,
-  visit_occurrence_id           NUMBER(19)        NULL ,
+  provider_id                   BIGINT        NULL ,
+  visit_occurrence_id           BIGINT        NULL ,
   --1/23/2019 Removing because we are trying to match the EDW's OMOP instance.
   -- visit_detail_id               BIGINT     NULL ,
   condition_source_value        VARCHAR(50)    NULL ,
@@ -115,20 +107,12 @@ CREATE TABLE condition_occurrence_temp
   record_id                     varchar(255)  NULL
 );
 
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE measurement_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE measurement_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
+DROP TABLE IF EXISTS measurement_temp;
 
 CREATE TABLE measurement_temp
 (
-  measurement_id                NUMBER(19)       NOT NULL ,
-  person_id                     NUMBER(19)       NOT NULL ,
+  measurement_id                BIGINT       NOT NULL ,
+  person_id                     BIGINT       NOT NULL ,
   measurement_concept_id        INT       NOT NULL ,
   measurement_date              DATE         NOT NULL ,
   measurement_time              VARCHAR(10)  NULL ,
@@ -140,35 +124,27 @@ CREATE TABLE measurement_temp
   unit_concept_id               INT       NULL ,
   range_low                     NUMERIC      NULL ,
   range_high                    NUMERIC      NULL ,
-  provider_id                   NUMBER(19)       NULL ,
-  visit_occurrence_id           NUMBER(19)       NULL ,
-  visit_detail_id               NUMBER(19)       NULL ,
+  provider_id                   BIGINT       NULL ,
+  visit_occurrence_id           BIGINT       NULL ,
+  visit_detail_id               BIGINT       NULL ,
   measurement_source_value      VARCHAR(50)   NULL ,
   measurement_source_concept_id INT       NULL ,
   unit_source_value             VARCHAR(50)  NULL ,
   value_source_value            VARCHAR(50)  NULL ,
-  modifier_of_event_id          NUMBER(19)       NULL ,
+  modifier_of_event_id          BIGINT       NULL ,
   modifier_of_field_concept_id  INT       NULL,
   record_id                     VARCHAR(255) NULL
 );
 
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE episode_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE episode_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
+DROP TABLE IF EXISTS episode_temp;
 
 CREATE TABLE episode_temp (
-  episode_id                  NUMBER(19)        NOT NULL,
-  person_id                   NUMBER(19)        NOT NULL,
+  episode_id                  BIGINT        NOT NULL,
+  person_id                   BIGINT        NOT NULL,
   episode_concept_id          INT       NOT NULL,
   episode_start_datetime      TIMESTAMP     NULL,       --Fix me
   episode_end_datetime        TIMESTAMP     NULL,
-  episode_parent_id           NUMBER(19)        NULL,
+  episode_parent_id           BIGINT        NULL,
   episode_number              INTEGER       NULL,
   episode_object_concept_id   INTEGER       NOT NULL,
   episode_type_concept_id     INTEGER       NOT NULL,
@@ -177,66 +153,42 @@ CREATE TABLE episode_temp (
   record_id                   VARCHAR(255)  NULL
 );
 
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE episode_event_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE episode_event_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
+DROP TABLE IF EXISTS episode_event_temp;
 
 CREATE TABLE episode_event_temp (
-  episode_id                      NUMBER(19)   NOT NULL,
-  event_id                         NUMBER(19)   NOT NULL,
+  episode_id                      BIGINT   NOT NULL,
+  event_id                         BIGINT   NOT NULL,
   episode_event_field_concept_id  INT NOT NULL
 );
 
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE procedure_occurrence_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE procedure_occurrence_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
+DROP TABLE IF EXISTS procedure_occurrence_temp;
 
 CREATE TABLE procedure_occurrence_temp
  (
-  procedure_occurrence_id     NUMBER(19)        NOT NULL ,
-  person_id                    NUMBER(19)        NOT NULL ,
+  procedure_occurrence_id     BIGINT        NOT NULL ,
+  person_id                    BIGINT        NOT NULL ,
   procedure_concept_id        INT        NOT NULL ,
   procedure_date              DATE          NOT NULL ,
   procedure_datetime          TIMESTAMP     NULL ,
   procedure_type_concept_id   INT        NOT NULL ,
   modifier_concept_id         INT        NULL ,
-  quantity                    NUMBER(19)        NULL ,
-  provider_id                 NUMBER(19)        NULL ,
-  visit_occurrence_id         NUMBER(19)        NULL ,
-  visit_detail_id             NUMBER(19)        NULL ,
+  quantity                    BIGINT        NULL ,
+  provider_id                 BIGINT        NULL ,
+  visit_occurrence_id         BIGINT        NULL ,
+  visit_detail_id             BIGINT        NULL ,
   procedure_source_value      VARCHAR(50)    NULL ,
   procedure_source_concept_id  INT        NULL ,
   modifier_source_value       VARCHAR(50)    NULL,
-  episode_id                  NUMBER(19)        NOT NULL,
+  episode_id                  BIGINT        NOT NULL,
   record_id                   VARCHAR(255)  NULL
  );
 
- BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE drug_exposure_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE drug_exposure_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
+ DROP TABLE IF EXISTS drug_exposure_temp;
 
 CREATE TABLE drug_exposure_temp
 (
-  drug_exposure_id              NUMBER(19)        NOT NULL ,
-  person_id                     NUMBER(19)        NOT NULL ,
+  drug_exposure_id              BIGINT        NOT NULL ,
+  person_id                     BIGINT        NOT NULL ,
   drug_concept_id               INT        NOT NULL ,
   drug_exposure_start_date      DATE          NOT NULL ,
   drug_exposure_start_datetime  TIMESTAMP      NULL ,
@@ -245,15 +197,15 @@ CREATE TABLE drug_exposure_temp
   verbatim_end_date             DATE          NULL ,
   drug_type_concept_id          INT        NOT NULL ,
   stop_reason                   VARCHAR(20)   NULL ,
-  refills                       NUMBER(19)        NULL ,
+  refills                       BIGINT        NULL ,
   quantity                      NUMERIC       NULL ,
-  days_supply                   NUMBER(19)        NULL ,
+  days_supply                   BIGINT        NULL ,
   sig                           TEXT          NULL ,
   route_concept_id              INT        NULL ,
   lot_number                    VARCHAR(50)   NULL ,
-  provider_id                   NUMBER(19)        NULL ,
-  visit_occurrence_id           NUMBER(19)        NULL ,
-  visit_detail_id               NUMBER(19)        NULL ,
+  provider_id                   BIGINT        NULL ,
+  visit_occurrence_id           BIGINT        NULL ,
+  visit_detail_id               BIGINT        NULL ,
   drug_source_value             VARCHAR(50)   NULL ,
   drug_source_concept_id        INT        NULL ,
   route_source_value            VARCHAR(50)   NULL ,
@@ -261,15 +213,7 @@ CREATE TABLE drug_exposure_temp
   record_id                     VARCHAR(255)    NULL
 );
 
- BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE observation_period_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE observation_period_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
+ DROP TABLE IF EXISTS observation_period_temp;
 
 CREATE TABLE observation_period_temp
 (
@@ -281,22 +225,14 @@ CREATE TABLE observation_period_temp
  );
 
 
-  BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE fact_relationship_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE fact_relationship_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
+  DROP TABLE IF EXISTS fact_relationship_temp;
 
   CREATE TABLE fact_relationship_temp
   (
     domain_concept_id_1             INT           NOT NULL ,
-    fact_id_1                     	NUMBER(19)        NOT NULL ,
+    fact_id_1                     	BIGINT        NOT NULL ,
     domain_concept_id_2        		  INT           NOT NULL ,
-    fact_id_2              		   	  NUMBER(19)        NOT NULL ,
+    fact_id_2              		   	  BIGINT        NOT NULL ,
     relationship_concept_id         INT           NOT NULL ,
     record_id                     	VARCHAR(255)  NULL
   );
@@ -305,15 +241,7 @@ END;
 
  -- Create ambiguous schema discriminator mapping tables
 
- BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE ambig_schema_discrim';
-  EXECUTE IMMEDIATE 'DROP TABLE ambig_schema_discrim';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
+ DROP TABLE IF EXISTS ambig_schema_discrim;
 
  CREATE TABLE ambig_schema_discrim(
 	schema_concept_code varchar(50) NULL,
@@ -355,19 +283,11 @@ END;
 
 
 
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE naaccr_data_points_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE naaccr_data_points_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
+DROP TABLE IF EXISTS naaccr_data_points_temp;
 
 CREATE TABLE naaccr_data_points_temp
 (
-	person_id NUMBER(19) NOT NULL,
+	person_id BIGINT NOT NULL,
 	record_id VARCHAR(255) NULL,
 	histology_site VARCHAR(255) NULL,
 	naaccr_item_number VARCHAR(255) NULL,
@@ -383,19 +303,11 @@ CREATE TABLE naaccr_data_points_temp
 	type_concept_id INT NULL
 );
 
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE tmp_naaccr_data_points_temp_dates';
-  EXECUTE IMMEDIATE 'DROP TABLE tmp_naaccr_data_points_temp_dates';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
+DROP TABLE IF EXISTS tmp_naaccr_data_points_temp_dates;
 
 CREATE TABLE tmp_naaccr_data_points_temp_dates
 (
-	person_id NUMBER(19) NOT NULL,
+	person_id BIGINT NOT NULL,
 	record_id VARCHAR(255) NULL,
 	histology_site VARCHAR(255) NULL,
 	naaccr_item_number VARCHAR(255) NULL,
@@ -411,15 +323,7 @@ CREATE TABLE tmp_naaccr_data_points_temp_dates
 	type_concept_id INT NULL
 );
 
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE tmp_concept_naaccr_procedures';
-  EXECUTE IMMEDIATE 'DROP TABLE tmp_concept_naaccr_procedures';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
+DROP TABLE IF EXISTS tmp_concept_naaccr_procedures;
 
 CREATE TABLE tmp_concept_naaccr_procedures
 (
@@ -472,15 +376,18 @@ CREATE TABLE tmp_concept_naaccr_procedures
 		,COALESCE(race.race_concept_id, 0)
 		,ethn.naaccr_item_value
 		,COALESCE(ethn.ethnicity_concept_id, 0)
-   FROM (SELECT DISTINCT person_id,
+   FROM
+   (
+    SELECT DISTINCT person_id,
 				CAST(naaccr_item_value as date) dob
     FROM naaccr_data_points ndp
-	  WHERE naaccr_item_number = '240' -- date of birth
-	AND person_id NOT IN (SELECT person_id FROM person ) -- exclude if exists already
+	WHERE naaccr_item_number = '240' -- date of birth
+	AND person_id NOT IN ( SELECT person_id FROM person) -- exclude if exists already
   AND ndp.person_id IS NOT NULL
-    ) per
+   ) per
    LEFT OUTER JOIN
-   (SELECT DISTINCT
+   (
+	SELECT DISTINCT
 		person_id
 		,naaccr_item_value
 		,CASE WHEN naaccr_item_value = '1' THEN 8507
@@ -488,11 +395,12 @@ CREATE TABLE tmp_concept_naaccr_procedures
 			 ELSE '0'
 		END as gender_concept_id
 	FROM naaccr_data_points ndp
-	  WHERE naaccr_item_number = '220'    -- gender
-    ) gen
+	WHERE naaccr_item_number = '220'    -- gender
+   ) gen
    ON per.person_id = gen.person_id
    LEFT OUTER JOIN
-   (SELECT DISTINCT
+   (
+	SELECT DISTINCT
 		person_id
 		,naaccr_item_value
 		,CASE WHEN naaccr_item_value = '01' THEN 8527		-- white
@@ -526,11 +434,12 @@ CREATE TABLE tmp_concept_naaccr_procedures
 			 ELSE '0'
 		END as race_concept_id
 	FROM naaccr_data_points ndp
-	  WHERE naaccr_item_number = '160'    -- race 1
-    ) race
+	WHERE naaccr_item_number = '160'    -- race 1
+   ) race
    ON per.person_id = race.person_id
    LEFT OUTER JOIN
-   (SELECT DISTINCT
+   (
+	SELECT DISTINCT
 		person_id
 		,naaccr_item_value
 		,CASE WHEN naaccr_item_value = '0' THEN 38003564									-- non hispanic or latino
@@ -538,10 +447,10 @@ CREATE TABLE tmp_concept_naaccr_procedures
 			 ELSE '0'
 		END as ethnicity_concept_id
 	FROM naaccr_data_points ndp
-	  WHERE naaccr_item_number = '190'    -- spanish/hispanic origin
-    ) ethn
+	WHERE naaccr_item_number = '190'    -- spanish/hispanic origin
+   ) ethn
    ON per.person_id = ethn.person_id
-    ;
+   ;
 
 
 
@@ -555,11 +464,11 @@ CREATE TABLE tmp_concept_naaccr_procedures
 
 	 -- Initial data insert
 	 INSERT INTO naaccr_data_points_temp
-	 SELECT ndp.person_id
+	 SELECT  ndp.person_id
          , record_id
          , histology_site
          , naaccr_item_number
-         , CASE WHEN LENGTH(naaccr_item_value) > 255
+         , CASE WHEN CHAR_LENGTH(naaccr_item_value) > 255
 				THEN SUBSTRING(naaccr_item_value,1,255)
 				ELSE naaccr_item_value
 			END
@@ -578,7 +487,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 	AND ndp.naaccr_item_value != ''
 	AND ndp.naaccr_item_number NOT IN(
      '1810' --ADDR CURRENT--CITY
-   ) ;
+   );
 
 
 	-- Format dates
@@ -586,8 +495,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
   UPDATE naaccr_data_points_temp
   SET naaccr_item_value =
 		CASE
-			WHEN LENGTH(naaccr_item_value) != 8 THEN NULL
-			WHEN CASE WHEN (LENGTH(TRIM(TRANSLATE(naaccr_item_value, ' +-.0123456789',' '))) IS NULL) THEN 1 ELSE 0 END <> 1 THEN NULL
+			WHEN CHAR_LENGTH(naaccr_item_value) != 8 THEN NULL
+			WHEN CASE WHEN (CAST(naaccr_item_value AS VARCHAR) ~ '^([0-9]+\.?[0-9]*|\.[0-9]+)$') THEN 1 ELSE 0 END <> 1 THEN NULL
 			ELSE CASE
 				WHEN CAST(SUBSTRING(naaccr_item_value, 1,4) as int) NOT BETWEEN 1800 AND 2099 THEN NULL
 				WHEN CAST(SUBSTRING(naaccr_item_value, 5,2) as int) NOT BETWEEN 1 AND 12 THEN NULL
@@ -595,13 +504,14 @@ CREATE TABLE tmp_concept_naaccr_procedures
 				ELSE naaccr_item_value
 				END
 		END
-  WHERE naaccr_item_number IN(SELECT DISTINCT c.concept_code
+  WHERE naaccr_item_number IN(-- todo: verify this list
+      SELECT DISTINCT c.concept_code
       FROM concept c
       INNER JOIN concept_relationship cr
         ON  cr.concept_id_1 = c.concept_id
         AND cr.relationship_id IN ('Start date of', 'End date of')
-        WHERE c.vocabulary_id = 'NAACCR'
-   );
+      WHERE c.vocabulary_id = 'NAACCR'
+  );
 
 
 
@@ -618,33 +528,37 @@ CREATE TABLE tmp_concept_naaccr_procedures
     SET schema_concept_id = schm.schema_concept_id,
       schema_concept_code = schm.schema_concept_code
     FROM
-    (SELECT DISTINCT record_id rec_id, asd.schema_concept_id, asd.schema_concept_code
-      FROM (SELECT DISTINCT
+    (
+      SELECT DISTINCT record_id rec_id, asd.schema_concept_id, asd.schema_concept_code
+      FROM
+      (
+        SELECT DISTINCT
               record_id
               ,  histology_site
               , naaccr_item_number
               , naaccr_item_value
         FROM naaccr_data_points_temp
-          WHERE schema_concept_id IS NULL
+        WHERE schema_concept_id IS NULL
         --AND naaccr_item_number in (SELECT DISTINCT discrim_item_num FROM .ambig_schema_discrim)
         AND naaccr_item_number in ('220', '2879')
-       ) x
+      ) x
       INNER JOIN
-      (SELECT DISTINCT conc.concept_code, cr.concept_id_2
+      (
+      SELECT DISTINCT conc.concept_code, cr.concept_id_2
       FROM concept conc
       INNER JOIN concept_relationship cr
       ON conc. vocabulary_id = 'ICDO3'
       AND cr.concept_id_1 = conc.concept_id
       AND relationship_id = 'ICDO to Schema'
       -- Theres a ton of duplicated schemas here that arent in the mapping file... Item/value must be identical between schemas?
-      AND cr.concept_id_2 IN (SELECT DISTINCT schema_concept_id FROM ambig_schema_discrim )
-       ) ambig_cond
+      AND cr.concept_id_2 IN (SELECT DISTINCT schema_concept_id FROM ambig_schema_discrim)
+      ) ambig_cond
       ON x.histology_site = ambig_cond.concept_code
       INNER JOIN ambig_schema_discrim asd
       ON ambig_cond.concept_id_2 = asd.schema_concept_id
       AND x.naaccr_item_number = asd.discrim_item_num
       AND x.naaccr_item_value = asd.discrim_item_value
-     ) schm
+    ) schm
     WHERE record_id = schm.rec_id;
 
 
@@ -664,7 +578,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
     SET variable_concept_code = cv.variable_concept_code
     , variable_concept_id   = cv.variable_concept_id
     FROM
-    (SELECT DISTINCT
+    (
+        SELECT DISTINCT
             c1.concept_code                   AS concept_code,
 			-- c1.concept_code					  AS variable_concept_code,
 			-- c1.concept_id					  AS variable_concept_id
@@ -694,9 +609,9 @@ CREATE TABLE tmp_concept_naaccr_procedures
             AND cr1.relationship_id = 'Maps to'
         LEFT JOIN concept c2
             ON cr1.concept_id_2 = c2.concept_id
-    WHERE c1.vocabulary_id = 'NAACCR'
+  WHERE c1.vocabulary_id = 'NAACCR'
   AND c1.concept_class_id = 'NAACCR Variable'
-     ) cv
+    ) cv
     WHERE naaccr_data_points_temp.variable_concept_id IS NULL
     AND naaccr_data_points_temp.naaccr_item_number = cv.concept_code;
 
@@ -710,7 +625,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
   AND c1.concept_class_id = 'NAACCR Variable'
   AND naaccr_data_points_temp.variable_concept_id IS NULL
   AND c1.concept_id IS NOT NULL
-  AND CONCAT(naaccr_data_points_temp.schema_concept_code, CONCAT('@', naaccr_data_points_temp.naaccr_item_number)) = c1.concept_code;
+  AND CONCAT(naaccr_data_points_temp.schema_concept_code,'@', naaccr_data_points_temp.naaccr_item_number) = c1.concept_code;
 
 
   -- schema-independent
@@ -735,14 +650,15 @@ CREATE TABLE tmp_concept_naaccr_procedures
   AND c1.concept_id IS NOT NULL
   AND c1.vocabulary_id = 'NAACCR'
   AND c1.concept_class_id = 'NAACCR Value'
-  AND CONCAT(naaccr_data_points_temp.variable_concept_code, CONCAT('@', naaccr_data_points_temp.naaccr_item_value)) = c1.concept_code
-  AND naaccr_data_points_temp.naaccr_item_number NOT IN(SELECT DISTINCT c.concept_code
+  AND CONCAT(naaccr_data_points_temp.variable_concept_code,'@', naaccr_data_points_temp.naaccr_item_value) = c1.concept_code
+  AND naaccr_data_points_temp.naaccr_item_number NOT IN(-- todo: verify this list
+      SELECT DISTINCT c.concept_code
       FROM concept c
       INNER JOIN concept_relationship cr
         ON  cr.concept_id_1 = c.concept_id
         AND cr.relationship_id IN ('Start date of', 'End date of')
-        WHERE c.vocabulary_id = 'NAACCR'
-   );
+      WHERE c.vocabulary_id = 'NAACCR'
+  );
 
   -- Values schema-independent (handle Observation domain values)
 
@@ -754,14 +670,15 @@ CREATE TABLE tmp_concept_naaccr_procedures
   AND c1.concept_id IS NOT NULL
   AND c1.vocabulary_id = 'NAACCR'
   AND c1.concept_class_id = 'NAACCR Value'
-  AND CONCAT(naaccr_data_points_temp.naaccr_item_number, CONCAT('@', naaccr_data_points_temp.naaccr_item_value)) = c1.concept_code
-  AND naaccr_data_points_temp.naaccr_item_number NOT IN(SELECT DISTINCT c.concept_code
+  AND CONCAT(naaccr_data_points_temp.naaccr_item_number,'@', naaccr_data_points_temp.naaccr_item_value) = c1.concept_code
+  AND naaccr_data_points_temp.naaccr_item_number NOT IN(-- todo: verify this list
+      SELECT DISTINCT c.concept_code
       FROM concept c
       INNER JOIN concept_relationship cr
         ON  cr.concept_id_1 = c.concept_id
         AND cr.relationship_id IN ('Start date of', 'End date of')
-        WHERE c.vocabulary_id = 'NAACCR'
-   );
+      WHERE c.vocabulary_id = 'NAACCR'
+  );
 
    -- Values schema-dependent
   UPDATE naaccr_data_points_temp
@@ -772,15 +689,15 @@ CREATE TABLE tmp_concept_naaccr_procedures
   AND c1.concept_id IS NOT NULL
   AND c1.vocabulary_id = 'NAACCR'
   AND c1.concept_class_id = 'NAACCR Value'
-  AND CONCAT(naaccr_data_points_temp.schema_concept_code, CONCAT('@', CONCAT(naaccr_data_points_temp.variable_concept_code, CONCAT('@', naaccr_data_points_temp.naaccr_item_value)))) = c1.concept_code
-  AND naaccr_data_points_temp.naaccr_item_number NOT IN(SELECT DISTINCT c.concept_code
+  AND CONCAT(naaccr_data_points_temp.schema_concept_code, '@', naaccr_data_points_temp.variable_concept_code,'@', naaccr_data_points_temp.naaccr_item_value) = c1.concept_code
+  AND naaccr_data_points_temp.naaccr_item_number NOT IN(-- todo: verify this list
+      SELECT DISTINCT c.concept_code
       FROM concept c
       INNER JOIN concept_relationship cr
         ON  cr.concept_id_1 = c.concept_id
         AND cr.relationship_id IN ('Start date of', 'End date of')
-        WHERE c.vocabulary_id = 'NAACCR'
-   );
-
+      WHERE c.vocabulary_id = 'NAACCR'
+  );
 
   UPDATE naaccr_data_points_temp
     SET variable_concept_code = cv.variable_concept_code
@@ -788,7 +705,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , source_variable_concept_id = cv.source_variable_concept_id
       , source_variable_concept_code = cv.source_variable_concept_code
     FROM
-    (SELECT DISTINCT
+    (
+        SELECT DISTINCT
             c1.concept_code          AS source_variable_concept_code,
             c1.concept_id            AS source_variable_concept_id,
             c2.concept_code          AS variable_concept_code,
@@ -799,10 +717,10 @@ CREATE TABLE tmp_concept_naaccr_procedures
             AND cr1.relationship_id = 'Maps to'
         LEFT JOIN concept c2
             ON cr1.concept_id_2 = c2.concept_id
-    WHERE c1.vocabulary_id = 'NAACCR'
+  WHERE c1.vocabulary_id = 'NAACCR'
   AND c1.concept_class_id = 'NAACCR Value'
-  AND c2.vocabulary_id = 'Cancer Modifier'  
-     ) cv
+  AND c2.vocabulary_id = 'Cancer Modifier'
+    ) cv
     WHERE naaccr_data_points_temp.value_concept_code = cv.source_variable_concept_code;
     
   -- Type
@@ -833,28 +751,31 @@ CREATE TABLE tmp_concept_naaccr_procedures
            , cause_source_value
            , cause_source_concept_id
            )
-	SELECT person_id
+	SELECT
+		person_id
 		,max_dth_date
 		,max_dth_date
 		,0 -- TODO
 		,0 -- TODO
 		,NULL
 		,0
-	FROM (SELECT ndp.person_id
+	FROM
+	(
+		SELECT ndp.person_id
 				,CAST(MAX(ndp.naaccr_item_value) as date) max_dth_date
 		FROM naaccr_data_points ndp
 		INNER JOIN naaccr_data_points ndp2
 		  ON ndp.naaccr_item_number = '1750'		-- date of last contact
 		  AND ndp2.naaccr_item_number = '1760'	-- vital status
 		  AND ndp.naaccr_item_value IS NOT NULL
-		  AND LENGTH(ndp.naaccr_item_value) = '8'
+		  AND CHAR_LENGTH(ndp.naaccr_item_value) = '8'
 		  AND ndp2.naaccr_item_value = '0' --'0'='Dead'
 		  AND ndp.record_id = ndp2.record_id
       AND ndp.person_id IS NOT NULL
 		GROUP BY ndp.person_id
-	 ) x
-	  WHERE x.person_id NOT IN (SELECT person_id FROM DEATH )
-	 ;
+	) x
+	WHERE x.person_id NOT IN (SELECT person_id from DEATH)
+	;
 
 
 
@@ -887,8 +808,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , record_id
   )
 
-  SELECT COALESCE( (SELECT MAX(condition_occurrence_id) FROM condition_occurrence_temp )
-                 , (SELECT MAX(condition_occurrence_id) FROM condition_occurrence )
+  SELECT COALESCE( (SELECT MAX(condition_occurrence_id) FROM condition_occurrence_temp)
+                 , (SELECT MAX(condition_occurrence_id) FROM condition_occurrence)
                  , 0) + row_number() over (order by s.person_id)                                                                  AS condition_occurrence_id
       , s.person_id                                                                                           AS person_id
       , c2.concept_id                                                                                         AS condition_concept_id
@@ -906,7 +827,13 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , NULL                                                                                                  AS condition_status_source_value
       , NULL                                                                                                  AS condition_status_concept_id
       , s.record_id                                                                                           AS record_id
-  FROM (SELECT person_id
+  FROM
+
+
+
+
+    (
+      SELECT person_id
         	 , record_id
         	 , histology_site
         	 , naaccr_item_number
@@ -919,10 +846,10 @@ CREATE TABLE tmp_concept_naaccr_procedures
         	 , value_concept_code
         	 , type_concept_id
       FROM naaccr_data_points_temp
-        WHERE naaccr_item_number = '390'  -- Date of diag
+      WHERE naaccr_item_number = '390'  -- Date of diag
       AND naaccr_item_value IS NOT NULL
       AND person_id IS NOT NULL
-     ) s
+    ) s
       JOIN concept d
         ON d.vocabulary_id = 'ICDO3'
         AND d.concept_code = s.histology_site
@@ -933,7 +860,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
         ON c2.standard_concept = 'S'
         AND ra.concept_id_2 = c2.concept_id
         AND c2.domain_id = 'Condition'
-     ;
+    ;
 
   -- Initial Diagnosis Condition Modifier
 
@@ -965,9 +892,9 @@ CREATE TABLE tmp_concept_naaccr_procedures
   )
 
 
-  SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement ), 0) + row_number() over (order by cot.person_id)                                                AS measurement_id
+  SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement), 0) + row_number() over (order by cot.person_id)                                                AS measurement_id
       , cot.person_id                                                                                                                                           AS person_id
-      , 734306 																																				  AS measurement_concept_id  --'Disease First Occurrence'
+      , 32528 																																				  AS measurement_concept_id  --'Disease First Occurrence'
       , cot.condition_start_date                                                                                                                                AS measurement_date
       , NULL                                                                                                                                                    AS measurement_time
       , cot.condition_start_datetime                                                                                                                            AS measurement_datetime
@@ -982,13 +909,13 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , NULL                                                                                                                                                    AS visit_occurrence_id
       , NULL                                                                                                                                                    AS visit_detail_id
       , NULL                                                                                                                                         			AS measurement_source_value
-      ,734306                                                                                                                                         		    AS measurement_source_concept_id --'Disease First Occurrence'
+      ,32528                                                                                                                                         		    AS measurement_source_concept_id --'Disease First Occurrence'
       , NULL                                                                                                                                                    AS unit_source_value
       , NULL                                                                                                                                         			AS value_source_value
       , cot.condition_occurrence_id                                                                                                                             AS modifier_of_event_id
       , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
       , cot.record_id                                                                                                                                           AS record_id
-  FROM condition_occurrence_temp cot ;
+  FROM condition_occurrence_temp cot;
 
   -- Staging Cancer Modifiers
 
@@ -1023,7 +950,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
  	 EXAMPLE OF TNM INSERT
  	 using TNM PATH T
  	*/
-     SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement_temp ), 0) + row_number() over (order by conc.person_id)   AS measurement_id
+     SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement_temp), 0) + row_number() over (order by conc.person_id)   AS measurement_id
          , cot.person_id                      	AS person_id
          , conc.concept_id                    	AS measurement_concept_id
          , cot.condition_start_date           	AS measurement_date
@@ -1050,83 +977,99 @@ CREATE TABLE tmp_concept_naaccr_procedures
 
  	-- GET TNM CONCEPT
  	INNER JOIN
-     (SELECT record_id, person_id, tnm.tnm_concept_code, conc.concept_id, tnm.tnm_value_raw
- 		FROM (SELECT x.record_id
+     (
+ 	 -- get record_id + concept_code + concept_id
+
+ 		SELECT record_id, person_id, tnm.tnm_concept_code, conc.concept_id, tnm.tnm_value_raw
+ 		FROM
+ 		(
+ 			-- hardcode 'p-' to start for PATH to match concept code of target
+ 			-- Get the TNM concept code to join
+ 			-- X = TNM value
+ 			-- Y = TNM edition
+ 			SELECT    x.record_id
 					, x.person_id
  					, x.tnm_value_raw
- 					, CONCAT(tnm_type_indicator, CONCAT(y.tnm_edition, CONCAT('th_AJCC/UICC-', x.tnm_value))) as tnm_concept_code
- 			FROM (SELECT DISTINCT   record_id
+ 					, CONCAT(tnm_type_indicator, y.tnm_edition, 'th_AJCC/UICC-', x.tnm_value) as tnm_concept_code
+ 			FROM
+ 			(
+ 				-- Get the TNM VALUE, one for each,  unioned (need split for concept code derivation)
+
+ 				--  T ----------------------------------
+ 				SELECT DISTINCT   record_id
 								, person_id
  								, CONCAT(substring(naaccr_item_value, 1,1), '-') as tnm_type_indicator
  								, CONCAT('T',substring(naaccr_item_value, 2, 10)) as tnm_value
  								, naaccr_item_value as tnm_value_raw
  				FROM naaccr_data_points_temp
- 				    WHERE naaccr_item_number in (
+ 				WHERE naaccr_item_number in (
  					  '880'
  					, '940'
  					, '1001'
  					, '1011'
  				)
  				-- filter out null records
- 				AND LENGTH(naaccr_item_value) > 0
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
  				AND naaccr_item_value <> '88'
- 				   UNION
+ 				UNION
 
  				-- N ----------------------------------------
  				SELECT DISTINCT   record_id
 								, person_id
- 								, CONCAT(substring(naaccr_item_value, 1,1), '-')  tnm_type_indicator
- 								, CONCAT('N',substring(naaccr_item_value, 2, 10))  tnm_value
+ 								, CONCAT(substring(naaccr_item_value, 1,1), '-') as tnm_type_indicator
+ 								, CONCAT('N',substring(naaccr_item_value, 2, 10)) as tnm_value
  								, naaccr_item_value as tnm_value_raw
  				FROM naaccr_data_points_temp
- 				   WHERE naaccr_item_number in (
+ 				WHERE naaccr_item_number in (
  					  '890'
  					, '950'
  					, '1002'
  					, '1012'
  				)
  				-- filter out null records
- 				AND LENGTH(naaccr_item_value) > 0
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
  				AND naaccr_item_value <> '88'
- 				   UNION
+ 				UNION
 
  				-- M ------------------------------------
  				SELECT DISTINCT   record_id
 								, person_id
- 								, CONCAT(substring(naaccr_item_value, 1,1), '-')  tnm_type_indicator
- 								, CONCAT('M',substring(naaccr_item_value, 2, 10))  tnm_value
+ 								, CONCAT(substring(naaccr_item_value, 1,1), '-') as tnm_type_indicator
+ 								, CONCAT('M',substring(naaccr_item_value, 2, 10)) as tnm_value
  								, naaccr_item_value as tnm_value_raw
  				FROM naaccr_data_points_temp
- 				 WHERE naaccr_item_number in (
+ 				WHERE naaccr_item_number in (
  					  '900'
  					, '960'
  					, '1003'
  					, '1013'
  				)
  				-- filter out null records
- 				AND LENGTH(naaccr_item_value) > 0
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
  				AND naaccr_item_value <> '88'
- 				 ) x
+ 				) x
  			INNER JOIN
- 			(SELECT DISTINCT record_id
+ 			(
+ 				-- Get the TNM EDITION
+ 				SELECT DISTINCT record_id
  								-- hacky way to try to get rid of preceeding 0 if it exists
 								, person_id
- 								, TO_CHAR(CAST(naaccr_item_value as int)) as  tnm_edition
+ 								, CAST(CAST(naaccr_item_value as int)as varchar) as  tnm_edition
  				FROM naaccr_data_points_temp
- 				  WHERE naaccr_item_number = '1060' -- TNM Edition Number
+ 				WHERE naaccr_item_number = '1060' -- TNM Edition Number
  				-- filter out null records
- 				AND LENGTH(naaccr_item_value) > 0
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
  				AND naaccr_item_value <> '88'
- 				 ) y
+ 				) y
  				ON x.record_id = y.record_id
- 			 ) tnm
+ 			) tnm
  			INNER JOIN concept conc
  				ON conc.vocabulary_id = 'Cancer Modifier'
  				AND conc.concept_class_id = 'Staging/Grading'
  				AND tnm.tnm_concept_code = conc.concept_code
- 	 ) conc
+ 	) conc
  	ON cot.record_id = conc.record_id
- 	 ;
+ 	;
 
   --   condition modifiers
 
@@ -1158,7 +1101,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
     )
 
 
-    SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement_temp ), 0) + row_number() over (order by ndp.person_id)                                                                                                                      AS measurement_id
+    SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement_temp), 0) + row_number() over (order by ndp.person_id)                                                                                                                      AS measurement_id
         , ndp.person_id                                                                                                                                             AS person_id
         , ndp.variable_concept_id
         , cot.condition_start_date                                                                                                                                AS measurement_date
@@ -1170,7 +1113,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 				  WHEN ndp.type_concept_id = 32676 --'Numeric'
 						THEN
 							CASE
-							WHEN ndp.value_concept_id IS NULL AND CASE WHEN (LENGTH(TRIM(TRANSLATE(ndp.naaccr_item_value, ' +-.0123456789',' '))) IS NULL) THEN 1 ELSE 0 END = 1
+							WHEN ndp.value_concept_id IS NULL AND CASE WHEN (CAST(ndp.naaccr_item_value AS VARCHAR) ~ '^([0-9]+\.?[0-9]*|\.[0-9]+)$') THEN 1 ELSE 0 END = 1
 							THEN
 								CAST(ndp.naaccr_item_value AS NUMERIC)
 							ELSE
@@ -1193,7 +1136,9 @@ CREATE TABLE tmp_concept_naaccr_procedures
         , cot.condition_occurrence_id                                                                                                                             AS modifier_of_event_id
         , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
         , ndp.record_id                                                                                                                                             AS record_id
-    FROM (SELECT person_id
+    FROM
+    (
+      SELECT person_id
         	 , record_id
         	 , histology_site
         	 , naaccr_item_number
@@ -1208,17 +1153,17 @@ CREATE TABLE tmp_concept_naaccr_procedures
       FROM naaccr_data_points_temp
 
       -- concept is modifier of a diagnosis item (child of site/hist)
-        WHERE variable_concept_id IN (SELECT DISTINCT concept_id_1
+      WHERE variable_concept_id IN (  SELECT DISTINCT concept_id_1
                       FROM concept_relationship
-                        WHERE relationship_id = 'Has parent item'
+                      WHERE relationship_id = 'Has parent item'
                       AND concept_id_2 in (35918588 -- primary site
                                 ,35918916 -- histology
                                 )
-                       )
+                      )
       -- filter empty values
-      AND LENGTH(naaccr_item_value) > 0
+      AND CHAR_LENGTH(naaccr_item_value) > 0
 
-      ) ndp
+     ) ndp
 
      -- Get condition_occurrence record
       INNER JOIN condition_occurrence_temp cot
@@ -1241,7 +1186,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
     LEFT OUTER JOIN concept_numeric conc_num
       ON ndp.type_concept_id = 32676 --'Numeric'
       AND ndp.value_concept_id = conc_num.concept_id
-     ;
+    ;
 
     -- condition modifiers to Cancer Modifier
     INSERT INTO measurement_temp
@@ -1270,7 +1215,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , modifier_of_field_concept_id
       , record_id
     )
-    SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement_temp ), 0) + row_number() over (order by ndp.person_id)                                                                                                                      AS measurement_id
+    SELECT COALESCE((SELECT MAX(measurement_id) FROM measurement_temp), 0) + row_number() over (order by ndp.person_id)                                                                                                                      AS measurement_id
         , ndp.person_id                                                                                                                                             AS person_id
         , ndp.variable_concept_id
         , cot.condition_start_date                                                                                                                                AS measurement_date
@@ -1293,7 +1238,9 @@ CREATE TABLE tmp_concept_naaccr_procedures
         , cot.condition_occurrence_id                                                                                                                             AS modifier_of_event_id
         , 1147127                                                                                                                                                 AS modifier_field_concept_id -- ‘condition_occurrence.condition_occurrence_id’ concept
         , ndp.record_id                                                                                                                                             AS record_id
-    FROM (SELECT person_id
+    FROM
+    (
+      SELECT person_id
         	 , record_id
         	 , histology_site
         	 , naaccr_item_number
@@ -1309,17 +1256,17 @@ CREATE TABLE tmp_concept_naaccr_procedures
         	 , type_concept_id
       FROM naaccr_data_points_temp
       -- concept is modifier of a diagnosis item (child of site/hist)
-        WHERE source_variable_concept_id IN (SELECT DISTINCT cr2.concept_id_2
+      WHERE source_variable_concept_id IN (  SELECT DISTINCT cr2.concept_id_2
                       FROM concept_relationship cr1 JOIN concept c1 ON cr1.concept_id_1 = c1.concept_id
                                                     JOIN concept_relationship cr2 ON c1.concept_id = cr2.concept_id_1 AND cr2.relationship_id = 'Has Answer'
-                        WHERE cr1.relationship_id = 'Has parent item'
+                      WHERE cr1.relationship_id = 'Has parent item'
                       AND cr1.concept_id_2 in (35918588 -- primary site
                                 ,35918916 -- histology
                                 )
-                       )                    
+                      )                    
       -- filter empty values
-      AND LENGTH(naaccr_item_value) > 0    
-      ) ndp
+      AND CHAR_LENGTH(naaccr_item_value) > 0      
+     ) ndp
 
      -- Get condition_occurrence record
       INNER JOIN condition_occurrence_temp cot
@@ -1342,8 +1289,9 @@ CREATE TABLE tmp_concept_naaccr_procedures
     LEFT OUTER JOIN concept_numeric conc_num
       ON ndp.type_concept_id = 32676 --'Numeric'
       AND ndp.value_concept_id = conc_num.concept_id
-     ;
-    
+    ;
+
+
 -- Treatment Episodes
   -- Temp table with NAACCR dates
   -- Used in joins instead full naaccr_data_points table to improve performance
@@ -1351,12 +1299,13 @@ CREATE TABLE tmp_concept_naaccr_procedures
   INSERT INTO tmp_naaccr_data_points_temp_dates 
   SELECT *
   FROM naaccr_data_points_temp src
-    WHERE EXISTS
-    (SELECT 1
+  WHERE EXISTS
+    (
+      SELECT 1
       FROM concept_relationship cr
-        WHERE cr.concept_id_1 = src.variable_concept_id
+      WHERE cr.concept_id_1 = src.variable_concept_id
         AND cr.relationship_id IN ('End date of', 'Start date of')
-     ) ;
+    );
 
   CREATE INDEX idx_ndptmp_date_join ON tmp_naaccr_data_points_temp_dates (variable_concept_id, record_id);
 
@@ -1380,8 +1329,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , record_id
 
   )
-  SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp )
-                 , (SELECT MAX(episode_id) FROM episode )
+  SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp)
+                 , (SELECT MAX(episode_id) FROM episode)
                  , 0) + row_number() over(order by ndp.person_id)                                                                                                                     AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , ndp.variable_concept_id  -- 32531 Treatment regimen
@@ -1394,7 +1343,9 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , c2.concept_code                                                                                                     AS episode_source_value
       , c2.concept_id                                                                                                                                           AS episode_source_concept_id
       , ndp.record_id                                                                                                                                             AS record_id
-  FROM (SELECT person_id
+  FROM
+  (
+    SELECT person_id
       	 , record_id
       	 , histology_site
       	 , naaccr_item_number
@@ -1407,12 +1358,12 @@ CREATE TABLE tmp_concept_naaccr_procedures
       	 , value_concept_code
       	 , type_concept_id
     FROM naaccr_data_points_temp
-      WHERE naaccr_item_number IN ( '1390', '1400', '1410')
-   ) ndp
+    WHERE naaccr_item_number IN ( '1390', '1400', '1410')
+  ) ndp
 	--Get value
   INNER JOIN concept c1 ON c1.concept_class_id = 'NAACCR Variable' AND ndp.naaccr_item_number = c1.concept_code
 	INNER JOIN concept_relationship cr1 ON c1.concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Has Answer'
-	INNER JOIN concept c2 ON cr1.concept_id_2 = c2.concept_id AND CONCAT(c1.concept_code, CONCAT('@', ndp.naaccr_item_value)) = c2.concept_code
+	INNER JOIN concept c2 ON cr1.concept_id_2 = c2.concept_id AND CONCAT(c1.concept_code,'@', ndp.naaccr_item_value) = c2.concept_code
   -- Get start date
   INNER JOIN concept_relationship cr2 ON c1.concept_id = cr2.concept_id_1
     AND cr2.relationship_id = 'Has start date'
@@ -1420,12 +1371,13 @@ CREATE TABLE tmp_concept_naaccr_procedures
     ON cr2.concept_id_2 = ndp_dates.variable_concept_id
     AND ndp.record_id = ndp_dates.record_id
 	-- filter null dates
-	AND ndp_dates.naaccr_item_value IS NOT NULL ;
+	AND ndp_dates.naaccr_item_value IS NOT NULL;
 
 
   -- Temp table with concept_ids only to optimize insert query
   INSERT INTO tmp_concept_naaccr_procedures
-  SELECT c1.concept_id     AS c1_concept_id,
+  SELECT
+    c1.concept_id     AS c1_concept_id,
     c1.concept_code   AS c1_concept_code,
     c2.concept_id     AS c2_concept_id,
     c2.concept_code   AS c2_concept_code
@@ -1436,9 +1388,9 @@ CREATE TABLE tmp_concept_naaccr_procedures
   INNER JOIN concept c2
     ON  cr1.concept_id_2 = c2.concept_id
     AND c2.domain_id = 'Procedure'
-    WHERE c1.vocabulary_id = 'NAACCR'
+  WHERE c1.vocabulary_id = 'NAACCR'
     AND c1.concept_class_id = 'NAACCR Variable'
-   ;
+  ;
 
 
   -- insert procedure (all except surgeries)
@@ -1458,14 +1410,14 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , record_id
 
   )
-  SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp )
-                 , (SELECT MAX(episode_id) FROM episode )
+  SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp)
+                 , (SELECT MAX(episode_id) FROM episode)
                  , 0) + row_number() over(order by ndp.person_id)                                                                                                                       AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , ndp.variable_concept_id  -- 32531 Treatment regimen
       , CAST(ndp_dates.naaccr_item_value as date)  		                                                          AS episode_start_datetime        --?
       -- Placeholder... TODO:better universal solution for isnull?
-	    , CASE WHEN LENGTH(end_dates.naaccr_item_value) > 1
+	    , CASE WHEN CHAR_LENGTH(end_dates.naaccr_item_value) > 1
 			 THEN CAST(end_dates.naaccr_item_value as date)
 			 ELSE NULL
 			 END AS episode_end_datetime
@@ -1476,7 +1428,9 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , c.c2_concept_code                                                                                                     																		AS episode_source_value
       , c.c2_concept_id
       , ndp.record_id                                                                                                                                             AS record_id
-  FROM (SELECT person_id
+  FROM
+  (
+    SELECT person_id
       	 , record_id
       	 , histology_site
       	 , naaccr_item_number
@@ -1489,10 +1443,10 @@ CREATE TABLE tmp_concept_naaccr_procedures
       	 , value_concept_code
       	 , type_concept_id
     FROM naaccr_data_points_temp
-      WHERE naaccr_item_number NOT IN ( '1290' )
-   ) ndp
+    WHERE naaccr_item_number NOT IN ( '1290' )
+  ) ndp
   INNER JOIN tmp_concept_naaccr_procedures c
-    ON CONCAT(c.c1_concept_code, CONCAT('@', ndp.naaccr_item_value)) = c.c2_concept_code
+    ON CONCAT(c.c1_concept_code,'@', ndp.naaccr_item_value) = c.c2_concept_code
     AND ndp.naaccr_item_number = c.c1_concept_code
   INNER JOIN concept_relationship cr2
     ON c.c1_concept_id = cr2.concept_id_1
@@ -1512,7 +1466,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 	-- filter null dates
 	AND end_dates.naaccr_item_value IS NOT NULL
 	AND ndp.record_id = end_dates.record_id
-   ;
+  ;
 
 
   -- insert surgery procedures
@@ -1533,8 +1487,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , record_id
 
   )
-  SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp )
-                 , (SELECT MAX(episode_id) FROM episode )
+  SELECT COALESCE( (SELECT MAX(episode_id) FROM episode_temp)
+                 , (SELECT MAX(episode_id) FROM episode)
                  , 0) + row_number() over(order by ndp.person_id)                                                                                                                     AS episode_id
       , ndp.person_id                                                                                                                                             AS person_id
       , 32531 -- Treatment regimen
@@ -1547,7 +1501,9 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , var_conc.concept_code                                                                                                      AS episode_source_value
       , var_conc.concept_id                                                                                                                                           AS episode_source_concept_id
       , ndp.record_id                                                                                                                                             AS record_id
-  FROM (SELECT person_id
+  FROM
+  (
+    SELECT person_id
       	 , record_id
       	 , histology_site
       	 , naaccr_item_number
@@ -1560,8 +1516,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
       	 , value_concept_code
       	 , type_concept_id
     FROM naaccr_data_points_temp
-      WHERE naaccr_item_number = '1290'
-   ) ndp
+    WHERE naaccr_item_number = '1290'
+  ) ndp
   -- get icdo
   INNER JOIN concept conc
     ON vocabulary_id = 'ICDO3'
@@ -1575,15 +1531,15 @@ CREATE TABLE tmp_concept_naaccr_procedures
   -- get procedure
   INNER JOIN concept var_conc
     ON var_conc.concept_class_id = 'NAACCR Procedure'
-    AND CONCAT(schem_conc.concept_code, CONCAT('@', CONCAT(1290, CONCAT('@', ndp.naaccr_item_value)))) = var_conc.concept_code
+    AND CONCAT(schem_conc.concept_code, '@', 1290, '@', ndp.naaccr_item_value) = var_conc.concept_code
 
   -- hardcoded for now until update
   INNER JOIN tmp_naaccr_data_points_temp_dates ndp_dates
     ON ndp_dates.naaccr_item_number = '1200'
     AND ndp.record_id = ndp_dates.record_id
   -- filter null dates
-    WHERE ndp_dates.naaccr_item_value IS NOT NULL
-   ;
+  WHERE ndp_dates.naaccr_item_value IS NOT NULL
+  ;
 
   -- Insert from episode_temp into domain temp tables
 
@@ -1615,8 +1571,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , dose_unit_source_value
     , record_id
   )
-  SELECT COALESCE( (SELECT MAX(drug_exposure_id) FROM drug_exposure_temp )
-                 , (SELECT MAX(drug_exposure_id) FROM drug_exposure )
+  SELECT COALESCE( (SELECT MAX(drug_exposure_id) FROM drug_exposure_temp)
+                 , (SELECT MAX(drug_exposure_id) FROM drug_exposure)
                  , 0) + row_number() over(order by et.person_id)                             AS drug_exposure_id
     , et.person_id                                                                                                                                                                                  AS person_id
     , et.episode_object_concept_id                                                                                                                                                                  AS drug_concept_id
@@ -1645,7 +1601,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
   JOIN concept c1
   ON et.episode_object_concept_id = c1.concept_id
   AND c1.standard_concept IS NULL
-  AND c1.domain_id = 'Drug' ;
+  AND c1.domain_id = 'Drug';
 
 
   -- procedure
@@ -1668,8 +1624,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
    , episode_id
    , record_id
   )
-  SELECT COALESCE( (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence_temp )
-                 , (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence )
+  SELECT COALESCE( (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence_temp)
+                 , (SELECT MAX(procedure_occurrence_id) FROM procedure_occurrence)
                  , 0) + row_number() over(order by et.person_id)  AS procedure_occurrence_id
     , et.person_id                                                                                                                                                                                   AS person_id
     , et.episode_object_concept_id                                                                                                                                                                   AS procedure_concept_id
@@ -1691,7 +1647,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
   JOIN concept c1
     ON et.episode_object_concept_id = c1.concept_id
     AND c1.standard_concept = 'S'
-    AND c1.domain_id = 'Procedure' ;
+    AND c1.domain_id = 'Procedure';
 
 
 -- Update episode_event_temp
@@ -1704,10 +1660,10 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , episode_event_field_concept_id
 
   )
-  SELECT et.episode_id                     AS episode_id
+  SELECT  et.episode_id                     AS episode_id
       , det.drug_exposure_id              AS event_id
       , 1147094                           AS episode_event_field_concept_id --drug_exposure.drug_exposure_id
-  FROM drug_exposure_temp det JOIN episode_temp et ON det.record_id = et.record_id AND det.drug_concept_id = et.episode_object_concept_id ;
+  FROM drug_exposure_temp det JOIN episode_temp et ON det.record_id = et.record_id AND det.drug_concept_id = et.episode_object_concept_id;
 
 
   --Connect Procedure Occurrence to Treatment Episodes in Episode Event
@@ -1718,14 +1674,14 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , episode_event_field_concept_id
 
   )
-  SELECT et.episode_id                     AS episode_id
+  SELECT  et.episode_id                     AS episode_id
       , pet.procedure_occurrence_id       AS event_id
       , 1147082                           AS episode_event_field_concept_id --procedure_occurrence.procedure_occurrence_id
   FROM procedure_occurrence_temp pet
   JOIN episode_temp et
     ON pet.record_id = et.record_id
     AND pet.procedure_concept_id = et.episode_object_concept_id
-   ;
+  ;
 
 
   -- Drug Treatment Episodes:   Update to standard 'Regimen' concepts.
@@ -1771,8 +1727,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
 	  )
 
 
-	  SELECT COALESCE( (SELECT MAX(measurement_id) FROM measurement_temp )
-                   , (SELECT MAX(measurement_id) FROM measurement )
+	  SELECT COALESCE( (SELECT MAX(measurement_id) FROM measurement_temp)
+                   , (SELECT MAX(measurement_id) FROM measurement)
                    , 0) + row_number() over(order by ndp.person_id)                                                                                                                       AS measurement_id
 	      , ndp.person_id                                                                                                                                             AS person_id
 	      , conc.concept_id                                                                                                                                        AS measurement_concept_id
@@ -1785,7 +1741,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 				  WHEN ndp.type_concept_id = 32676 --'Numeric'
 						THEN
 							CASE
-							WHEN ndp.value_concept_id IS NULL AND CASE WHEN (LENGTH(TRIM(TRANSLATE(ndp.naaccr_item_value, ' +-.0123456789',' '))) IS NULL) THEN 1 ELSE 0 END = 1
+							WHEN ndp.value_concept_id IS NULL AND CASE WHEN (CAST(ndp.naaccr_item_value AS VARCHAR) ~ '^([0-9]+\.?[0-9]*|\.[0-9]+)$') THEN 1 ELSE 0 END = 1
 							THEN
 								CAST(ndp.naaccr_item_value AS NUMERIC)
 							ELSE
@@ -1808,7 +1764,9 @@ CREATE TABLE tmp_concept_naaccr_procedures
 	      , et.episode_id                                                                                                                             AS modifier_of_event_id
 	      , 1000000003 -- TODO: Need vocab update                                                                                                                  AS modifier_field_concept_id -- ‘episode.episode_id’ concept
 	      , ndp.record_id                                                                                                                                             AS record_id
-	  FROM (SELECT person_id
+	  FROM
+	  (
+      SELECT person_id
         	 , record_id
         	 , histology_site
         	 , naaccr_item_number
@@ -1821,10 +1779,10 @@ CREATE TABLE tmp_concept_naaccr_procedures
         	 , value_concept_code
         	 , type_concept_id
 	    FROM naaccr_data_points_temp
-	      WHERE person_id IS NOT NULL
-	    AND LENGTH(naaccr_item_value) > 0
+	    WHERE person_id IS NOT NULL
+	    AND CHAR_LENGTH(naaccr_item_value) > 0
 
-	    ) ndp
+	   ) ndp
 		 INNER JOIN concept_relationship cr1 ON ndp.variable_concept_id = cr1.concept_id_1 AND cr1.relationship_id = 'Has parent item'
 	   AND cr1.concept_id_2 in (
 			 												  35918686  --Phase I Radiation Treatment Modality
@@ -1854,7 +1812,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 	  -- Get numeric value
 	  LEFT OUTER JOIN concept_numeric conc_num
 	    ON ndp.type_concept_id = 32676 --'Numeric'
-	    AND ndp.value_concept_id = conc_num.concept_id  ;
+	    AND ndp.value_concept_id = conc_num.concept_id ;
 
 
 
@@ -1885,8 +1843,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
 	  , modifier_of_field_concept_id
 	  , record_id
 	)
-	SELECT COALESCE(   (SELECT MAX(measurement_id) FROM measurement_temp )
-                   , (SELECT MAX(measurement_id) FROM measurement )
+	SELECT COALESCE(   (SELECT MAX(measurement_id) FROM measurement_temp)
+                   , (SELECT MAX(measurement_id) FROM measurement)
                    , 0) + row_number() over(order by mt.person_id)                                                                                                                               AS measurement_id
 	      , mt.person_id                                                                                                                                                      AS person_id
 	      , mt.measurement_concept_id                                                                                                                                         AS measurement_concept_id
@@ -1918,7 +1876,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
 		  AND mt.modifier_of_field_concept_id = 1000000003
 	JOIN procedure_occurrence_temp pet
 	  ON et.record_id = pet.record_id
-	  AND et.episode_object_concept_id = pet.procedure_concept_id ;
+	  AND et.episode_object_concept_id = pet.procedure_concept_id;
 
 
 
@@ -1928,10 +1886,11 @@ CREATE TABLE tmp_concept_naaccr_procedures
 	UPDATE episode_temp
 	SET episode_parent_id = det.episode_id
 	FROM
-	(SELECT DISTINCT record_id rec_id, episode_id
+	(
+		SELECT DISTINCT record_id rec_id, episode_id
 		FROM episode_temp
-		  WHERE episode_concept_id          = 32528 --Disease First Occurrence
-	 ) det
+		WHERE episode_concept_id          = 32528 --Disease First Occurrence
+	) det
 	WHERE record_id        = det.rec_id
 	AND episode_concept_id = 32531; --Treatment Regimen
 
@@ -1957,7 +1916,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , condition_status_source_value
     , condition_status_concept_id
     )
-    SELECT condition_occurrence_id
+    SELECT  condition_occurrence_id
       , person_id
       , condition_concept_id
       , condition_start_date
@@ -1974,7 +1933,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , condition_status_source_value
       , condition_status_concept_id
     FROM condition_occurrence_temp
-     ;
+    ;
 
     INSERT INTO cdm_source_provenance
     (
@@ -1982,10 +1941,10 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , cdm_field_concept_id
     , record_id
     )
-    SELECT condition_occurrence_id
+    SELECT  condition_occurrence_id
         , 1147127   --condition_occurrence.condition_occurrence_id
         , record_id
-    FROM condition_occurrence_temp ;
+    FROM condition_occurrence_temp;
 
   --Step 18: Move episode_temp into episode
   INSERT INTO episode
@@ -2002,7 +1961,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , episode_source_value
     , episode_source_concept_id
   )
-  SELECT episode_id
+  SELECT
+    episode_id
     , person_id
     , episode_concept_id
     , episode_start_datetime
@@ -2015,7 +1975,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , episode_type_concept_id
     , episode_source_value
     , episode_source_concept_id
-  FROM episode_temp ;
+  FROM episode_temp;
 
   -- Move procedure_occurrence_temp into procedure_occurrence
    INSERT INTO procedure_occurrence
@@ -2035,7 +1995,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
    , procedure_source_concept_id
    , modifier_source_value
   )
-  SELECT procedure_occurrence_id
+  SELECT   procedure_occurrence_id
        , person_id
        , procedure_concept_id
        , procedure_date
@@ -2049,7 +2009,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
        , procedure_source_value
        , procedure_source_concept_id
        , modifier_source_value
-  FROM procedure_occurrence_temp ;
+  FROM procedure_occurrence_temp;
 
    INSERT INTO cdm_source_provenance
     (
@@ -2057,10 +2017,10 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , cdm_field_concept_id
     , record_id
     )
-    SELECT procedure_occurrence_id
+    SELECT  procedure_occurrence_id
         , 1147082   --procedure_occurrence.procedure_occurrence_id
         , record_id
-    FROM procedure_occurrence_temp ;
+    FROM procedure_occurrence_temp;
 
   --Move drug_exposure_temp into drug_exposure
    INSERT INTO drug_exposure
@@ -2089,7 +2049,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , route_source_value
     , dose_unit_source_value
   )
-  SELECT drug_exposure_id
+  SELECT  drug_exposure_id
       , person_id
       , 0 --We are hardcoding to 0
       , drug_exposure_start_date
@@ -2112,7 +2072,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
       , drug_source_concept_id
       , route_source_value
       , dose_unit_source_value
-  FROM drug_exposure_temp ;
+  FROM drug_exposure_temp;
 
    INSERT INTO cdm_source_provenance
     (
@@ -2120,10 +2080,10 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , cdm_field_concept_id
     , record_id
     )
-    SELECT drug_exposure_id
+    SELECT  drug_exposure_id
         , 1147094   --drug_exposure.drug_exposure_id
         , record_id
-    FROM drug_exposure_temp ;
+    FROM drug_exposure_temp;
 
   -- Move episode_event_temp into episode_event
   INSERT INTO episode_event
@@ -2133,10 +2093,10 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , episode_event_field_concept_id
 
   )
-  SELECT episode_id
+  SELECT  episode_id
       , event_id
       , episode_event_field_concept_id
-  FROM episode_event_temp ;
+  FROM episode_event_temp;
 
 
   -- Move measurement_temp into measurement
@@ -2165,7 +2125,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , modifier_of_event_id
     , modifier_of_field_concept_id
   )
-  SELECT measurement_id
+  SELECT
+      measurement_id
     , person_id
     , measurement_concept_id
     , measurement_date
@@ -2187,7 +2148,7 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , value_source_value
     , modifier_of_event_id
     , modifier_of_field_concept_id
-  FROM measurement_temp ;
+  FROM measurement_temp;
 
    INSERT INTO cdm_source_provenance
     (
@@ -2195,10 +2156,10 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , cdm_field_concept_id
     , record_id
     )
-    SELECT measurement_id
+    SELECT  measurement_id
         , 1147138   --measurement.measurement_id
         , record_id
-    FROM measurement_temp ;
+    FROM measurement_temp;
 
 
   -- move from fact_relationship_temp to fact_relationship
@@ -2210,12 +2171,13 @@ CREATE TABLE tmp_concept_naaccr_procedures
     , fact_id_2
     , relationship_concept_id
   )
-  SELECT domain_concept_id_1
+  SELECT
+      domain_concept_id_1
     , fact_id_1
     , domain_concept_id_2
     , fact_id_2
     , relationship_concept_id
-  FROM fact_relationship_temp ;
+  FROM fact_relationship_temp;
 
 
 
@@ -2232,66 +2194,73 @@ CREATE TABLE tmp_concept_naaccr_procedures
 									, observation_period_end_date
 									, period_type_concept_id
 									)
-    SELECT COALESCE(   (SELECT MAX(observation_period_id) FROM observation_period_temp )
-                      , (SELECT MAX(observation_period_id) FROM observation_period )
+    SELECT  COALESCE(   (SELECT MAX(observation_period_id) FROM observation_period_temp)
+                      , (SELECT MAX(observation_period_id) FROM observation_period)
                       , 0) + row_number() over (order by obs_dates.person_id)         AS observation_period_id
    				, obs_dates.person_id
    				, obs_dates.min_date as observation_period_start_date
    				, COALESCE(ndp.max_date, obs_dates.max_date) as observation_period_end_date
    				, 44814724 AS period_type_concept_id -- TODO. 44814724-"Period covering healthcare encounters"
-		FROM (SELECT person_id,
+		FROM
+
+		-- start date -> find earliest record
+		(
+			SELECT person_id,
 					MIN(min_date) AS min_date
 					,MAX(max_date) as max_date
-			FROM (SELECT person_id
+			FROM
+			(
+				SELECT person_id
 							, Min(condition_start_date)  min_date
 							, MAX(condition_start_date)  max_date
 				FROM condition_occurrence
 				GROUP BY person_id
-			  UNION
+			UNION
 				SELECT person_id
 						, Min(drug_exposure_start_date)
 						, Max(drug_exposure_start_date)
 				FROM drug_exposure
 				GROUP BY person_id
-			  UNION
+			UNION
 				SELECT person_id
 						, Min(procedure_date)
 						, Max(procedure_date)
 				FROM procedure_occurrence
 				GROUP BY person_id
-			  UNION
+			UNION
 				SELECT person_id
 						, Min(observation_date)
 						, Max(observation_date)
 				FROM Observation
 				GROUP BY person_id
-			  UNION
+			UNION
 				SELECT person_id
 						, Min(measurement_date)
 						, Max(measurement_date)
 				FROM measurement
 				GROUP BY person_id
-			  UNION
+			UNION
 				SELECT person_id
 						, Min(death_date)
 						, Max(death_date)
 				FROM death
 				GROUP BY person_id
-			 ) T
+			) T
 			GROUP BY t.PERSON_ID
-		 ) obs_dates
+		) obs_dates
 		LEFT OUTER JOIN
 		-- end date -> date of last contact
-		(SELECT person_id
+		(
+			SELECT person_id
 				, CAST(max(naaccr_item_value) as date) max_date
 			FROM naaccr_data_points_temp
-			  WHERE naaccr_item_number = '1750'
+			WHERE naaccr_item_number = '1750'
 			AND naaccr_item_value IS NOT NULL
-			AND LENGTH(naaccr_item_value) = '8'
+			AND CHAR_LENGTH(naaccr_item_value) = '8'
 			GROUP BY person_id
-		 ) ndp
+		) ndp
 		ON obs_dates.person_id = ndp.person_id
-		 ;
+		;
 
 	-- Update existing obs period
 
@@ -2301,26 +2270,30 @@ CREATE TABLE tmp_concept_naaccr_procedures
 	SET observation_period_start_date = obs.observation_period_start_date
 		,observation_period_end_date = obs.observation_period_end_date
 	FROM
-	(SELECT person_id obs_person_id
+	(
+		SELECT
+			person_id obs_person_id
 			,MIN(observation_period_start_date) observation_period_start_date
 			,MAX(observation_period_end_date) observation_period_end_date
-		FROM (SELECT observation_period_id
+		FROM
+		(
+      SELECT  observation_period_id
           	, person_id
           	, observation_period_start_date
           	, observation_period_end_date
           	, period_type_concept_id
 
 			FROM observation_period
-			  UNION
+			UNION
       SELECT  observation_period_id
           	, person_id
           	, observation_period_start_date
           	, observation_period_end_date
           	, period_type_concept_id
 			FROM observation_period_temp
-		 ) x
+		) x
 		GROUP BY x.person_id
-	 ) obs
+	) obs
 	WHERE person_id = obs.obs_person_id
 	;
 
@@ -2333,139 +2306,44 @@ CREATE TABLE tmp_concept_naaccr_procedures
            ,observation_period_start_date
            ,observation_period_end_date
            ,period_type_concept_id)
-	SELECT observation_period_id
+	SELECT
+     observation_period_id
     ,person_id
 		,MIN(observation_period_start_date) observation_period_start_date
 		,MAX(observation_period_end_date) observation_period_end_date
 		,44814724	-- TODO
 	FROM observation_period_temp
-	  WHERE person_id NOT IN (SELECT person_id FROM observation_period )
+	WHERE person_id NOT IN (select person_id from observation_period)
 	GROUP BY observation_period_id, person_id
-	 ;
+	;
 
 
 --Cleanup
 --Delete temp tables
 
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE naaccr_data_points_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE naaccr_data_points_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
-
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE condition_occurrence_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE condition_occurrence_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
-
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE measurement_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE measurement_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
-
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE episode_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE episode_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
-
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE episode_event_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE episode_event_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
-
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE procedure_occurrence_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE procedure_occurrence_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
-
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE drug_exposure_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE drug_exposure_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
-
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE fact_relationship_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE fact_relationship_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
-
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE observation_period_temp';
-  EXECUTE IMMEDIATE 'DROP TABLE observation_period_temp';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
-
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE ambig_schema_discrim';
-  EXECUTE IMMEDIATE 'DROP TABLE ambig_schema_discrim';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
-
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE tmp_naaccr_data_points_temp_dates';
-  EXECUTE IMMEDIATE 'DROP TABLE tmp_naaccr_data_points_temp_dates';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
-
-BEGIN
-  EXECUTE IMMEDIATE 'TRUNCATE TABLE tmp_concept_naaccr_procedures';
-  EXECUTE IMMEDIATE 'DROP TABLE tmp_concept_naaccr_procedures';
-EXCEPTION
-  WHEN OTHERS THEN
-    IF SQLCODE != -942 THEN
-      RAISE;
-    END IF;
-END;
-
+-- DROP TABLE IF EXISTS naaccr_data_points_temp;
+--
+-- DROP TABLE IF EXISTS condition_occurrence_temp;
+--
+-- DROP TABLE IF EXISTS measurement_temp;
+--
+-- DROP TABLE IF EXISTS episode_temp;
+--
+-- DROP TABLE IF EXISTS episode_event_temp;
+--
+-- DROP TABLE IF EXISTS procedure_occurrence_temp;
+--
+-- DROP TABLE IF EXISTS drug_exposure_temp;
+--
+-- DROP TABLE IF EXISTS fact_relationship_temp;
+--
+-- DROP TABLE IF EXISTS observation_period_temp;
+--
+-- DROP TABLE IF EXISTS ambig_schema_discrim;
+--
+-- DROP TABLE IF EXISTS tmp_naaccr_data_points_temp_dates;
+--
+-- DROP TABLE IF EXISTS tmp_concept_naaccr_procedures;
+--
 
 COMMIT;
