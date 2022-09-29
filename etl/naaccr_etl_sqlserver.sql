@@ -1,4 +1,4 @@
-BEGIN TRANSACTION;
+--BEGIN TRANSACTION;
 
 /* Scripts assumes:
 	-input data exists on same database in specified format inside of 'naacr_data_points'
@@ -491,6 +491,8 @@ CREATE TABLE tmp_concept_naaccr_procedures
          , NULL
          , NULL
          , NULL
+		 , NULL
+		 , NULL
 	 FROM naaccr_data_points ndp
 	 -- only consider valid person_id
 	 INNER JOIN person per
@@ -2370,4 +2372,4 @@ IF OBJECT_ID('tmp_concept_naaccr_procedures', 'U') IS NOT NULL           -- Drop
   DROP TABLE tmp_concept_naaccr_procedures;
 
 
-COMMIT;
+--COMMIT;
