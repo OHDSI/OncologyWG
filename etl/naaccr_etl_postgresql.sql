@@ -1048,6 +1048,38 @@ CREATE TABLE tmp_concept_naaccr_procedures
  				-- filter out null records
  				AND CHAR_LENGTH(naaccr_item_value) > 0
  				AND naaccr_item_value <> '88'
+ 				UNION
+
+ 				--- TNM Path Stage Group -------------------
+ 				SELECT DISTINCT   record_id
+								, person_id
+ 								, 'p-' as tnm_type_indicator
+ 								, CONCAT('Stage', '-', substring(naaccr_item_value, 1, 10)) as tnm_value
+ 								, naaccr_item_value as tnm_value_raw
+ 				FROM naaccr_data_points_temp
+ 				WHERE naaccr_item_number in (
+ 					  '910'
+ 				    , '1014'
+ 				)
+ 				-- filter out null records
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
+ 				AND naaccr_item_value <> '88'
+ 				UNION
+
+ 				--- TNM Clin Stage Group -------------------
+ 				SELECT DISTINCT   record_id
+								, person_id
+ 								, 'c-' as tnm_type_indicator
+ 								, CONCAT('Stage', '-', substring(naaccr_item_value, 1, 10)) as tnm_value
+ 								, naaccr_item_value as tnm_value_raw
+ 				FROM naaccr_data_points_temp
+ 				WHERE naaccr_item_number in (
+ 					  '970'
+ 				    , '1004'
+ 				)
+ 				-- filter out null records
+ 				AND CHAR_LENGTH(naaccr_item_value) > 0
+ 				AND naaccr_item_value <> '88'
  				) x
  			INNER JOIN
  			(
