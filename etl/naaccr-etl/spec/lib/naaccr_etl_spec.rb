@@ -923,6 +923,76 @@ describe NaaccrEtl do
     end
   end
 
+  describe "Creating entries in MEASUREMENT table for a staging group variables mapped to the 'Cancer Modifier' vocabulary" do
+    before(:each) do
+      @diagnosis_date = '20170630'
+      @histology_site = '8140/3-C61.9'
+      @naaccr_item_number = '910'          #TNM Path Stage Group
+      @naaccr_item_value = '0'
+
+      @naaccr_item_number_tnm_edition_number = '1060'          #TNM Edition Number
+      @naaccr_item_value_tnm_edition_number = '07'             #Seventh Edition (published 2009), recommended for use with cases diagnosed 2010-2017
+      @cancer_modifier_concept_code = 'p-7th_AJCC/UICC-Stage-0'
+
+      #390=Date of Diagnosis.
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: '390' \
+        , naaccr_item_value: @diagnosis_date \
+        , histology: '8140/3' \
+        , site: 'C61.9' \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number \
+        , naaccr_item_value: @naaccr_item_value  \
+        , histology: '8140/3' \
+        , site: 'C61.9' \
+        , histology_site: @histology_site \
+      )
+
+      FactoryBot.create(:naaccr_data_point \
+        , person_id: @person_1.person_id \
+        , record_id: '1' \
+        , naaccr_item_number: @naaccr_item_number_tnm_edition_number \
+        , naaccr_item_value: @naaccr_item_value_tnm_edition_number  \
+        , histology: '8140/3' \
+        , site: 'C61.9' \
+        , histology_site: @histology_site \
+      )
+
+
+      @measurement_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'Cancer Modifier', concept_code: @cancer_modifier_concept_code)
+      @measurement_source_concept = NaaccrEtl::SpecSetup.concept(vocabulary_id: 'Cancer Modifier', concept_code: @cancer_modifier_concept_code)
+      @measurement_value_as_concept = NaaccrEtl::SpecSetup.naaccr_value_concept(concept_code: "#{@naaccr_item_number}@#{@naaccr_item_value}")
+      @condition_concept =  NaaccrEtl::SpecSetup.standard_concept(vocabulary_id: 'ICDO3', concept_code: @histology_site)
+      NaaccrEtl::Setup.execute_naaccr_etl(@legacy)
+    end
+
+    it 'pointing to CONDITION_OCCURRENCE', focus: false do
+      expect(Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).count).to eq(1)       #1147127 = 'condition_occurrence.condition_occurrence_id'
+      measurement = Measurement.where(modifier_of_field_concept_id: 1147127, measurement_concept_id: @measurement_concept.concept_id).first
+      expect(measurement.person_id).to eq(@person_1.person_id)
+      expect(measurement.measurement_concept_id).to eq(@measurement_concept.concept_id)
+      expect(measurement.measurement_date).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_time).to be_nil
+      expect(measurement.measurement_datetime).to eq(Date.parse(@diagnosis_date))
+      expect(measurement.measurement_type_concept_id).to eq(32534) # 32534 = ‘Tumor registry type concept
+      expect(measurement.value_as_concept_id).to be_nil
+      expect(measurement.measurement_source_value).to eq(@cancer_modifier_concept_code)
+      expect(measurement.measurement_source_concept_id).to eq(@measurement_source_concept.concept_id)
+      expect(measurement.value_source_value).to eq(@naaccr_item_value)
+      expect(ConditionOccurrence.count).to eq(1)
+      condition_occurrence = ConditionOccurrence.first
+      expect(measurement.modifier_of_event_id).to eq(condition_occurrence.condition_occurrence_id)
+      expect(measurement.modifier_of_field_concept_id).to eq(1147127) #‘condition_occurrence.condition_occurrence_id’ concept
+    end
+  end
+
   describe "Creating entries in MEASUREMENT table for a  diagnosis modifier mapped from a NAACCR value to the 'Cancer Modifier' vocabulary via CONCEPT_RELATIONSHIP" do
     before(:each) do
       @diagnosis_date = '20170630'
