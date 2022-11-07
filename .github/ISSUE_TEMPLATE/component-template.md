@@ -1,0 +1,24 @@
+---
+name: Component template
+about: 'Standardized workflow for components '
+title: 'Component: X '
+labels: Component
+assignees: ''
+
+---
+
+# Problem Space
+
+Text here
+
+# Proposed Solutions
+
+Text/links here
+
+## Tasks
+- [ ] Finalize decisions/requirements
+- [ ] Identify outstanding work; Create issues
+- [ ] Complete outstanding work 
+- [ ] Submit vocabulary modifications
+- [ ] Document 
+- [ ] Designate as 'ready for use'
