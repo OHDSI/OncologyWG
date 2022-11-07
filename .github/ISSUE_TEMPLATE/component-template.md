@@ -16,6 +16,7 @@ Text here
 Text/links here
 
 ## Tasks
+- [ ] Open up for group discussion
 - [ ] Finalize decisions/requirements
 - [ ] Identify outstanding work; Create issues
 - [ ] Complete outstanding work 
