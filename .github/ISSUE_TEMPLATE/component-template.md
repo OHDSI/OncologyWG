@@ -19,7 +19,7 @@ Text/links here
 - [ ] Open up for group discussion
 - [ ] Finalize decisions/requirements
 - [ ] Identify outstanding work; Create issues
-- [ ] Complete outstanding work 
-- [ ] Submit vocabulary modifications
-- [ ] Document 
-- [ ] Designate as 'ready for use'
+- [ ] Complete outstanding work: (X)
+- [ ] Submit vocabulary modifications: (X)
+- [ ] Document : (X)
+- [ ] Designate as 'ready for use': (X)
