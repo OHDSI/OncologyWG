@@ -1,5 +1,5 @@
 ---
-name: Component template
+name: Component - standard template
 about: 'Standardized workflow for components '
 title: 'Component: X '
 labels: Component
