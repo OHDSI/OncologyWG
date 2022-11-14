@@ -21,5 +21,5 @@ assignees: ''
 
 ## Remaining tasks
 - [ ] Package creation - Study: [X] 
-- [ ] Dissemination - Study: [X] -  
+- [ ] Dissemination - Study: [X] 
 - [ ] Process results - Study: [X]
