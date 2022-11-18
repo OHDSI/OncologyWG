@@ -13,7 +13,7 @@ Text here
 
 # Proposed Solutions
 
-Text/links here
+TODO
 
 ## Tasks
 - [ ] Open up for group discussion
@@ -21,5 +21,5 @@ Text/links here
 - [ ] Identify outstanding work; Create issues
 - [ ] Complete outstanding work: (X)
 - [ ] Submit vocabulary modifications: (X)
-- [ ] Document : (X)
+- [ ] Document: (X)
 - [ ] Designate as 'ready for use': (X)
