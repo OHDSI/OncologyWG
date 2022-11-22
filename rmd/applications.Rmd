@@ -1,0 +1,39 @@
+---
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 3
+        toc_float:
+          collapsed: false
+---
+
+
+# **Applications**
+
+*TODO: Brief overview *
+
+TODO 
+
+
+## **ETL**
+
+### Tumor Registry
+- TODO
+<br>
+
+### EHR Data
+- TODO
+<br>
+
+## **Genomics**
+- TODO
+<br>
+
+
+## **Regimen Derivation** 
+- TODO 
+<br>
+
+## **Episode Derivation**
+- TODO
+<br>

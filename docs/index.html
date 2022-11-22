@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title> OHDSI Oncology WG</title>
+
+<script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"><div><img src="ohdsi16x16.png"></img> OMOP Oncology </div></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="background.html">
+    <span class="fa fa-landmark"></span>
+     
+    Data Model
+  </a>
+</li>
+<li>
+  <a href="conventions.html">
+    <span class="fa fa-landmark"></span>
+     
+    Conventions
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-landmark"></span>
+     
+    Implementation
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="installation.html">Installation</a>
+    </li>
+    <li>
+      <a href="population.html">Populating the Oncology Extention</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="applications.html">
+    <span class="fa fa-landmark"></span>
+     
+    Applications
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/OHDSI/OncologyWG">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore"><img src="ohdsi40x40.png"></img> OHDSI
+Oncology WG</h1>
+
+</div>
+
+
+<div id="problem-space-and-goals" class="section level1">
+<h1><strong>Problem Space and Goals</strong></h1>
+<p>In a typical observational study, the definition of the study
+population (cohort), exposures and outcomes are usually based on
+diagnostic codes in addition to drug exposures, procedure occurrences or
+lab measurements. For cancer studies, this information is typically not
+sufficient, as more details are required for the proper identification
+of the study population, treatment and subsequent outcomes.</p>
+<p>Appropriate characterization of cancer requires details such as
+anatomical site, morphology, local penetration, affected lymph nodes,
+metastatic spread, biomarkers, and disease staging and grading. In
+typical observational data sources, this necessary level of detail is
+not regularly present. Patient results from diagnostic procedures are
+collected but may not be available within the given data source or what
+is collected cannot appropriately serve as a surrogate for the above
+attributes. Correct identification of cancer treatment regimens also
+tends to be more complex compared to other disease modalities within
+observational data. Most cancer treatments are administered in
+chemotherapy regimens with complex dosing and scheduling in multiple
+cycles and are often combined with targeted therapies, immunotherapies,
+surgery or radiotherapy. None of these attributes follow standard
+definition to be applied to observational data, as most regimens are
+personalized to the individual patient need, making a priori
+standardized definitions more complex. Additionally, clinically relevant
+information on disease, treatment and outcomes that appropriately
+reflects a patient’s journey including information on the time of
+diagnosis, response to treatments, time to treatment failure, disease
+progression, recurrence and (disease-free and overall) survival requires
+data abstraction and is rarely available in the source data and has not
+been traditionally supported in OMOP CDM.</p>
+<p>The Oncology CDM Extension of the OMOP CDM aims to provide a
+foundation for representing cancer data at the levels of granularity and
+abstraction required to support observational cancer research.</p>
+<p>The extension has been tested in EHR and Cancer Registry data against
+a number of typical use cases.</p>
+<p><br></p>
+<div id="subgroups-meeting-schedule" class="section level2">
+<h2><strong>Subgroups &amp; Meeting Schedule</strong></h2>
+<table>
+<colgroup>
+<col width="25%" />
+<col width="36%" />
+<col width="17%" />
+<col width="20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">subgroup</th>
+<th align="left">schedule</th>
+<th align="left">meeting details</th>
+<th align="left">Team Lead</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CDM/Vocabulary &amp; Development</td>
+<td align="left">Second and Forth Thu 1PM EST</td>
+<td align="left"><a
+href="https://teams.microsoft.com/l/meetup-join/19%3a239caede18574bc183f75a7a5eb9e826%40thread.tacv2/1608665830064?context=%7b%22Tid%22%3a%22a30f0094-9120-4aab-ba4c-e5509023b2d5%22%2c%22Oid%22%3a%22e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%22%7d">link</a></td>
+<td align="left">Thomas Falconer, Michael Gurley, &amp; Robert
+Miller</td>
+</tr>
+<tr class="even">
+<td align="left">Outreach/Research</td>
+<td align="left">Second and Forth Tue 3PM EST</td>
+<td align="left"><a
+href="https://nam04.safelinks.protection.outlook.com/ap/t-59584e83/?url=https%3A%2F%2Fteams.microsoft.com%2Fl%2Fmeetup-join%2F19%253a3d57479b0f804e26bcef0aa5b1465c12%2540thread.tacv2%2F1608669595080%3Fcontext%3D%257b%2522Tid%2522%253a%2522a30f0094-9120-4aab-ba4c-e5509023b2d5%2522%252c%2522Oid%2522%253a%2522e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%2522%257d&amp;data=04%7C01%7Csratwani%40us.imshealth.com%7C30c5cbd8817c4cad042808d9193c1d32%7C5989ece0f90e40bf9c791a7beccdb861%7C0%7C0%7C637568569301832802%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0&amp;sdata=AFANjWGwRVGHYHWKqJLMFZHvQ42t8TkPGERrmWyNjnc%3D&amp;reserved=0">link</a></td>
+<td align="left">Asieh Golozar &amp; Christian Reich</td>
+</tr>
+<tr class="odd">
+<td align="left">Genomic</td>
+<td align="left">Second and Forth Tue 9AM EST</td>
+<td align="left"><a
+href="https://teams.microsoft.com/l/meetup-join/19%3aa38d75bbaf8b4093b78f4ff4b0201f11%40thread.tacv2/1608669187453?context=%7b%22Tid%22%3a%22a30f0094-9120-4aab-ba4c-e5509023b2d5%22%2c%22Oid%22%3a%22e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%22%7d">link</a></td>
+<td align="left">Asieh Golozar</td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
+</div>
+<div id="roadmap" class="section level2">
+<h2><strong>Roadmap</strong></h2>
+<p>Our goal is to create an interoperable, extensible standard that
+covers all aspects of oncology data. To view our current and near term
+goals see our <a href="https://github.com/orgs/OHDSI/projects/13">OHDSI
+Github - Oncology Release 2.0 Project</a></p>
+<p><br></p>
+</div>
+<div id="get-involved" class="section level2">
+<h2><strong>Get Involved</strong></h2>
+<p>TODO</p>
+<p><br></p>
+</div>
+<div id="publicationspresentation" class="section level2">
+<h2><strong>Publications/Presentation</strong></h2>
+<ul>
+<li><p><a
+href="https://github.com/OHDSI/OncologyWG/wiki/Oncology-Tutorial">2020
+OHDSI Symposium - Oncology Tutorial</a></p></li>
+<li><p><a
+href="https://github.com/OHDSI/OncologyWG/wiki/Genomic-Variant-Harmonization">2020
+OHDSI Symposium - Genomic Variant Harmonization Poster
+Presentation</a></p></li>
+<li><p><a
+href="https://github.com/OHDSI/OncologyWG/wiki/Bladder-Cancer-Study">Bladder
+Cancer Study</a></p></li>
+<li><p><a href="https://ascopubs.org/doi/10.1200/CCI.20.00079">JCO
+Clinical Cancer Informatics</a></p></li>
+</ul>
+<p><br></p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
