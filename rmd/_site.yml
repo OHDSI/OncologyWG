@@ -1,0 +1,31 @@
+name: "OMOP Oncology "
+output_dir: "../docs"
+output:
+  html_document:
+    theme: cosmo
+    css: style.css
+    includes:
+      in_header: "favicon.html"
+exclude: ["extras"]
+navbar:
+  title: '<div><img src="ohdsi16x16.png"></img> OMOP Oncology </div>'
+  right:
+    - icon: fa-github
+      href: https://github.com/OHDSI/OncologyWG
+  left:
+    - text: "Data Model"
+      icon: fa-landmark
+      href: background.html
+    - text: "Conventions"
+      icon: fa-landmark
+      href: conventions.html
+    - text: "Implementation"
+      icon: fa-landmark
+      menu:
+        - text: "Installation"
+          href: installation.html
+        - text: "Populating the Oncology Extention"
+          href: population.html
+    - text: "Applications"
+      icon: fa-landmark
+      href: applications.html  

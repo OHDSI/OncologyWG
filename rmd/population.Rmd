@@ -1,0 +1,20 @@
+---
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 3
+        toc_float:
+          collapsed: false
+---
+# Populating the OMOP Oncology Extension
+
+There are multiple strategies for populating the Oncology CDM Extension:
+
+## Directly from Tumor Registries: 
+ETL Disease Episodes, Disease Episode Modifiers, Treatment Episodes and Treatment Episode Modifiers directly from tumor registry data. Tumor registries natively capture many of the abstractions and detailed modifiers that the Oncology CDM Extension strives to instantiate. A standard ETL has been written capable of ETLing NAACCR-formatted tumor registry data. See the documentation of the NAACCR ETL here
+
+## Directly from non-registry sources: 
+ETL Disease Episodes, Disease Episode Modifiers, Treatment Episodes and Treatment Episode Modifiers directly from EHR systems, ancillary clinical systems, Oncology Analytic Platforms and custom clinical data repositories. Some Oncology EMRs (Elekta MOSAIQ, Flatiron OncoEMR), the Oncology modules of standard EMRs (EPIC Beacon), ancillary clinical system (Pathology LIMS capturing CAP Cancer checklists via mTuitive CAP eFRM/xPert for Pathology), Oncology Analytic platforms ((Flatiron OncoAnalytics, COTA, TEMPUS) and custom clinical data repositories natively capture and/or curate the abstractions and detailed modifiers that the Oncology CDM Extension strives to instantiate.
+
+## Indirectly via Algorithmic Derivation on top of the OMOP CDM:
+Run algorithms on top of the OMOP standardized clinical data tables. For example, machine learning, rules-based compendium-aided temporal logic, and natural language processing. ETL Disease Episodes, Disease Episode Modifiers, Treatment Episodes and Treatment Episode Modifiers from the outputs of these algorithms.

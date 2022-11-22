@@ -1,0 +1,83 @@
+---
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 3
+        toc_float:
+          collapsed: false
+---
+
+
+ **Conventions**
+
+*TODO: Brief overview of intent of conventions*
+
+TODO 
+
+# **Diagnostic**
+<br>
+
+## Diagnosis
+- TODO 
+<br>
+
+
+## **Condition Modifiers**
+<br>
+
+### Date of Initial Diagnosis
+- TODO
+
+### TNM
+- TODO 
+
+### Grading
+- TODO 
+
+### Metastasis
+- TODO
+
+### Extension/Invasion
+- TODO 
+
+### Dimension 
+- TODO 
+
+# **Treatment**
+
+<br> 
+
+## Surgery   
+- Representation (TODO)
+
+### Modifiers 
+- type, site, margins, topography, intent... (TODO)
+
+## Chemotherapy
+- Representation (TODO)
+
+### Modifiers 
+- regimen, drug exposures, dosage, phase/course, intent... (TODO)
+
+## Radiotherapy
+- Representation (TODO)
+
+### Modifiers 
+- type, technique, site, modality, intent, fractions, dose/volume, planned vs. delivered... (TODO)
+
+## Hormone Therapy
+- Representation (TODO)
+
+### Modifiers 
+- (TODO)
+
+## Immunotherapy
+- Representation (TODO)
+
+### Modifiers 
+- (TODO)
+
+
+
+
+	
