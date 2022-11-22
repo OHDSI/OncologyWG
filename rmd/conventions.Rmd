@@ -23,25 +23,67 @@ TODO
 
 
 ## **Condition Modifiers**
+
 <br>
+
+---
 
 ### Date of Initial Diagnosis
 - TODO
 
+<br>
+
+---
+
 ### TNM
-- TODO 
+
+Circumvent the concept mappings and map directly to the standard concepts within the 'Cancer Modifier' vocabulary by concatenating your source data and joining on the concept code. 
+
+The concept code has 4 components that the ETL developer will need to concatenate to match. Those components are:
+
+1. Clinical vs. Pathological ( c or p)
+2. Version of AJCC/UICC (6th, 7th or 8th supported)
+3. Specification of AJCC/UICC (static value)
+4. The TNM value from the source
+
+The concept code format is : [c/p]-[version]th_AJCC/UICC-[TNM Value]
+
+For example : c-7th_AJCC/UICC-T1c2
+Above: TNM value of T1c2, clinically staged, defined by the 7th version of AJCC/UICC
+  
+To find the correct standard concept, you need to join to the concept code, as shown here:
+
+```{sql eval=FALSE, echo=TRUE}
+  SELECT concept_id
+  FROM concept
+  WHERE vocabulary_id = 'Cancer Modifier'
+  AND concept_class_id = 'Staging/Grading'
+  AND standard_concept = 'S'
+  AND concept_code = 'c-7th_AJCC/UICC-T1c2'
+```
+
+---
+
+<br>
 
 ### Grading
 - TODO 
 
+---
+
 ### Metastasis
 - TODO
+
+---
 
 ### Extension/Invasion
 - TODO 
 
+---
+
 ### Dimension 
 - TODO 
+
 
 # **Treatment**
 

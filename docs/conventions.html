@@ -402,35 +402,63 @@ div.tocify {
 <div id="condition-modifiers" class="section level2">
 <h2><strong>Condition Modifiers</strong></h2>
 <p><br></p>
+<hr />
 <div id="date-of-initial-diagnosis" class="section level3">
 <h3>Date of Initial Diagnosis</h3>
 <ul>
 <li>TODO</li>
 </ul>
+<p><br></p>
+<hr />
 </div>
 <div id="tnm" class="section level3">
 <h3>TNM</h3>
-<ul>
-<li>TODO</li>
-</ul>
+<p>Circumvent the concept mappings and map directly to the standard
+concepts within the ‘Cancer Modifier’ vocabulary by concatenating your
+source data and joining on the concept code.</p>
+<p>The concept code has 4 components that the ETL developer will need to
+concatenate to match. Those components are:</p>
+<ol style="list-style-type: decimal">
+<li>Clinical vs. Pathological ( c or p)</li>
+<li>Version of AJCC/UICC (6th, 7th or 8th supported)</li>
+<li>Specification of AJCC/UICC (static value)</li>
+<li>The TNM value from the source</li>
+</ol>
+<p>The concept code format is : [c/p]-[version]th_AJCC/UICC-[TNM
+Value]</p>
+<p>For example : c-7th_AJCC/UICC-T1c2 Above: TNM value of T1c2,
+clinically staged, defined by the 7th version of AJCC/UICC</p>
+<p>To find the correct standard concept, you need to join to the concept
+code, as shown here:</p>
+<pre class="sql"><code>  SELECT concept_id
+  FROM concept
+  WHERE vocabulary_id = &#39;Cancer Modifier&#39;
+  AND concept_class_id = &#39;Staging/Grading&#39;
+  AND standard_concept = &#39;S&#39;
+  AND concept_code = &#39;c-7th_AJCC/UICC-T1c2&#39;</code></pre>
+<hr />
+<p><br></p>
 </div>
 <div id="grading" class="section level3">
 <h3>Grading</h3>
 <ul>
 <li>TODO</li>
 </ul>
+<hr />
 </div>
 <div id="metastasis" class="section level3">
 <h3>Metastasis</h3>
 <ul>
 <li>TODO</li>
 </ul>
+<hr />
 </div>
 <div id="extensioninvasion" class="section level3">
 <h3>Extension/Invasion</h3>
 <ul>
 <li>TODO</li>
 </ul>
+<hr />
 </div>
 <div id="dimension" class="section level3">
 <h3>Dimension</h3>
