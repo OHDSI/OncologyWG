@@ -64,6 +64,7 @@ Clinically and analytically relevant representation of cancer diagnoses, treatme
 
 * **Disease and treatment episodes** are represented in the EPISODE table.  [See the definition of the EPISODE table here.](https://github.com/OHDSI/OncologyWG/wiki/Episode)
 * Standard Episode Concepts are categorized by concept class:
+( UNDER REVIEW)
   * Disease Episode
     * 32528 "Disease First Occurrence"
     * 32529 "Disease Recurrence"
