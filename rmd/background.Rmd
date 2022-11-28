@@ -64,15 +64,8 @@ Clinically and analytically relevant representation of cancer diagnoses, treatme
 
 * **Disease and treatment episodes** are represented in the EPISODE table.  [See the definition of the EPISODE table here.](https://github.com/OHDSI/OncologyWG/wiki/Episode)
 * Standard Episode Concepts are categorized by concept class:
-( UNDER REVIEW)
-  * Disease Episode
-    * 32528 "Disease First Occurrence"
-    * 32529 "Disease Recurrence"
-    * 32530 "Disease Remission"
-    * 32677 "Disease Progression"
-  * Treatment Episode
-    * 32531 "Treatment Regimen"
-    * 32532 "Treatment Cycle"
+( UNDER REVIEW:)
+ 
 * The EPISODE.episode_object_id column refers to a concept identifier in the Standardized Vocabularies describing the disease, treatment, or other abstraction that the episode describes.  Episode entries from the 'Disease Episode' concept class should have an episode_object_concept_id that comes from the Condition domain.  Episode entries from the 'Treatment Episode' concept class should have an episode_object_concept_id that comes from the 'Procedure' or 'Regimen' domain.
 * The relationship between a disease episode and treatment episodes can be represented by the self-referencing foreign key column EPISODE.episode_parent_id.  This allows for the attribution of cancer treatment to a cancer diagnosis to help support the use case of calculating time from diagnosis to treatment.
 * The relationship between a 'Disease First Occurrence' disease episode and a subsequent 'Disease Progression' episode can be represented by the self-referencing foreign key column EPISODE.episode_parent_id.  This enables support for the use case of calculating interval time to progression.
