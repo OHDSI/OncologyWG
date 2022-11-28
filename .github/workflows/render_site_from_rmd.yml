@@ -1,0 +1,22 @@
+on: 
+  push:
+    paths:
+      - 'rmd/**'
+
+name: render R Markdown files to docs
+
+jobs:
+  render:
+    name: render all R Markdown documents 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: r-lib/actions/setup-r@v1
+      - uses: r-lib/actions/setup-pandoc@v1
+      - uses: r-lib/actions/setup-tinytex@master
+      - name: Install known depedencies  
+        run: |
+          Rscript -e "install.packages(c('bookdown', 'tidyverse', 'rmarkdown', 'knitr', 'devtools', 'here'))"
+      - name: render all R Markdown documents 
+        run: |
+          Rscript -e "rmarkdown::render_site('rmd/')"
