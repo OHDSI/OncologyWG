@@ -65,6 +65,8 @@ Clinically and analytically relevant representation of cancer diagnoses, treatme
 * **Disease and treatment episodes** are represented in the EPISODE table.  [See the definition of the EPISODE table here.](https://github.com/OHDSI/OncologyWG/wiki/Episode)
 * Standard Episode Concepts are categorized by concept class:
 ( UNDER REVIEW:)
+
+TODO
  
  
 * The EPISODE.episode_object_id column refers to a concept identifier in the Standardized Vocabularies describing the disease, treatment, or other abstraction that the episode describes.  Episode entries from the 'Disease Episode' concept class should have an episode_object_concept_id that comes from the Condition domain.  Episode entries from the 'Treatment Episode' concept class should have an episode_object_concept_id that comes from the 'Procedure' or 'Regimen' domain.
