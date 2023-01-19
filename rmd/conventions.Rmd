@@ -8,28 +8,89 @@ output:
 ---
 
 
- **Conventions**
+Conventions
 
-*TODO: Brief overview of intent of conventions*
+*TODO: Brief overview of the use and intent of these conventions*
 
-TODO 
+---
 
 # **Diagnostic**
-<br>
+
+
+---
 
 ## Diagnosis
-- TODO 
+
+(Placeholder)
+
+Cancer diagnoses are recorded within the CONDITION table, ideally with ICD0 concepts. Specific attributes or details about that condition which are not contained within the concept are attached to these condition records as MEASUREMENTS, referred to as Condition Modifiers, which are described below. 
+
 <br>
 
+---
 
 ## **Condition Modifiers**
+
+---
+
+#### Overview of Condition Modifiers ####
+
+(Placeholder)
+
+What we are calling 'Condition Modifiers' are observations/findings/attributes about a cancer and are stored as Measurements using the Cancer Modifier vocabulary. 
+
+A linkage between the Condition Modifier and the respective condition is made leveraging the two columns in the Measurement table that serve as a foreign key. This same mechanism is used for procedure modifiers as well.  The first (modifier_of_field_concept_id) indicates which table we are referring to, the second (modifier_of_event_id) indicates which row. 
+
+There are concepts for every potential PK that a measurement can potentially modify. 
+
+Vocabulary ID : CDM 
+Domain Id : Metadata
+Concept Class Id : Field 
+
+For condition modifiers, we are pointing to the primary key of the condition table, which is condition_occurrence.condition_concept_id (https://athena.ohdsi.org/search-terms/terms/1147127)
+
+An example condition modifier record within the measurement table would contain:
+
+```{sql eval=FALSE, echo=TRUE}
+  SELECT 
+  ...
+  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
+```
+
 
 <br>
 
 ---
 
 ### Date of Initial Diagnosis
-- TODO
+
+(Placeholder)
+
+The date of initial diagnosis can be represented in the OMOP CDM by mapping to the correct concept in the Cancer Modifier vocabulary and represented as a MEASUREMENT, or rather, a cancer modifier. This can be an important data point from the source to distinguish this particular date as the most reliable diagnosis date of a patient's cancer and can, depending on various factors, substantially vary in a non-trivial way from other diagnosis dates in the CONDITION_OCCURRENCE table for the same disease occurrence.
+
+There are specific circumstances in which there is a higher level of certainty that the date contained within a condition record is an accurate representation of the initial diagnosis date. Some examples would be from tumor registries or manually curated or verified data. In those cases, to distinguish these records as the source of truth, we assign a condition modifier of **'Initial Diagnosis' (Concept_id = 734306)** to that condition record, recorded as a measurement. 
+
+If the source data record in question is not confirmed to reliably represent the initial diagnosis date, such as from typical EMR records, the modifier is not used. 
+
+|Metadata |Value|
+|:--- |:--- |
+|Concept Name| Initial Diagnosis| 
+|Domain ID | Measurement|
+|Vocabulary ID | Cancer Modifier|
+|Concept ID | **734306**|
+|Concept code | init_diag|
+
+Adding this condition modifier would look something like:
+
+```{sql eval=FALSE, echo=TRUE}
+  INSERT INTO MEASUREMENT
+  SELECT
+  ...
+  734306 as measurement_concept_id -- "Initial Diagnosis" ****** 
+  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
+```
 
 <br>
 
@@ -64,7 +125,11 @@ To find the correct standard concept, you need to join to the concept code, as s
 
 ---
 
-<br>
+### Stage Group 
+
+- TODO 
+
+---
 
 ### Grading
 - TODO 
@@ -72,52 +137,139 @@ To find the correct standard concept, you need to join to the concept code, as s
 ---
 
 ### Metastasis
-- TODO
+- Revision to come 
+
+(Placeholder)
+
+*Caveat*
+It is currently under discussion as to whether or not records of metastases will be represented as *both* a MEASUREMENT and a CONDITION, and once it has this documentation will be updated, but we are sure that we need the MEASUREMENT representation which is detailed below. Additionally, there are concept mappings being worked on by the Vocabulary team to de-standardize NAACCR and map those concepts to our destination representation within the Cancer Modifier vocabulary.
+
+The standard Metastasis concepts can be found within:
+
+|Metadata |Value|
+|:--- |:--- |
+|Domain ID | Measurement|
+|Vocabulary ID | Cancer Modifier|
+|Concept Class ID | **Metastasis**|
+
+There is an overarching concept of 'Metastasis' (https://athena.ohdsi.org/search-terms/terms/36769180) . For one, this is important as it is a destination standard concept for sources where the data is vague to the point that you only know metastasis occurred. A secondary usage of this would be to find all of the standard concepts in which fall under it. 
+
+To find all concepts in that hierarchy:
+
+```{sql eval=FALSE, echo=TRUE}
+  SELECT descendant_concept_id -- The various concepts under the metasis hierarchy
+  FROM CONCEPT_ANCESTOR
+  WHERE ancestor_concept_id = 36769180
+```
+
+When it is known which CONDITION the metastasis occurrence refers to, it is represented linked similarly to that CONDITION record using the Cancer Modifiers mechanisms. 
+
+For example, a record of 'Metastasis to Lung' would look like:
+
+```{sql eval=FALSE, echo=TRUE}
+  INSERT INTO MEASUREMENT
+  SELECT
+  ...
+  36770283 as measurement_concept_id -- "Metastasis to Lung" ****** 
+  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
+```
+
 
 ---
 
 ### Extension/Invasion
-- TODO 
+- Revision to come
+
+*Caveat*
+
+These will be implemented similarly to the Metastasis approach, as Cancer Modifiers or MEASUREMENTS, but we are currently waiting on a revision of the concepts within this class of the Cancer Modifier vocabulary before mapping and providing examples as there is an absence of hierarchical relationships.  
 
 ---
 
 ### Dimension 
 - TODO 
 
+--- 
 
 # **Treatment**
 
-<br> 
+
+(Placeholder)
+
+**Treatment representation is currently being finalized and this documentation will be updated accordingly** 
+
+Treatment records are similar to conditions in that the concepts themselves do not contain all of the relevant information and there is a need for 'modifiers' to append additional information to these records, which we refer to as 'Treatment Modifiers' 
+
+---
 
 ## Surgery   
-- Representation (TODO)
+(TODO)
 
-### Modifiers 
-- type, site, margins, topography, intent... (TODO)
+Representation: 
 
-## Chemotherapy
-- Representation (TODO)
+### Modifiers - Surgery 
+(TODO) 
 
-### Modifiers 
-- regimen, drug exposures, dosage, phase/course, intent... (TODO)
+Examples: 
+- type
+- site
+- margins
+- topography
+- intent
+- ... 
+
+---
+
+## Drug Therapy 
+
+(TODO) 
+ 
+**Scope**
+
+Includes but not limited to:
+
+-  Chemotherapy
+-  Immunotherapy
+-  Hormone Therapy
+
+
+Representation: (TODO) 
+
+### Modifiers - Drug Therapy 
+
+(TODO)
+
+Examples: 
+
+- regimen/phase/course
+- drug exposures
+- dosage
+- intent
+- planned vs. delivered
+- ... 
+
+---
 
 ## Radiotherapy
-- Representation (TODO)
+(TODO)
 
-### Modifiers 
-- type, technique, site, modality, intent, fractions, dose/volume, planned vs. delivered... (TODO)
+Representation:
 
-## Hormone Therapy
-- Representation (TODO)
+### Modifiers - Radiotherapy
+(TODO)
 
-### Modifiers 
-- (TODO)
+Examples: 
 
-## Immunotherapy
-- Representation (TODO)
-
-### Modifiers 
-- (TODO)
+- type
+- technique
+- site
+- modality
+- intent
+- fractions
+- dose/volume
+- planned vs. delivered
+- ...
 
 
 

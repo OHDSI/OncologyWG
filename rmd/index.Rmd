@@ -21,6 +21,32 @@ The extension has been tested in EHR and Cancer Registry data against a number o
 
 <br>
 
+## **Get Involved**
+
+We communicate and coordinate through the OHDSI MS Teams environment and Github. 
+
+**MS Teams**
+
+To join the MS Teams environment you need to complete two steps:
+
+| # | task | link | 
+|:-|:-|:-|
+| 1 | Sign up for an OHDSI Teams Account | [link](https://forms.office.com/Pages/ResponsePage.aspx?id=lAAPoyCRq0q6TOVQkCOy1ZyG6Ud_r2tKuS0HcGnqiQZUQ05MOU9BSzEwOThZVjNQVVFGTDNZRENONiQlQCN0PWcu)|
+| 2 | Register for the workgroup by filling out the specified form selecting the tickbox for "Oncology" - which will automatically add you to our channel | [link](https://forms.office.com/Pages/ResponsePage.aspx?id=lAAPoyCRq0q6TOVQkCOy1ZyG6Ud_r2tKuS0HcGnqiQZUOVJFUzBFWE1aSVlLN0ozR01MUVQ4T0RGNyQlQCN0PWcu)|
+
+**Github**
+
+We use Github in a variety of ways including project planning and topic specific discussions. 
+
+The root link to our Github page is: https://github.com/OHDSI/OncologyWG
+
+And the Github 'Project' where we manage our work can be found here: https://github.com/orgs/OHDSI/projects/13
+
+
+
+
+<br> 
+
 ##   **Subgroups & Meeting Schedule**
 
 subgroup|schedule|meeting details|Team Lead
@@ -39,11 +65,7 @@ Our goal is to create an interoperable, extensible standard that covers all aspe
 
 <br>
 
-## **Get Involved**
 
-TODO
-
-<br> 
 
 ## **Publications/Presentation**
 
