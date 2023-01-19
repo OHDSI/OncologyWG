@@ -387,27 +387,114 @@ div.tocify {
 </div>
 
 
-<p><strong>Conventions</strong></p>
-<p><em>TODO: Brief overview of intent of conventions</em></p>
-<p>TODO</p>
+<p>Conventions</p>
+<p><em>TODO: Brief overview of the use and intent of these
+conventions</em></p>
+<hr />
 <div id="diagnostic" class="section level1">
 <h1><strong>Diagnostic</strong></h1>
-<p><br></p>
+<hr />
 <div id="diagnosis" class="section level2">
 <h2>Diagnosis</h2>
-<ul>
-<li>TODO <br></li>
-</ul>
+<p>(Placeholder)</p>
+<p>Cancer diagnoses are recorded within the CONDITION table, ideally
+with ICD0 concepts. Specific attributes or details about that condition
+which are not contained within the concept are attached to these
+condition records as MEASUREMENTS, referred to as Condition Modifiers,
+which are described below.</p>
+<p><br></p>
+<hr />
 </div>
 <div id="condition-modifiers" class="section level2">
 <h2><strong>Condition Modifiers</strong></h2>
+<hr />
+<div id="overview-of-condition-modifiers" class="section level4">
+<h4>Overview of Condition Modifiers</h4>
+<p>(Placeholder)</p>
+<p>What we are calling ‘Condition Modifiers’ are
+observations/findings/attributes about a cancer and are stored as
+Measurements using the Cancer Modifier vocabulary.</p>
+<p>A linkage between the Condition Modifier and the respective condition
+is made leveraging the two columns in the Measurement table that serve
+as a foreign key. This same mechanism is used for procedure modifiers as
+well. The first (modifier_of_field_concept_id) indicates which table we
+are referring to, the second (modifier_of_event_id) indicates which
+row.</p>
+<p>There are concepts for every potential PK that a measurement can
+potentially modify.</p>
+<p>Vocabulary ID : CDM Domain Id : Metadata Concept Class Id : Field</p>
+<p>For condition modifiers, we are pointing to the primary key of the
+condition table, which is condition_occurrence.condition_concept_id (<a
+href="https://athena.ohdsi.org/search-terms/terms/1147127"
+class="uri">https://athena.ohdsi.org/search-terms/terms/1147127</a>)</p>
+<p>An example condition modifier record within the measurement table
+would contain:</p>
+<pre class="sql"><code>  SELECT 
+  ...
+  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to </code></pre>
 <p><br></p>
 <hr />
+</div>
 <div id="date-of-initial-diagnosis" class="section level3">
 <h3>Date of Initial Diagnosis</h3>
-<ul>
-<li>TODO</li>
-</ul>
+<p>(Placeholder)</p>
+<p>The date of initial diagnosis can be represented in the OMOP CDM by
+mapping to the correct concept in the Cancer Modifier vocabulary and
+represented as a MEASUREMENT, or rather, a cancer modifier. This can be
+an important data point from the source to distinguish this particular
+date as the most reliable diagnosis date of a patient’s cancer and can,
+depending on various factors, substantially vary in a non-trivial way
+from other diagnosis dates in the CONDITION_OCCURRENCE table for the
+same disease occurrence.</p>
+<p>There are specific circumstances in which there is a higher level of
+certainty that the date contained within a condition record is an
+accurate representation of the initial diagnosis date. Some examples
+would be from tumor registries or manually curated or verified data. In
+those cases, to distinguish these records as the source of truth, we
+assign a condition modifier of <strong>‘Initial Diagnosis’ (Concept_id =
+734306)</strong> to that condition record, recorded as a
+measurement.</p>
+<p>If the source data record in question is not confirmed to reliably
+represent the initial diagnosis date, such as from typical EMR records,
+the modifier is not used.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Metadata</th>
+<th align="left">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Concept Name</td>
+<td align="left">Initial Diagnosis</td>
+</tr>
+<tr class="even">
+<td align="left">Domain ID</td>
+<td align="left">Measurement</td>
+</tr>
+<tr class="odd">
+<td align="left">Vocabulary ID</td>
+<td align="left">Cancer Modifier</td>
+</tr>
+<tr class="even">
+<td align="left">Concept ID</td>
+<td align="left"><strong>734306</strong></td>
+</tr>
+<tr class="odd">
+<td align="left">Concept code</td>
+<td align="left">init_diag</td>
+</tr>
+</tbody>
+</table>
+<p>Adding this condition modifier would look something like:</p>
+<pre class="sql"><code>  INSERT INTO MEASUREMENT
+  SELECT
+  ...
+  734306 as measurement_concept_id -- &quot;Initial Diagnosis&quot; ****** 
+  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to </code></pre>
 <p><br></p>
 <hr />
 </div>
@@ -437,7 +524,13 @@ code, as shown here:</p>
   AND standard_concept = &#39;S&#39;
   AND concept_code = &#39;c-7th_AJCC/UICC-T1c2&#39;</code></pre>
 <hr />
-<p><br></p>
+</div>
+<div id="stage-group" class="section level3">
+<h3>Stage Group</h3>
+<ul>
+<li>TODO</li>
+</ul>
+<hr />
 </div>
 <div id="grading" class="section level3">
 <h3>Grading</h3>
@@ -449,15 +542,74 @@ code, as shown here:</p>
 <div id="metastasis" class="section level3">
 <h3>Metastasis</h3>
 <ul>
-<li>TODO</li>
+<li>Revision to come</li>
 </ul>
+<p>(Placeholder)</p>
+<p><em>Caveat</em> It is currently under discussion as to whether or not
+records of metastases will be represented as <em>both</em> a MEASUREMENT
+and a CONDITION, and once it has this documentation will be updated, but
+we are sure that we need the MEASUREMENT representation which is
+detailed below. Additionally, there are concept mappings being worked on
+by the Vocabulary team to de-standardize NAACCR and map those concepts
+to our destination representation within the Cancer Modifier
+vocabulary.</p>
+<p>The standard Metastasis concepts can be found within:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Metadata</th>
+<th align="left">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Domain ID</td>
+<td align="left">Measurement</td>
+</tr>
+<tr class="even">
+<td align="left">Vocabulary ID</td>
+<td align="left">Cancer Modifier</td>
+</tr>
+<tr class="odd">
+<td align="left">Concept Class ID</td>
+<td align="left"><strong>Metastasis</strong></td>
+</tr>
+</tbody>
+</table>
+<p>There is an overarching concept of ‘Metastasis’ (<a
+href="https://athena.ohdsi.org/search-terms/terms/36769180"
+class="uri">https://athena.ohdsi.org/search-terms/terms/36769180</a>) .
+For one, this is important as it is a destination standard concept for
+sources where the data is vague to the point that you only know
+metastasis occurred. A secondary usage of this would be to find all of
+the standard concepts in which fall under it.</p>
+<p>To find all concepts in that hierarchy:</p>
+<pre class="sql"><code>  SELECT descendant_concept_id -- The various concepts under the metasis hierarchy
+  FROM CONCEPT_ANCESTOR
+  WHERE ancestor_concept_id = 36769180</code></pre>
+<p>When it is known which CONDITION the metastasis occurrence refers to,
+it is represented linked similarly to that CONDITION record using the
+Cancer Modifiers mechanisms.</p>
+<p>For example, a record of ‘Metastasis to Lung’ would look like:</p>
+<pre class="sql"><code>  INSERT INTO MEASUREMENT
+  SELECT
+  ...
+  36770283 as measurement_concept_id -- &quot;Metastasis to Lung&quot; ****** 
+  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to </code></pre>
 <hr />
 </div>
 <div id="extensioninvasion" class="section level3">
 <h3>Extension/Invasion</h3>
 <ul>
-<li>TODO</li>
+<li>Revision to come</li>
 </ul>
+<p><em>Caveat</em></p>
+<p>These will be implemented similarly to the Metastasis approach, as
+Cancer Modifiers or MEASUREMENTS, but we are currently waiting on a
+revision of the concepts within this class of the Cancer Modifier
+vocabulary before mapping and providing examples as there is an absence
+of hierarchical relationships.</p>
 <hr />
 </div>
 <div id="dimension" class="section level3">
@@ -465,70 +617,75 @@ code, as shown here:</p>
 <ul>
 <li>TODO</li>
 </ul>
+<hr />
 </div>
 </div>
 </div>
 <div id="treatment" class="section level1">
 <h1><strong>Treatment</strong></h1>
-<p><br></p>
+<p>(Placeholder)</p>
+<p><strong>Treatment representation is currently being finalized and
+this documentation will be updated accordingly</strong></p>
+<p>Treatment records are similar to conditions in that the concepts
+themselves do not contain all of the relevant information and there is a
+need for ‘modifiers’ to append additional information to these records,
+which we refer to as ‘Treatment Modifiers’</p>
+<hr />
 <div id="surgery" class="section level2">
 <h2>Surgery</h2>
-<ul>
-<li>Representation (TODO)</li>
-</ul>
-<div id="modifiers" class="section level3">
-<h3>Modifiers</h3>
-<ul>
-<li>type, site, margins, topography, intent… (TODO)</li>
-</ul>
+<p>(TODO)</p>
+<p>Representation:</p>
+<div id="modifiers---surgery" class="section level3">
+<h3>Modifiers - Surgery</h3>
+<p>(TODO)</p>
+<p>Examples: - type - site - margins - topography - intent - …</p>
+<hr />
 </div>
 </div>
-<div id="chemotherapy" class="section level2">
-<h2>Chemotherapy</h2>
+<div id="drug-therapy" class="section level2">
+<h2>Drug Therapy</h2>
+<p>(TODO)</p>
+<p><strong>Scope</strong></p>
+<p>Includes but not limited to:</p>
 <ul>
-<li>Representation (TODO)</li>
+<li>Chemotherapy</li>
+<li>Immunotherapy</li>
+<li>Hormone Therapy</li>
 </ul>
-<div id="modifiers-1" class="section level3">
-<h3>Modifiers</h3>
+<p>Representation: (TODO)</p>
+<div id="modifiers---drug-therapy" class="section level3">
+<h3>Modifiers - Drug Therapy</h3>
+<p>(TODO)</p>
+<p>Examples:</p>
 <ul>
-<li>regimen, drug exposures, dosage, phase/course, intent… (TODO)</li>
+<li>regimen/phase/course</li>
+<li>drug exposures</li>
+<li>dosage</li>
+<li>intent</li>
+<li>planned vs. delivered</li>
+<li>…</li>
 </ul>
+<hr />
 </div>
 </div>
 <div id="radiotherapy" class="section level2">
 <h2>Radiotherapy</h2>
+<p>(TODO)</p>
+<p>Representation:</p>
+<div id="modifiers---radiotherapy" class="section level3">
+<h3>Modifiers - Radiotherapy</h3>
+<p>(TODO)</p>
+<p>Examples:</p>
 <ul>
-<li>Representation (TODO)</li>
-</ul>
-<div id="modifiers-2" class="section level3">
-<h3>Modifiers</h3>
-<ul>
-<li>type, technique, site, modality, intent, fractions, dose/volume,
-planned vs. delivered… (TODO)</li>
-</ul>
-</div>
-</div>
-<div id="hormone-therapy" class="section level2">
-<h2>Hormone Therapy</h2>
-<ul>
-<li>Representation (TODO)</li>
-</ul>
-<div id="modifiers-3" class="section level3">
-<h3>Modifiers</h3>
-<ul>
-<li>(TODO)</li>
-</ul>
-</div>
-</div>
-<div id="immunotherapy" class="section level2">
-<h2>Immunotherapy</h2>
-<ul>
-<li>Representation (TODO)</li>
-</ul>
-<div id="modifiers-4" class="section level3">
-<h3>Modifiers</h3>
-<ul>
-<li>(TODO)</li>
+<li>type</li>
+<li>technique</li>
+<li>site</li>
+<li>modality</li>
+<li>intent</li>
+<li>fractions</li>
+<li>dose/volume</li>
+<li>planned vs. delivered</li>
+<li>…</li>
 </ul>
 </div>
 </div>
