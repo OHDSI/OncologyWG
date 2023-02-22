@@ -10,6 +10,7 @@ output:
 
 There are multiple strategies for populating the Oncology CDM Extension:
 
+(TODO: Carry over from wiki)
 ## Directly from Tumor Registries: 
 ETL Disease Episodes, Disease Episode Modifiers, Treatment Episodes and Treatment Episode Modifiers directly from tumor registry data. Tumor registries natively capture many of the abstractions and detailed modifiers that the Oncology CDM Extension strives to instantiate. A standard ETL has been written capable of ETLing NAACCR-formatted tumor registry data. See the documentation of the NAACCR ETL here
 
