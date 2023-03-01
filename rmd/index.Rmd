@@ -21,6 +21,33 @@ The extension has been tested in EHR and Cancer Registry data against a number o
 
 <br>
 
+## **Onramp Outline**
+
+### **OHDSI Scope**
+
+- OHDSI Problem Space
+  - include SOS diagram
+- What OMOP Oncology can do today
+  - Incidence, survival
+  - Treatment practices
+  - Safety
+- What OMOP Oncology cannot do (without outcomes)
+  - Treatment response
+  - Comparative effectiveness
+  - PFS/DFS
+
+### **Oncology Use Cases**
+  - TODO
+
+### **Data Sources**
+- what data sources do I need to get oncology value from OMOP
+	- Required
+	- Optional
+
+### **How will we get outcomes data?**
+  - Manual curation
+  - NLP
+
 ## **Get Involved**
 
 We communicate and coordinate through the OHDSI MS Teams environment and Github. 
