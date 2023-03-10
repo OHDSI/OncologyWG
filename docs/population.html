@@ -352,10 +352,10 @@ div.tocify {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="installation.html">Installation</a>
+      <a href="installation.html">DDL</a>
     </li>
     <li>
-      <a href="population.html">Populating the Oncology Extention</a>
+      <a href="population.html">Populating Oncology Data into OMOP</a>
     </li>
   </ul>
 </li>
@@ -387,40 +387,29 @@ div.tocify {
 </div>
 
 
-<div id="populating-the-omop-oncology-extension" class="section level1">
-<h1>Populating the OMOP Oncology Extension</h1>
+<div id="populating-oncology-data-into-omop" class="section level1">
+<h1>Populating Oncology Data into OMOP</h1>
 <p>There are multiple strategies for populating the Oncology CDM
 Extension:</p>
 <div id="directly-from-tumor-registries" class="section level2">
 <h2>Directly from Tumor Registries:</h2>
-<p>ETL Disease Episodes, Disease Episode Modifiers, Treatment Episodes
-and Treatment Episode Modifiers directly from tumor registry data. Tumor
-registries natively capture many of the abstractions and detailed
-modifiers that the Oncology CDM Extension strives to instantiate. A
-standard ETL has been written capable of ETLing NAACCR-formatted tumor
-registry data. See the documentation of the NAACCR ETL here</p>
+<p>Tumor registries natively capture many of the abstractions and
+detailed modifiers that the Oncology CDM Extension strives to
+instantiate. A standard ETL has been written capable of ETLing
+NAACCR-formatted tumor registry data. See the documentation of the
+NAACCR ETL here</p>
+<p>TODO – ABOVE WILL ME OVERWRITTEN</p>
 </div>
 <div id="directly-from-non-registry-sources" class="section level2">
 <h2>Directly from non-registry sources:</h2>
-<p>ETL Disease Episodes, Disease Episode Modifiers, Treatment Episodes
-and Treatment Episode Modifiers directly from EHR systems, ancillary
-clinical systems, Oncology Analytic Platforms and custom clinical data
-repositories. Some Oncology EMRs (Elekta MOSAIQ, Flatiron OncoEMR), the
-Oncology modules of standard EMRs (EPIC Beacon), ancillary clinical
-system (Pathology LIMS capturing CAP Cancer checklists via mTuitive CAP
-eFRM/xPert for Pathology), Oncology Analytic platforms ((Flatiron
-OncoAnalytics, COTA, TEMPUS) and custom clinical data repositories
-natively capture and/or curate the abstractions and detailed modifiers
-that the Oncology CDM Extension strives to instantiate.</p>
+<p>TODO – Explanation of mapping to standard concepts and conventions to
+be elaborated on below. Perhaps with links in the conventions
+section</p>
 </div>
 <div id="indirectly-via-algorithmic-derivation-on-top-of-the-omop-cdm"
 class="section level2">
 <h2>Indirectly via Algorithmic Derivation on top of the OMOP CDM:</h2>
-<p>Run algorithms on top of the OMOP standardized clinical data tables.
-For example, machine learning, rules-based compendium-aided temporal
-logic, and natural language processing. ETL Disease Episodes, Disease
-Episode Modifiers, Treatment Episodes and Treatment Episode Modifiers
-from the outputs of these algorithms.</p>
+<p>TODO</p>
 </div>
 </div>
 
