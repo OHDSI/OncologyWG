@@ -1,4 +1,5 @@
 ---
+title: '<div><img src="images/ohdsi40x40.png"></img> OMOP Oncology Installation</div>'
 output: 
   html_document:
         toc: TRUE
@@ -6,9 +7,15 @@ output:
         toc_float:
           collapsed: false
 ---
-# Oncology CDM Extension Installation
+<br>
 
 This page covers how to install the Oncology CDM Extension.  The Oncology CDM Extension has **not** yet been incorporated into an official OMOP CDM release.  Consequently, the installation of the Oncology CDM Extension requires additional steps beyond installing the OMOP CDM.  The Oncology CDM Extension currently supports OMOP CDM v5.31 and the following database platforms: PostgreSQL, SQL Server, Oracle and Redshift.
+
+---
+
+# **Installation**
+
+<br>
 
 ## Step 1: Compile the OMOP CDM v5.31 Tables  
 Compile the OMOP CDM v5.31 data model tables from the [OHDSI/CommonDataModel](https://github.com/OHDSI/CommonDataModel) Github repository.  Find the DDL relevant to your database platform (PostgreSQL, SQL Server, Oracle and Redshift).  [See the OMOP CDM v5.31 release here.](https://github.com/OHDSI/CommonDataModel/releases/tag/v5.3.1)  Do not yet compile indexes and constraints.  Do not yet load the vocabulary tables.  We will do these in subsequent steps.

@@ -1,4 +1,5 @@
 ---
+title: '<div><img src="images/ohdsi40x40.png"></img> Tooling</div>'
 output: 
   html_document:
         toc: TRUE
@@ -6,6 +7,8 @@ output:
         toc_float:
           collapsed: false
 ---
+
+<br>
 
 
 # **Applications**

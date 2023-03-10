@@ -8,24 +8,34 @@ output:
       in_header: "favicon.html"
 exclude: ["extras"]
 navbar:
-  title: '<div><img src="ohdsi16x16.png"></img> OMOP Oncology </div>'
+  title: '<div><img src="images/ohdsi16x16.png"></img> OHDSI Oncology WG </div>'
   right:
     - icon: fa-github
       href: https://github.com/OHDSI/OncologyWG
   left:
-    - text: "Data Model"
-      icon: fa-landmark
+    - icon: fa-home
+      href: index.html
+    - text: " Background"
+      icon: fa-info-circle
       href: background.html
-    - text: "Conventions"
-      icon: fa-landmark
-      href: conventions.html
-    - text: "Implementation"
-      icon: fa-landmark
+    - text: " Approach"
+      icon: fa-cogs
       menu:
-        - text: "DDL"
+        - text: " Model"
+          href: model.html
+          icon: fa-sitemap
+        - text: " Conventions"
+          icon: fa-gavel
+          href: conventions.html
+    - text: "Implementation"
+      icon: fa-plug
+      menu:
+        - text: " Install"
           href: installation.html
-        - text: "Populating Oncology Data into OMOP"
+          icon: fa-download
+        - text: " Populate Data"
           href: population.html
-    - text: "Applications"
-      icon: fa-landmark
-      href: applications.html  
+          icon: fa-database
+    - text: " Tooling"
+      icon: fa-wrench
+      href: tooling.html  

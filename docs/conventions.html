@@ -11,7 +11,7 @@
 
 
 
-<title>conventions.knit</title>
+<title>Oncology Conventions</title>
 
 <script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -324,27 +324,51 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html"><div><img src="ohdsi16x16.png"></img> OMOP Oncology </div></a>
+      <a class="navbar-brand" href="index.html"><div><img src="images/ohdsi16x16.png"></img> OHDSI Oncology WG </div></a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="background.html">
-    <span class="fa fa-landmark"></span>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
      
-    Data Model
   </a>
 </li>
 <li>
-  <a href="conventions.html">
-    <span class="fa fa-landmark"></span>
+  <a href="background.html">
+    <span class="fa fa-info-circle"></span>
      
-    Conventions
+     Background
   </a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <span class="fa fa-landmark"></span>
+    <span class="fa fa-cogs"></span>
+     
+     Approach
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="model.html">
+        <span class="fa fa-sitemap"></span>
+         
+         Model
+      </a>
+    </li>
+    <li>
+      <a href="conventions.html">
+        <span class="fa fa-gavel"></span>
+         
+         Conventions
+      </a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-plug"></span>
      
     Implementation
      
@@ -352,18 +376,26 @@ div.tocify {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="installation.html">DDL</a>
+      <a href="installation.html">
+        <span class="fa fa-download"></span>
+         
+         Install
+      </a>
     </li>
     <li>
-      <a href="population.html">Populating Oncology Data into OMOP</a>
+      <a href="population.html">
+        <span class="fa fa-database"></span>
+         
+         Populate Data
+      </a>
     </li>
   </ul>
 </li>
 <li>
-  <a href="applications.html">
-    <span class="fa fa-landmark"></span>
+  <a href="tooling.html">
+    <span class="fa fa-wrench"></span>
      
-    Applications
+     Tooling
   </a>
 </li>
       </ul>
@@ -383,6 +415,8 @@ div.tocify {
 
 
 
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>Oncology
+Conventions</h1>
 
 </div>
 
@@ -391,11 +425,12 @@ div.tocify {
 <p><em>TODO: Brief overview of the use and intent of these
 conventions</em></p>
 <hr />
+<p><br></p>
 <div id="diagnostic" class="section level1">
 <h1><strong>Diagnostic</strong></h1>
-<hr />
-<div id="diagnosis" class="section level2">
-<h2>Diagnosis</h2>
+<p><br></p>
+<div id="primary-diagnosis" class="section level2">
+<h2>Primary Diagnosis</h2>
 <p>(Placeholder)</p>
 <p>Cancer diagnoses are recorded within the CONDITION table, ideally
 with ICD0 concepts. Specific attributes or details about that condition
