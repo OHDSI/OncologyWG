@@ -22,9 +22,9 @@ navbar:
     - text: "Implementation"
       icon: fa-landmark
       menu:
-        - text: "Installation"
+        - text: "DDL"
           href: installation.html
-        - text: "Populating the Oncology Extention"
+        - text: "Populating Oncology Data into OMOP"
           href: population.html
     - text: "Applications"
       icon: fa-landmark
