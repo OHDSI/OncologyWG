@@ -11,7 +11,7 @@
 
 
 
-<title>implementation.knit</title>
+<title> Tooling</title>
 
 <script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -324,27 +324,51 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html"><div><img src="ohdsi16x16.png"></img> OMOP Oncology </div></a>
+      <a class="navbar-brand" href="index.html"><div><img src="images/ohdsi16x16.png"></img> OHDSI Oncology WG </div></a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="background.html">
-    <span class="fa fa-landmark"></span>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
      
-    Data Model
   </a>
 </li>
 <li>
-  <a href="conventions.html">
-    <span class="fa fa-landmark"></span>
+  <a href="background.html">
+    <span class="fa fa-info-circle"></span>
      
-    Conventions
+     Background
   </a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <span class="fa fa-landmark"></span>
+    <span class="fa fa-cogs"></span>
+     
+     Approach
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="model.html">
+        <span class="fa fa-sitemap"></span>
+         
+         Model
+      </a>
+    </li>
+    <li>
+      <a href="conventions.html">
+        <span class="fa fa-gavel"></span>
+         
+         Conventions
+      </a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-plug"></span>
      
     Implementation
      
@@ -352,18 +376,26 @@ div.tocify {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="installation.html">DDL</a>
+      <a href="installation.html">
+        <span class="fa fa-download"></span>
+         
+         Install
+      </a>
     </li>
     <li>
-      <a href="population.html">Populating Oncology Data into OMOP</a>
+      <a href="population.html">
+        <span class="fa fa-database"></span>
+         
+         Populate Data
+      </a>
     </li>
   </ul>
 </li>
 <li>
-  <a href="applications.html">
-    <span class="fa fa-landmark"></span>
+  <a href="tooling.html">
+    <span class="fa fa-wrench"></span>
      
-    Applications
+     Tooling
   </a>
 </li>
       </ul>
@@ -383,36 +415,50 @@ div.tocify {
 
 
 
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
+Tooling</h1>
 
 </div>
 
 
-<div id="r-markdown" class="section level2">
-<h2>R Markdown</h2>
-<p>This is an R Markdown document. Markdown is a simple formatting
-syntax for authoring HTML, PDF, and MS Word documents. For more details
-on using R Markdown see <a href="http://rmarkdown.rstudio.com"
-class="uri">http://rmarkdown.rstudio.com</a>.</p>
-<p>When you click the <strong>Knit</strong> button a document will be
-generated that includes both content as well as the output of any
-embedded R code chunks within the document. You can embed an R code
-chunk like this:</p>
-<pre class="r"><code>summary(cars)</code></pre>
-<pre><code>##      speed           dist       
-##  Min.   : 4.0   Min.   :  2.00  
-##  1st Qu.:12.0   1st Qu.: 26.00  
-##  Median :15.0   Median : 36.00  
-##  Mean   :15.4   Mean   : 42.98  
-##  3rd Qu.:19.0   3rd Qu.: 56.00  
-##  Max.   :25.0   Max.   :120.00</code></pre>
+<p><br></p>
+<div id="applications" class="section level1">
+<h1><strong>Applications</strong></h1>
+<p><em>TODO: Brief overview </em></p>
+<p>TODO</p>
+<div id="etl" class="section level2">
+<h2><strong>ETL</strong></h2>
+<div id="tumor-registry" class="section level3">
+<h3>Tumor Registry</h3>
+<ul>
+<li>TODO <br></li>
+</ul>
 </div>
-<div id="including-plots" class="section level2">
-<h2>Including Plots</h2>
-<p>You can also embed plots, for example:</p>
-<p><img src="implementation_files/figure-html/pressure-1.png" width="672" /></p>
-<p>Note that the <code>echo = FALSE</code> parameter was added to the
-code chunk to prevent printing of the R code that generated the
-plot.</p>
+<div id="ehr-data" class="section level3">
+<h3>EHR Data</h3>
+<ul>
+<li>TODO <br></li>
+</ul>
+</div>
+</div>
+<div id="genomics" class="section level2">
+<h2><strong>Genomics</strong></h2>
+<ul>
+<li>TODO <br></li>
+</ul>
+</div>
+<div id="regimen-derivation" class="section level2">
+<h2><strong>Regimen Derivation</strong></h2>
+<ul>
+<li>TODO <br></li>
+</ul>
+</div>
+<div id="episode-derivation" class="section level2">
+<h2><strong>Episode Derivation</strong></h2>
+<ul>
+<li>TODO <br></li>
+</ul>
+</div>
 </div>
 
 

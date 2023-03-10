@@ -324,27 +324,51 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html"><div><img src="ohdsi16x16.png"></img> OMOP Oncology </div></a>
+      <a class="navbar-brand" href="index.html"><div><img src="images/ohdsi16x16.png"></img> OHDSI Oncology WG </div></a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="background.html">
-    <span class="fa fa-landmark"></span>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
      
-    Data Model
   </a>
 </li>
 <li>
-  <a href="conventions.html">
-    <span class="fa fa-landmark"></span>
+  <a href="background.html">
+    <span class="fa fa-info-circle"></span>
      
-    Conventions
+     Background
   </a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <span class="fa fa-landmark"></span>
+    <span class="fa fa-cogs"></span>
+     
+     Approach
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="model.html">
+        <span class="fa fa-sitemap"></span>
+         
+         Model
+      </a>
+    </li>
+    <li>
+      <a href="conventions.html">
+        <span class="fa fa-gavel"></span>
+         
+         Conventions
+      </a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-plug"></span>
      
     Implementation
      
@@ -352,18 +376,26 @@ div.tocify {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="installation.html">DDL</a>
+      <a href="installation.html">
+        <span class="fa fa-download"></span>
+         
+         Install
+      </a>
     </li>
     <li>
-      <a href="population.html">Populating Oncology Data into OMOP</a>
+      <a href="population.html">
+        <span class="fa fa-database"></span>
+         
+         Populate Data
+      </a>
     </li>
   </ul>
 </li>
 <li>
-  <a href="applications.html">
-    <span class="fa fa-landmark"></span>
+  <a href="tooling.html">
+    <span class="fa fa-wrench"></span>
      
-    Applications
+     Tooling
   </a>
 </li>
       </ul>
@@ -383,94 +415,19 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore"><img src="ohdsi40x40.png"></img> OHDSI
-Oncology WG</h1>
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
+OHDSI Oncology WG</h1>
 
 </div>
 
 
-<div id="problem-space-and-goals" class="section level1">
-<h1><strong>Problem Space and Goals</strong></h1>
-<p>In a typical observational study, the definition of the study
-population (cohort), exposures and outcomes are usually based on
-diagnostic codes in addition to drug exposures, procedure occurrences or
-lab measurements. For cancer studies, this information is typically not
-sufficient, as more details are required for the proper identification
-of the study population, treatment and subsequent outcomes.</p>
-<p>Appropriate characterization of cancer requires details such as
-anatomical site, morphology, local penetration, affected lymph nodes,
-metastatic spread, biomarkers, and disease staging and grading. In
-typical observational data sources, this necessary level of detail is
-not regularly present. Patient results from diagnostic procedures are
-collected but may not be available within the given data source or what
-is collected cannot appropriately serve as a surrogate for the above
-attributes. Correct identification of cancer treatment regimens also
-tends to be more complex compared to other disease modalities within
-observational data. Most cancer treatments are administered in
-chemotherapy regimens with complex dosing and scheduling in multiple
-cycles and are often combined with targeted therapies, immunotherapies,
-surgery or radiotherapy. None of these attributes follow standard
-definition to be applied to observational data, as most regimens are
-personalized to the individual patient need, making a priori
-standardized definitions more complex. Additionally, clinically relevant
-information on disease, treatment and outcomes that appropriately
-reflects a patient’s journey including information on the time of
-diagnosis, response to treatments, time to treatment failure, disease
-progression, recurrence and (disease-free and overall) survival requires
-data abstraction and is rarely available in the source data and has not
-been traditionally supported in OMOP CDM.</p>
-<p>The Oncology CDM Extension of the OMOP CDM aims to provide a
-foundation for representing cancer data at the levels of granularity and
-abstraction required to support observational cancer research.</p>
-<p>The extension has been tested in EHR and Cancer Registry data against
-a number of typical use cases.</p>
-<p><br></p>
-<div id="onramp-outline" class="section level2">
-<h2><strong>Onramp Outline</strong></h2>
-<div id="ohdsi-scope" class="section level3">
-<h3><strong>OHDSI Scope</strong></h3>
-<ul>
-<li>OHDSI Problem Space
-<ul>
-<li>include SOS diagram</li>
-</ul></li>
-<li>What OMOP Oncology can do today
-<ul>
-<li>Incidence, survival</li>
-<li>Treatment practices</li>
-<li>Safety</li>
-</ul></li>
-<li>What OMOP Oncology cannot do (without outcomes)
-<ul>
-<li>Treatment response</li>
-<li>Comparative effectiveness</li>
-<li>PFS/DFS</li>
-</ul></li>
-</ul>
-</div>
-<div id="oncology-use-cases" class="section level3">
-<h3><strong>Oncology Use Cases</strong></h3>
-<ul>
-<li>TODO</li>
-</ul>
-</div>
-<div id="data-sources" class="section level3">
-<h3><strong>Data Sources</strong></h3>
-<ul>
-<li>what data sources do I need to get oncology value from OMOP
-<ul>
-<li>Required</li>
-<li>Optional</li>
-</ul></li>
-</ul>
-</div>
-<div id="how-will-we-get-outcomes-data" class="section level3">
-<h3><strong>How will we get outcomes data?</strong></h3>
-<ul>
-<li>Manual curation</li>
-<li>NLP</li>
-</ul>
-</div>
+<div id="mission" class="section level2">
+<h2><strong>Mission</strong></h2>
+<p>The OHDSI Oncology Working Group aims to provide a foundation for
+representing cancer data within the OMOP CDM at the levels of
+granularity and abstraction required to support observational cancer
+research.</p>
+<hr />
 </div>
 <div id="get-involved" class="section level2">
 <h2><strong>Get Involved</strong></h2>
@@ -591,7 +548,6 @@ Cancer Study</a></p></li>
 Clinical Cancer Informatics</a></p></li>
 </ul>
 <p><br></p>
-</div>
 </div>
 
 

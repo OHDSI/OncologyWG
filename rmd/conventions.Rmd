@@ -1,4 +1,5 @@
 ---
+title: '<div><img src="images/ohdsi40x40.png"></img>Oncology Conventions</div>'
 output: 
   html_document:
         toc: TRUE
@@ -14,12 +15,13 @@ Conventions
 
 ---
 
+<br>
+
 # **Diagnostic**
 
+<br>
 
----
-
-## Diagnosis
+## Primary Diagnosis
 
 (Placeholder)
 
@@ -63,7 +65,7 @@ An example condition modifier record within the measurement table would contain:
 
 ---
 
-### Date of Initial Diagnosis
+### Date of Initial Diagnosis 
 
 (Placeholder)
 

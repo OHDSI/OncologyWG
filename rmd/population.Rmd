@@ -1,4 +1,5 @@
 ---
+title: '<div><img src="images/ohdsi40x40.png"></img> Populating Oncology Data</div>'
 output: 
   html_document:
         toc: TRUE
@@ -6,9 +7,19 @@ output:
         toc_float:
           collapsed: false
 ---
-# Populating Oncology Data into OMOP
 
-There are multiple strategies for populating the Oncology CDM Extension:
+<br>
+
+There are multiple strategies for populating the Oncology data within OMOP:
+
+
+<br>
+
+---
+
+# **Data Population**
+
+<br>
 
 ## Directly from Tumor Registries: 
 
@@ -16,10 +27,13 @@ Tumor registries natively capture many of the abstractions and detailed modifier
 
 TODO -- ABOVE WILL ME OVERWRITTEN 
 
+<br>
+
 ## Directly from non-registry sources: 
 
 TODO -- Explanation of mapping to standard concepts and conventions to be elaborated on below. Perhaps with links in the conventions section
 
+<br>
 
 ## Indirectly via Algorithmic Derivation on top of the OMOP CDM:
 TODO

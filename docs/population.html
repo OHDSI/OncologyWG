@@ -11,7 +11,7 @@
 
 
 
-<title>population.knit</title>
+<title> Populating Oncology Data</title>
 
 <script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -324,27 +324,51 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html"><div><img src="ohdsi16x16.png"></img> OMOP Oncology </div></a>
+      <a class="navbar-brand" href="index.html"><div><img src="images/ohdsi16x16.png"></img> OHDSI Oncology WG </div></a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="background.html">
-    <span class="fa fa-landmark"></span>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
      
-    Data Model
   </a>
 </li>
 <li>
-  <a href="conventions.html">
-    <span class="fa fa-landmark"></span>
+  <a href="background.html">
+    <span class="fa fa-info-circle"></span>
      
-    Conventions
+     Background
   </a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <span class="fa fa-landmark"></span>
+    <span class="fa fa-cogs"></span>
+     
+     Approach
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="model.html">
+        <span class="fa fa-sitemap"></span>
+         
+         Model
+      </a>
+    </li>
+    <li>
+      <a href="conventions.html">
+        <span class="fa fa-gavel"></span>
+         
+         Conventions
+      </a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-plug"></span>
      
     Implementation
      
@@ -352,18 +376,26 @@ div.tocify {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="installation.html">DDL</a>
+      <a href="installation.html">
+        <span class="fa fa-download"></span>
+         
+         Install
+      </a>
     </li>
     <li>
-      <a href="population.html">Populating Oncology Data into OMOP</a>
+      <a href="population.html">
+        <span class="fa fa-database"></span>
+         
+         Populate Data
+      </a>
     </li>
   </ul>
 </li>
 <li>
-  <a href="applications.html">
-    <span class="fa fa-landmark"></span>
+  <a href="tooling.html">
+    <span class="fa fa-wrench"></span>
      
-    Applications
+     Tooling
   </a>
 </li>
       </ul>
@@ -383,14 +415,20 @@ div.tocify {
 
 
 
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
+Populating Oncology Data</h1>
 
 </div>
 
 
-<div id="populating-oncology-data-into-omop" class="section level1">
-<h1>Populating Oncology Data into OMOP</h1>
-<p>There are multiple strategies for populating the Oncology CDM
-Extension:</p>
+<p><br></p>
+<p>There are multiple strategies for populating the Oncology data within
+OMOP:</p>
+<p><br></p>
+<hr />
+<div id="data-population" class="section level1">
+<h1><strong>Data Population</strong></h1>
+<p><br></p>
 <div id="directly-from-tumor-registries" class="section level2">
 <h2>Directly from Tumor Registries:</h2>
 <p>Tumor registries natively capture many of the abstractions and
@@ -399,12 +437,14 @@ instantiate. A standard ETL has been written capable of ETLing
 NAACCR-formatted tumor registry data. See the documentation of the
 NAACCR ETL here</p>
 <p>TODO – ABOVE WILL ME OVERWRITTEN</p>
+<p><br></p>
 </div>
 <div id="directly-from-non-registry-sources" class="section level2">
 <h2>Directly from non-registry sources:</h2>
 <p>TODO – Explanation of mapping to standard concepts and conventions to
 be elaborated on below. Perhaps with links in the conventions
 section</p>
+<p><br></p>
 </div>
 <div id="indirectly-via-algorithmic-derivation-on-top-of-the-omop-cdm"
 class="section level2">
