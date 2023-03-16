@@ -21,11 +21,11 @@ Conventions
 
 <br>
 
-## Primary Diagnosis
+## <img src="images/green-check.png"></img> Primary Diagnosis
 
 (Placeholder)
 
-Cancer diagnoses are recorded within the CONDITION table, ideally with ICD0 concepts. Specific attributes or details about that condition which are not contained within the concept are attached to these condition records as MEASUREMENTS, referred to as Condition Modifiers, which are described below. 
+Cancer diagnoses are recorded within the CONDITION table, ideally with ICDO3 concepts. Specific attributes or details about that condition which are not contained within the concept are attached to these condition records as MEASUREMENTS, referred to as Condition Modifiers, which are described below. 
 
 <br>
 
@@ -65,7 +65,7 @@ An example condition modifier record within the measurement table would contain:
 
 ---
 
-### Date of Initial Diagnosis 
+### <img src="images/green-check.png"></img> Date of Initial Diagnosis 
 
 (Placeholder)
 
@@ -98,7 +98,7 @@ Adding this condition modifier would look something like:
 
 ---
 
-### TNM
+### <img src="images/green-check.png"></img> TNM  
 
 Circumvent the concept mappings and map directly to the standard concepts within the 'Cancer Modifier' vocabulary by concatenating your source data and joining on the concept code. 
 
@@ -127,18 +127,18 @@ To find the correct standard concept, you need to join to the concept code, as s
 
 ---
 
-### Stage Group 
+### <img src="images/stop.png"></img> Stage Group 
 
 - TODO 
 
 ---
 
-### Grading
+### <img src="images/stop.png"></img> Stage Group Grading
 - TODO 
 
 ---
 
-### Metastasis
+### <img src="images/stop.png"></img> Metastasis
 - Revision to come 
 
 (Placeholder)
@@ -180,7 +180,7 @@ For example, a record of 'Metastasis to Lung' would look like:
 
 ---
 
-### Extension/Invasion
+### <img src="images/stop.png"></img> Extension/Invasion
 - Revision to come
 
 *Caveat*
@@ -189,7 +189,7 @@ These will be implemented similarly to the Metastasis approach, as Cancer Modifi
 
 ---
 
-### Dimension 
+### <img src="images/stop.png"></img> Dimension 
 - TODO 
 
 --- 
@@ -205,7 +205,7 @@ Treatment records are similar to conditions in that the concepts themselves do n
 
 ---
 
-## Surgery   
+## <img src="images/stop.png"></img> Surgery   
 (TODO)
 
 Representation: 
@@ -223,7 +223,7 @@ Examples:
 
 ---
 
-## Drug Therapy 
+## <img src="images/stop.png"></img> Drug Therapy 
 
 (TODO) 
  
@@ -238,7 +238,7 @@ Includes but not limited to:
 
 Representation: (TODO) 
 
-### Modifiers - Drug Therapy 
+###  Modifiers - Drug Therapy 
 
 (TODO)
 
@@ -253,7 +253,7 @@ Examples:
 
 ---
 
-## Radiotherapy
+##  <img src="images/stop.png"></img> Radiotherapy
 (TODO)
 
 Representation:
