@@ -23,7 +23,7 @@ Load package
 library(NaaccrParser)
 
 ```
-As we are splitting up rows into an EAV structure, we need to retain provenance by appending a source row index to each value pair. The record id prefix is intended to be unique to each file and will be concatenated to the front of each row index. The record id is only used a means to complete the ETL and is not retained in the destination data. 
+As we are splitting up rows into an EAV structure, we need to retain provenance by appending a source row index to each value pair. The record id prefix is intended to be unique to each file and will be concatenated to the front of each row index. The record id is only used as a means to complete the ETL and is not retained in the destination data. 
 
 ```r
 record_id_prefix <- "my_id_prefix"
