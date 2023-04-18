@@ -1,0 +1,246 @@
+---
+title: '<div><img src="images/ohdsi40x40.png"></img>Oncology Model</div>'
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 3
+        toc_float:
+          collapsed: false
+---
+<br>
+
+## **Representation**
+
+<br>
+
+### Diagnosis
+
+The **Cancer Diagnostic Model in the OMOP vocabulary** is comprised of:
+* **Cancer diagnosis**: a condition that is a combination of histology (morphology) and topography (anatomic site). 
+* **Diagnostic schema**: a group of cancer diagnoses with similar diagnostic features.
+* **Diagnostic modifiers**: a set of diagnostic features that define a group of cancer diagnoses. These include stage, grade, laterality, genomic biomarkers, and other attributes. 
+
+![](https://user-images.githubusercontent.com/57408355/76053847-9c1c5380-5f3c-11ea-8ac2-4efbcc4ee66e.png)
+
+
+***
+
+#### Cancer Diagnosis
+
+* **Cancer diagnosis** is stored in the CONDITION_OCCURRENCE table.
+* **Diagnostic modifiers** are stored in the MEASUREMENT table. They are explicitly linked to the cancer diagnosis record in CONDITION_OCCURRENCE via the columns MEASUREMENT.modifier_of_event_id and MEASUREMENT.modifier_of_field_concept_id: MEASUREMENT.modifier_of_event_id contains value of the respective condition_occurrence_id. MEASUREMENT.modifier_of_field_concept_id contains the concept for the condition_occurrence_id field (1147127).
+
+![](https://user-images.githubusercontent.com/57408355/76053733-2912dd00-5f3c-11ea-9ae5-0e3d95aef79d.png)
+
+![](https://user-images.githubusercontent.com/57408355/76053666-f8cb3e80-5f3b-11ea-895a-f4375686b43f.png)
+
+***
+
+### Treatments
+
+The **Cancer Treatment Model in the OMOP vocabulary** is comprised of:
+* **Cancer treatments**: a higher-level procedure or regimen concept that raises above the transactional and observational details of treatment planning, treatment delivery, and treatment billing.  Cancer treatment concepts attempt to capture the overall modality of a therapeutic or diagnostic intervention.  
+* **Treatment modifiers**: a set of features that refine the description of a cancer treatment. These include: 
+'Number of Fractions', 'Radiation Primary Treatment Volume', 'Total Dose' and other attributes of a radiation therapy treatment; 'Lymph nodes examined', 'Surgical Margins' and other attributes of a surgery.
+
+***
+
+#### Cancer Treatment
+
+* **Cancer treatment** is stored in the PROCEDURE_OCCURRENCE and EPISODE table.
+* **Treatment modifiers** are stored in the MEASUREMENT table. They are explicitly linked to the cancer treatment record in PROCEDURE_OCCURRENCE via the columns MEASUREMENT.modifier_of_event_id and MEASUREMENT.modifier_of_field_concept_id: MEASUREMENT.modifier_of_event_id contains value of the respective procedure_occurrence_id. MEASUREMENT.modifier_of_field_concept_id contains the concept for the procedure_occurrence_id field (1147084).
+
+***
+
+### Episodes
+Clinically and analytically relevant representation of cancer diagnoses, treatments, and outcomes requires data abstraction. Examples include 'Disease First Occurrence', 'Disease Recurrence', 'Disease Remission', 'Disease Progression', 'Treatment Regimen', and 'Treatment Cycle'.
+
+![](https://user-images.githubusercontent.com/57408355/76054020-354b6a00-5f3d-11ea-8107-ec3ce45370f0.png)
+
+* **Disease and treatment episodes** are represented in the EPISODE table.  [See the definition of the EPISODE table here.](https://github.com/OHDSI/OncologyWG/wiki/Episode)
+* Standard Episode Concepts are categorized by concept class:
+( UNDER REVIEW:)
+
+-TODO-
+ 
+ 
+* The EPISODE.episode_object_id column refers to a concept identifier in the Standardized Vocabularies describing the disease, treatment, or other abstraction that the episode describes.  Episode entries from the 'Disease Episode' concept class should have an episode_object_concept_id that comes from the Condition domain.  Episode entries from the 'Treatment Episode' concept class should have an episode_object_concept_id that comes from the 'Procedure' or 'Regimen' domain.
+* The relationship between a disease episode and treatment episodes can be represented by the self-referencing foreign key column EPISODE.episode_parent_id.  This allows for the attribution of cancer treatment to a cancer diagnosis to help support the use case of calculating time from diagnosis to treatment.
+* The relationship between a 'Disease First Occurrence' disease episode and a subsequent 'Disease Progression' episode can be represented by the self-referencing foreign key column EPISODE.episode_parent_id.  This enables support for the use case of calculating interval time to progression.
+* A treatment EPISODE can be delivered at regular intervals, cycles or fractions.  The parent-child relationship between a treatment episode and its constituent treatment cycles can be represented by the self-referencing foreign key column EPISODE.episode_parent_id.
+
+![](https://user-images.githubusercontent.com/57408355/76054102-82c7d700-5f3d-11ea-988b-82fec7919989.png)
+
+* **Episode modifiers**
+Episode modifiers are very similar to condition and procedure modifiers. For example, a ‘Disease First Occurrence’ of ‘Carcinoma of breast’ can have stage, grade, and other attributes of the ‘Carcinoma of breast’.  A 'Treatment Regimen' of 'External beam, NOS' can have 'Number of Fractions', 'Radiation Primary Treatment Volume', 'Total Dose' and other attributes of 'External beam, NOS'.
+
+* **Connection between episodes and lower-level events** (e.g. conditions, procedures, drugs) are represented in the linking EPISODE_EVENT table. In this table: event_id contains value of the respective lower level event (e.g. condition_occurrence_id) and ;episode_event_field_concept_id field contains concept for the corresponding field (e.g. concept ID 1147127 for ‘condition_occurrence_id field’).
+
+![](https://user-images.githubusercontent.com/57408355/76054164-c0c4fb00-5f3d-11ea-9a36-b873ed92cb94.png)
+
+* **Episode population** may be accomplished by multiple strategies:
+  * **Directly from Tumor Registries**:  ETL Disease Episodes, Disease Episode Modifiers, Treatment Episodes and Treatment Episode Modifiers directly from tumor registry data.  Tumor registries natively capture many of the abstractions and detailed modifiers that the Oncology CDM Extension strives to instantiate.  A standard ETL has been written capable of ETLing NAACCR-formated tumor registry data.[See the documentation of the NAACCR ETL here](https://github.com/OHDSI/OncologyWG/wiki/Oncology-CDM-Extension-Installation/)
+  * **Directly from non-registry sources**: ETL Disease Episodes, Disease Episode Modifiers, Treatment Episodes and Treatment Episode Modifiers directly from EHR systems, ancillary clinical systems, Oncology Analytic Platforms and custom clinical data repositories.  Some Oncology EMRs (Elekta MOSAIQ, Flatiron OncoEMR), the Oncology modules of standard EMRs (EPIC Beacon), ancillary clinical system (Pathology LIMS capturing CAP Cancer checklists via mTuitive CAP eFRM/xPert for Pathology), Oncology Analytic platforms ((Flatiron OncoAnalytics, COTA, TEMPUS) and custom clinical data repositories natively capture and/or curate the abstractions and detailed modifiers that the Oncology CDM Extension strives to instantiate.
+  * **Indirectly via Algorithmic Derivation on top of the OMOP CDM:**  Run algorithms on top of the OMOP standardized clinical data tables. For example, machine learning, rules-based compendium-aided temporal logic, and natural language processing.  ETL Disease Episodes, Disease Episode Modifiers, Treatment Episodes and Treatment Episode Modifiers from the outputs of the algorithms.
+
+
+## **Schema**
+
+### MEASUREMENT
+
+The Oncology CDM Extension adds two new fields (modifier_of_event_id and modifier_of_field_concept_id) to enable the MEASUREMENT table to represent modifiers. 
+
+Field|Required|Type|Description
+:----------------------------------|:--------|:------------|:------------------------------------------------
+|measurement_id|Yes|integer|A unique identifier for each Measurement.|
+|person_id|Yes|integer|A foreign key identifier to the Person about whom the measurement was recorded. The demographic details of that Person are stored in the PERSON table.|
+|measurement_concept_id|Yes|integer|A foreign key to the standard measurement concept identifier in the Standardized Vocabularies. These belong to the 'Measurement' domain, but could overlap with the 'Observation' domain (see #3 below).|
+|measurement_date|No|date|The date of the Measurement.|
+|measurement_datetime|Yes|datetime|The date and time of the Measurement. Some database systems don't have a datatype of time. To accommodate all temporal analyses, datatype datetime can be used (combining measurement_date and measurement_time [forum discussion](http://forums.ohdsi.org/t/date-time-and-datetime-problem-and-the-world-of-hours-and-1day/314))|
+|measurement_time |No|varchar(10)|The time of the Measurement. This is present for backwards compatibility and will be deprecated in an upcoming version|
+|measurement_type_concept_id|Yes|integer|A foreign key to the predefined Concept in the Standardized Vocabularies reflecting the provenance from where the Measurement record was recorded. These belong to the 'Meas Type' vocabulary|
+|operator_concept_id|No|integer|A foreign key identifier to the predefined Concept in the Standardized Vocabularies reflecting the mathematical operator that is applied to the value_as_number. Operators are <, <=, =, >=, > and these concepts belong to the 'Meas Value Operator' domain.|
+|value_as_number|No|float|A Measurement result where the result is expressed as a numeric value.|
+|value_as_concept_id|No|integer|A foreign key to a Measurement result represented as a Concept from the Standardized Vocabularies (e.g., positive/negative, present/absent, low/high, etc.). These belong to the 'Meas Value' domain|
+|unit_concept_id|No|integer|A foreign key to a Standard Concept ID of Measurement Units in the Standardized Vocabularies that belong to the 'Unit' domain.|
+|range_low|No|float|The lower limit of the normal range of the Measurement result. The lower range is assumed to be of the same unit of measure as the Measurement value.|
+|range_high|No|float|The upper limit of the normal range of the Measurement. The upper range is assumed to be of the same unit of measure as the Measurement value.|
+|provider_id|No|integer|A foreign key to the provider in the PROVIDER table who was responsible for initiating or obtaining the measurement.|
+|visit_occurrence_id|No|integer|A foreign key to the Visit in the VISIT_OCCURRENCE table during which the Measurement was recorded.|
+|visit_detail_id|No|integer|A foreign key to the Visit Detail in the VISIT_DETAIL table during which the Measurement was recorded. |
+|measurement_source_value|No|varchar(50)|The Measurement name as it appears in the source data. This code is mapped to a Standard Concept in the Standardized Vocabularies and the original code is stored here for reference.|
+|measurement_source_concept_id|Yes|integer|A foreign key to a Concept in the Standard Vocabularies that refers to the code used in the source.|
+|unit_source_value|No|varchar(50)|The source code for the unit as it appears in the source data. This code is mapped to a standard unit concept in the Standardized Vocabularies and the original code is stored here for reference.|
+|value_source_value|No|varchar(50)|The source value associated with the content of the value_as_number or value_as_concept_id as stored in the source data.|
+|**modifier_of_event_id**|**No**|**bigint**|**A foreign key identifier to the event (e.g. condition, procedure, episode) record for which the modifier is recorded.**|
+|**modifier_of_field_concept_id**|**No**|**integer**|**The concept representing the table field concept that contains the value of the event id for which the modifier is recorded (e.g. CONDITION_OCCURRENCE.condition_occurre nce_id).**|
+
+
+
+<br>
+
+### EPISODE
+The EPISODE table aggregates lower-level clinical events (VISIT_OCCURRENCE, DRUG_EXPOSURE, PROCEDURE_OCCURRENCE, DEVICE_EXPOSURE) into a higher-level abstraction representing clinically and analytically relevant disease phases/outcomes and treatments.  The [EPISODE_EVENT](https://github.com/OHDSI/OncologyWG/wiki/EPISODE_EVENT) table connects qualifying clinical events (VISIT_OCCURRENCE, DRUG_EXPOSURE, PROCEDURE_OCCURRENCE, DEVICE_EXPOSURE) to the appropriate EPISODE entry. 
+
+Field Name| Required| Datatype| Field Description
+:------------------|:--------------------------|:------------|:--------------------
+episode_id|Yes|bigint|A unique identifier for each Episode event.
+person_id|Yes|bigint| A foreign key identifier to the Person who is experiencing the episode. The demographic details of that Person are stored in the PERSON table.
+episode_concept_id|Yes|integer|A foreign key that refers to a Standard Concept identifier in the Standardized Vocabularies belonging to the 'Episode' domain.
+episode_start_datetime|Yes|datetime|The date and time when the Episode begins.
+episode_end_datetime|No|datetime|The date when the instance of the Episode is considered to have ended.
+episode_parent_id|No|bigint|A foreign key that refers to a parent Episode entry representing an entire episode if the episode spans multiple cycles.
+episode_number|No|integer|An ordinal count for an Episode that spans multiple times.
+episode_object_concept_id|Yes|integer|A foreign key that refers to a concept identifier in the Standardized Vocabularies describing the disease, treatment, or other abstraction that the episode describes.  Episode entries from the 'Disease Episode' concept class should have an episode_object_concept_id that comes from the Condition domain.  Episode entries from the 'Treatment Episode' concept class should have an episode_object_concept_id that comes from the 'Procedure' or 'Regimen' domain.
+episode_type_concept_id|Yes|integer|A foreign key to the predefined Concept identifier in the Standardized Vocabularies reflecting the source data from which the Episode was recorded, the level of standardization, and the type of occurrence. These belong to the 'Episode Type' vocabulary.
+episode_source_value|No|varchar(50)|The source code for the Episdoe as it appears in the source data. This code is mapped to a Standard Condition Concept in the Standardized Vocabularies and the original code is stored here for reference.
+
+### EPISODE_EVENT
+The EPISODE_EVENT table connects qualifying clinical events (VISIT_OCCURRENCE, DRUG_EXPOSURE, PROCEDURE_OCCURRENCE, DEVICE_EXPOSURE) to the appropriate EPISODE entry.  The EPISODE_EVENT table supports the linkage of an EPISODE abstraction to the low-level clinical events that implement the EPISODE abstraction.
+
+Field|Required|Type|Description
+:------------------|:--------|:------------|:----------------------------------
+|episode_id|Yes|bigint|A foreign key identifier to the Episode that the Episode Event belongs to.|
+|event_id|Yes|bigint|A foreign key identifier to the underlying event (condition, procedure, measurement, etc.) record in a respective table for which an episode is recorded.|
+|episode_event_field_concept_id|Yes|int|A foreign key identifier to the standardized concept corresponding to the table primary key column (condition_occurrence.condition_occurrence_id, procedure_occurrence.procedure_occurrence_id, measurment.measurment_id etc.) where the underlying event is stored.|
+
+### CONCEPT_NUMERIC
+**CONCEPT_NUMERIC** is an extension of the OMOP CDM and vocabulary that supports formal representation of concepts containing numeric values or ranges. This proposal has not yet been ratified by a larger CDM Workgroup. However, it plays a critical role in supporting ETL from tumor registries. 
+
+
+**Background**
+* 
+NAACCR vocabulary includes concepts representing numeric values or numeric ranges. Often, these concepts also contain measurement units. For example, “Described as less than 1 centimeter (cm)". In OMOP CDM, these concepts are normally used in Measurement and Observation tables to store value_as_concept_id. Analysis of these data is currently possible only if the user knows exactly which concepts are used to represent range or value, including their respective units. It is not possible to perform analysis on numeric values of these data, nor is it possible to differentiate numeric values by units. For example, it is not impossible to find tumors which size is less than 2 cm by issuing the following simple query:
+```{sql eval=FALSE, echo=TRUE}
+    SELECT * 
+    FROM measurement
+    WHERE measurement_concept_id = 4139794	-- Tumor size
+    AND ( (value_as_number <= 2 and unit_concept_id = 8582) -- Centimeter
+    OR (value_as_number <= 20 and unit_concept_id = 8588)) --Millimeter
+    AND COALESCE(operator_concept_id, 4171754) = 4171754 -- Less than or equal
+```
+One has to know exactly the concepts that cover this range.
+
+#### Proposal 1
+**Add a new table, CONCEPT_NUMERIC**
+
+In this table, numeric values, units and math operators indicating range limits (less than) corresponding to “numeric” concepts will be stored.
+
+
+
+Field| Required| Type| Description
+:------------------|:--------------------------|:------------|:--------------------
+concept_id|Yes| integer| A foreign key that refers to a respective concept in the Standardized Vocabularies.
+value_as_number| Yes| float| A value of the concept expressed as a numeric value.
+unit_concept_id| No| integer| A foreign key to a Standard Concept ID of the concept units in the Standardized Vocabularies that belong to the 'Unit' domain.
+operator_concept_id| yes| float| A foreign key identifier to the predefined Concept in the Standardized Vocabularies reflecting the mathematical operator that is applied to the value_as_number. Operators are <, <=, =, >=, > and these concepts belong to the 'Meas Value Operator' domain.
+
+
+#### Proposal 2. 
+Conventions for representing “numeric” concepts in **CONCEPT_NUMERIC**
+
+Numeric ranges that have lower and upper limits will be represented by two records in this table. Numeric ranges containing only lower or upper limit will be represented by one record.
+
+Below are examples of representing the following “numeric” concepts in CONCEPT_NUMERIC:
+
+concept_id| concept_name| domain_id| vocabulary_id| concept_class_id| standard_concept| concept_code
+:----------|:-----------------|:------------|:-----------|:-----------------|:------------|:-----------
+45883535| Mild| Meas Value| LOINC| Answer| S| LA6752-5
+35920053| Described as "less than 1 centimeter (cm)"| Meas Value| NAACCR| Cancer Identification| S| melanoma_skin@2800@991
+35919956| Described as "less than 2 cm," or "greater than 1 cm," or "between 1 cm and 2 cm"| Meas Value| NAACCR|	Cancer Identification| S| melanoma_mouth_other@2800@992
+
+
+<br>
+
+**CONCEPT_NUMERIC**
+
+concept_id| value_as_number| unit_concept_id| operator_concept_id| Description
+:----------|:---------------|:------------|:-----------|:---------------
+45883535| 1| | | 1 is numeric value of ‘Mild’
+35920053| 1| 8582| 4171756| ‘Less than 1 cm’
+35919956| 1| 8582| 4171755| Lower limit of ‘between 1 cm and 2 cm’
+35919956| 2| 8582| 4171754| Upper limit of ‘between 1 cm and 2 cm’
+
+#### Proposal 3. 
+Population of Measurement and Observation tables with the data represented by “numeric” concepts
+
+When data are represented by “numeric” concepts, we recommend populating value_as_number, unit_id and operator_id (if available) along with value_as_concept_id. These additional values can be easily extracted from Concept_Numeric for the respective concept. Below is an example of Measurement record representing ‘Mild’ (45883535) ‘Pain intensity rating scale’ (4137083):
+
+measurement_id| measurement_concept_id|	value_as_concept_id| value_as_number
+:----------|:---------------|:------------|:-----------
+1111111|4137083|45883535|1
+
+In case, when a numeric concept represents a range with both lower and upper limits (e.g. ‘between 1 and 2 cm’), we recommend creating two records representing respectively lower and upper limit of the range. Values for value_as_number, unit_id and operator_id will be extracted from Concept_Numeric. Below is an example of Measurement record representing ‘Tumor size’ (4139794) ‘Described as "less than 2 cm," or "greater than 1 cm," or "between 1 cm and 2 cm"’ (35919956):
+
+measurement_id| measurement_concept_id|	value_as_concept_id|value_as_number| unit_concept_id| operator_concept_id
+:----------|:---------------|:------------|:-----------|:----------|:---------------
+2222222| 4139794| 35919956| 1| 8582| 4171755
+3333333| 4139794| 35919956| 2| 8582| 4171754
+
+This representation was also suggested in this Forum post: https://forums.ohdsi.org/t/how-to-implement-a-lab-test-range-result-in-measurement-table/5221 
+
+#### Proposal 4. 
+Queries to analyze data represented by “numeric” concepts
+When data represented by “numeric” concepts is stored in the Measurement table as described in the previous section, queries based on numeric values become possible against this data. 
+
+For example:
+
+    SELECT * 
+    FROM measurement
+    WHERE measurement_concept_id = 4139794	-- Tumor size
+    AND ( (value_as_number <= 2 and unit_concept_id = 8582) -- Centimeter
+    OR (value_as_number <= 20 and unit_concept_id = 8588)) --Millimeter
+    AND COALESCE(operator_concept_id, 4171754) = 4171754 -- Less than or equal
+
+This query will identify records containing either regular numeric values (e.g. value_as_number = 0.5) or “numeric” concepts.
+
+<br>
+
+## **Vocabularies**
+- Cancer Modifier (OMOP)
+- ICD-0
+- NAACCR
+- HemOnc
+- CAP
+- Genomic Vocabulary (OMOP)
+- Nebraska Lexicon

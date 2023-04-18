@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title> OMOP Oncology Installation</title>
+
+<script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"><div><img src="images/ohdsi16x16.png"></img> OHDSI Oncology WG </div></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="background.html">
+    <span class="fa fa-info-circle"></span>
+     
+     Background
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-cogs"></span>
+     
+     Approach
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="model.html">
+        <span class="fa fa-sitemap"></span>
+         
+         Model
+      </a>
+    </li>
+    <li>
+      <a href="conventions.html">
+        <span class="fa fa-gavel"></span>
+         
+         Conventions
+      </a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-plug"></span>
+     
+    Implementation
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="installation.html">
+        <span class="fa fa-download"></span>
+         
+         Install
+      </a>
+    </li>
+    <li>
+      <a href="population.html">
+        <span class="fa fa-database"></span>
+         
+         Populate Data
+      </a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="tooling.html">
+    <span class="fa fa-wrench"></span>
+     
+     Tooling
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/OHDSI/OncologyWG">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
+OMOP Oncology Installation</h1>
+
+</div>
+
+
+<p><br></p>
+<p>This page covers how to install the Oncology CDM Extension. The
+Oncology CDM Extension has <strong>not</strong> yet been incorporated
+into an official OMOP CDM release. Consequently, the installation of the
+Oncology CDM Extension requires additional steps beyond installing the
+OMOP CDM. The Oncology CDM Extension currently supports OMOP CDM v5.31
+and the following database platforms: PostgreSQL, SQL Server, Oracle and
+Redshift.</p>
+<hr />
+<div id="installation" class="section level1">
+<h1><strong>Installation</strong></h1>
+<p><br></p>
+<div id="step-1-compile-the-omop-cdm-v5.31-tables"
+class="section level2">
+<h2>Step 1: Compile the OMOP CDM v5.31 Tables</h2>
+<p>Compile the OMOP CDM v5.31 data model tables from the <a
+href="https://github.com/OHDSI/CommonDataModel">OHDSI/CommonDataModel</a>
+Github repository. Find the DDL relevant to your database platform
+(PostgreSQL, SQL Server, Oracle and Redshift). <a
+href="https://github.com/OHDSI/CommonDataModel/releases/tag/v5.3.1">See
+the OMOP CDM v5.31 release here.</a> Do not yet compile indexes and
+constraints. Do not yet load the vocabulary tables. We will do these in
+subsequent steps.</p>
+</div>
+<div id="step-2-compile-the-oncology-cdm-extension-tables"
+class="section level2">
+<h2>Step 2: Compile the Oncology CDM Extension Tables</h2>
+<ul>
+<li>Compile the Oncology CDM Extension data model tables from the <a
+href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
+repository. This is a temporary additional step that will be removed
+once the Oncology CDM Extension has been incorporated into an official
+OMOP CDM release. Find the DDL relevant to your database platform
+(PostgreSQL, Sql Server, Oracle and Redshift). <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/ddl">See DDL
+folder here.</a></li>
+<li>For example, for the PostgreSQL database platform, execute the DDL
+script. <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/OMOP%20CDM%20postgresql%20ddl%20Oncology%20Module.txt">See
+PostgreSQL DDL script here.</a></li>
+</ul>
+</div>
+<div id="step-3-load-the-omop-standardized-vocabulary-tables."
+class="section level2">
+<h2>Step 3: Load the OMOP Standardized Vocabulary Tables.</h2>
+<ul>
+<li>Populate the OMOP CDM vocabulary tables with, at minimum, the most
+recent version of the following vocabularies: SNOMED, ICDO3, HemOnc,
+RxNorm, NAACCR, and Episode Type.</li>
+<li>ATHENA is the recommended approach for navigating and downloading
+OHDSI vocabularies. <a href="http://athena.ohdsi.org/">See ATHENA
+here.</a></li>
+<li>Vocabulary ingestion scripts are organized by database platform in
+the <a
+href="https://github.com/OHDSI/CommonDataModel">OHDSI/CommonDataModel</a>
+Github repository. Refer back to the OMOP CDM v5.31 release you
+downloaded in step 1.</li>
+<li>Execute the vocabulary patch file from the <a
+href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
+repository to support metadata description/reference of the Oncology CDM
+Extension’s new tables and added columns. This is a temporary additional
+step that will be removed once the Oncology CDM Extension has been
+incorporated into an official OMOP CDM release. The patch file currently
+only supports the PostgreSQL database platform. You will need to
+manually translate the vocabulary patch file to other database
+platforms. <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/CDM_patch.sql">See
+patch file here.</a></li>
+<li>Run the vocabulary ingestion script to populate the Oncology CDM
+Extension’s newly added CONCEPT_NUMERIC vocabulary table from the <a
+href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
+repository. This is a temporary additional step that will be removed
+once the Oncology CDM Extension has been incorporated into an official
+OMOP CDM release. The ingestion script depends on a CONCEPT_NUMERIC.CSV
+file. Find the ingestion script (and CSV file) relevant to your database
+platform (PostgreSQL, Sql Server, Oracle and Redshift). <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/ddl">See DDL
+folder here.</a>
+<ul>
+<li>For example, for the PostgreSQL database platform, execute the
+ingestion script. <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/VocabImport/OMOP%20CDM%20vocabulary%20load%20-%20PostgreSQL.sql">See
+PostgreSQL ingestion script here.</a></li>
+</ul></li>
+</ul>
+</div>
+<div id="step-4-etl-the-omop-standardized-clinical-data-tables"
+class="section level2">
+<h2>Step 4: ETL the OMOP Standardized Clinical Data Tables</h2>
+<ul>
+<li>This step will be institution-specific and involves transforming
+your local EHR, claims database and other data sources into the common
+data structures and semantics of the OMOP CDM. The OMOP CDM includes
+(among others) representations for patients (PERSON), providers
+(PROVIDER), healthcare facilities (CARE_SITE and LOCATION), healthcare
+encounters (VISIT_OCCURRENCE), diagnoses (CONDITION_OCCURRENCE),
+medication prescriptions and administrations (DRUG_EXPOSURE), labs
+(MEASUREMENT), medical procedures (PROCEDURE_OCCURRENCE) and clinical
+notes (NOTE). <a
+href="https://www.ohdsi.org/web/wiki/doku.php?id=documentation:etl_best_practices">See
+ETL creation best practices here.</a></li>
+<li>Some implementations will layer the ETL of data into the Oncology
+CDM Extension tables on top of an OMOP CDM instance populated from other
+sources. Other implementations will ETL data into the Oncology CDM
+Extension tables in a satellite OMOP CDM instance and merge the data
+into a main OMOP CDM instance. This will based on local institutional
+practices and strategies.</li>
+</ul>
+</div>
+<div id="step-5-compile-the-indexes-and-constraints."
+class="section level2">
+<h2>Step 5: Compile the indexes and constraints.</h2>
+<ul>
+<li>Compile the OMOP CDM v5.31 indexes and constraints from the <a
+href="https://github.com/OHDxSI/CommonDataModel">OHDSI/CommonDataModel</a>
+Github repository. Find the indexes and constraints DDL relevant to your
+database platform (PostgreSQL, SQL Server, Oracle and Redshift). Refer
+back to the OMOP CDM v5.31 release you downloaded in step 1.</li>
+<li>Compile the Oncology CDM Extension indexes from the <a
+href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
+repository. This is a temporary additional step that will be removed
+once the Oncology CDM Extension has been incorporated into an official
+OMOP CDM release. Find the indexes DDL relevant to your database
+platform (PostgreSQL, Sql Server, Oracle and Redshift). <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/ddl">See DDL
+folder here.</a>
+<ul>
+<li>For example, for the PostgreSQL database platform, execute the
+indexes DDL script. <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/OMOP%20CDM%20postgresql%20pk%20indexes%20Oncology%20Module.txt">See
+PostgreSQL indexes DDL script here.</a></li>
+</ul></li>
+<li>Compile the Oncology CDM Extension constraints from the <a
+href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
+repository. This is a temporary additional step that will be removed
+once the Oncology CDM Extension has been incorporated into an official
+OMOP CDM release. Find the constraints DDL relevant to your database
+platform (PostgreSQL, Sql Server, Oracle and Redshift). <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/ddl">See DDL
+folder here.</a>
+<ul>
+<li>For example, for the PostgreSQL database platform, execute the
+constraints DDL script. <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/OMOP%20CDM%20postgresql%20constraints%20Oncology%20Module.txt">See
+PostgreSQL constraints DDL script here.</a></li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

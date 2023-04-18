@@ -1,0 +1,52 @@
+---
+title: '<div><img src="images/ohdsi40x40.png"></img> Tooling</div>'
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 3
+        toc_float:
+          collapsed: false
+---
+
+<br>
+
+
+# **Applications**
+
+*TODO: Brief overview *
+
+TODO 
+
+
+## **ETL**
+
+### Tumor Registry
+- TODO
+<br>
+
+### EHR Data
+- TODO
+<br>
+
+## **Genomics**
+- TODO
+<br>
+
+### KOIOS
+
+Github: [OHDSI/KOIOS](https://github.com/OHDSI/Koios)
+
+KOIOS is a tool developed by Odysseus Data Services Inc that allows you to find matching and missing concepts in OMOP Genomic Vocabulary for most types of raw patient-level genomic data. The current tool functionality allows to extract relevant variant information from VCF files, or detect HGVS in any TXT/CSV file. In the next step, KOIOS finds corresponding HGVS references in ClinGen for each variant, and maps the results to OMOP Genomic vocabulary. Extracted HGVS references can be used as either synonyms for the existing OMOP Genomic concepts, or as new entities.
+
+
+
+
+
+
+## **Regimen Derivation** 
+- TODO 
+<br>
+
+## **Episode Derivation**
+- TODO
+<br>

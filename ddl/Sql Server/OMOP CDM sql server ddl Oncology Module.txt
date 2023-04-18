@@ -71,4 +71,4 @@ CREATE TABLE measurement
 )
 ;
 -- Measurement ALTER statement.  When you are not starting from scratch.
---ALTER TABLE measurement ADD COLUMN modifier_of_event_id BIGINT NULL, ADD COLUMN modifier_of_field_concept_id INTEGER NULL;
+--ALTER TABLE measurement ADD modifier_of_event_id BIGINT NULL ALTER TABLE MEASUREMENT ADD modifier_of_field_concept_id INTEGER NULL;

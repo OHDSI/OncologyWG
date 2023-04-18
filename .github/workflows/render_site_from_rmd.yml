@@ -1,0 +1,23 @@
+on: 
+  pull_request:
+    types: [opened, edited]
+    paths:
+      - 'rmd/**'
+
+name: render R Markdown files to docs
+
+jobs:
+  render:
+    name: render all R Markdown documents 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-pandoc@v2
+      - uses: r-lib/actions/setup-tinytex@v2
+      - name: Install known depedencies  
+        run: |
+          Rscript -e "install.packages('rmarkdown')"
+      - name: render all R Markdown documents 
+        run: |
+          Rscript -e "rmarkdown::render_site('rmd/')"

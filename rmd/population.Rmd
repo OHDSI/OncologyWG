@@ -1,0 +1,39 @@
+---
+title: '<div><img src="images/ohdsi40x40.png"></img> Populating Oncology Data</div>'
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 3
+        toc_float:
+          collapsed: false
+---
+
+<br>
+
+There are multiple strategies for populating the Oncology data within OMOP:
+
+
+<br>
+
+---
+
+# **Data Population**
+
+<br>
+
+## Directly from Tumor Registries: 
+
+Tumor registries natively capture many of the abstractions and detailed modifiers that the Oncology CDM Extension strives to instantiate. A standard ETL has been written capable of ETLing NAACCR-formatted tumor registry data. See the documentation of the NAACCR ETL here
+
+TODO -- ABOVE WILL ME OVERWRITTEN 
+
+<br>
+
+## Directly from non-registry sources: 
+
+TODO -- Explanation of mapping to standard concepts and conventions to be elaborated on below. Perhaps with links in the conventions section
+
+<br>
+
+## Indirectly via Algorithmic Derivation on top of the OMOP CDM:
+TODO

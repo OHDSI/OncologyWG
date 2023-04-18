@@ -1,0 +1,44 @@
+---
+title: '<div><img src="images/ohdsi40x40.png"></img> OMOP Oncology Installation</div>'
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 3
+        toc_float:
+          collapsed: false
+---
+<br>
+
+This page covers how to install the Oncology CDM Extension.  The Oncology CDM Extension has **not** yet been incorporated into an official OMOP CDM release.  Consequently, the installation of the Oncology CDM Extension requires additional steps beyond installing the OMOP CDM.  The Oncology CDM Extension currently supports OMOP CDM v5.31 and the following database platforms: PostgreSQL, SQL Server, Oracle and Redshift.
+
+---
+
+# **Installation**
+
+<br>
+
+## Step 1: Compile the OMOP CDM v5.31 Tables  
+Compile the OMOP CDM v5.31 data model tables from the [OHDSI/CommonDataModel](https://github.com/OHDSI/CommonDataModel) Github repository.  Find the DDL relevant to your database platform (PostgreSQL, SQL Server, Oracle and Redshift).  [See the OMOP CDM v5.31 release here.](https://github.com/OHDSI/CommonDataModel/releases/tag/v5.3.1)  Do not yet compile indexes and constraints.  Do not yet load the vocabulary tables.  We will do these in subsequent steps.
+
+## Step 2: Compile the Oncology CDM Extension Tables  
+* Compile the Oncology CDM Extension data model tables from the [OncologyWG](https://github.com/OHDSI/OncologyWG) Github repository.  This is a temporary additional step that will be removed once the Oncology CDM Extension has been incorporated into an official OMOP CDM release.  Find the DDL relevant to your database platform (PostgreSQL, Sql Server, Oracle and Redshift).  [See DDL folder here.](https://github.com/OHDSI/OncologyWG/tree/master/ddl)
+* For example, for the PostgreSQL database platform, execute the DDL script. [See PostgreSQL DDL script here.](https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/OMOP%20CDM%20postgresql%20ddl%20Oncology%20Module.txt)
+
+## Step 3: Load the OMOP Standardized Vocabulary Tables.
+* Populate the OMOP CDM vocabulary tables with, at minimum, the most recent version of the following vocabularies: SNOMED, ICDO3, HemOnc, RxNorm, NAACCR, and Episode Type.
+* ATHENA is the recommended approach for navigating and downloading OHDSI vocabularies. [See ATHENA here.](http://athena.ohdsi.org/) 
+* Vocabulary ingestion scripts are organized by database platform in the [OHDSI/CommonDataModel](https://github.com/OHDSI/CommonDataModel) Github repository.  Refer back to the OMOP CDM v5.31 release you downloaded in step 1.
+* Execute the vocabulary patch file from the [OncologyWG](https://github.com/OHDSI/OncologyWG) Github repository to support metadata description/reference of the Oncology CDM Extension's new tables and added columns.  This is a temporary additional step that will be removed once the Oncology CDM Extension has been incorporated into an official OMOP CDM release.  The patch file currently only supports the PostgreSQL database platform.  You will need to manually translate the vocabulary patch file to other database platforms.  [See patch file here.](https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/CDM_patch.sql)
+* Run the vocabulary ingestion script to populate the Oncology CDM Extension's newly added CONCEPT_NUMERIC vocabulary table from the [OncologyWG](https://github.com/OHDSI/OncologyWG) Github repository.  This is a temporary additional step that will be removed once the Oncology CDM Extension has been incorporated into an official OMOP CDM release.  The ingestion script depends on a CONCEPT_NUMERIC.CSV file.   Find the ingestion script (and CSV file) relevant to your database platform (PostgreSQL, Sql Server, Oracle and Redshift).  [See DDL folder here.](https://github.com/OHDSI/OncologyWG/tree/master/ddl)
+  * For example, for the PostgreSQL database platform, execute the ingestion script. [See PostgreSQL ingestion script here.](https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/VocabImport/OMOP%20CDM%20vocabulary%20load%20-%20PostgreSQL.sql)
+ 
+## Step 4: ETL the OMOP Standardized Clinical Data Tables
+* This step will be institution-specific and involves transforming your local EHR, claims database and other data sources into the common data structures and semantics of the OMOP CDM.  The OMOP CDM includes (among others) representations for patients (PERSON), providers (PROVIDER), healthcare facilities (CARE_SITE and LOCATION), healthcare encounters (VISIT_OCCURRENCE), diagnoses (CONDITION_OCCURRENCE), medication prescriptions and administrations (DRUG_EXPOSURE), labs (MEASUREMENT), medical procedures (PROCEDURE_OCCURRENCE) and clinical notes (NOTE). [See ETL creation best practices here.](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:etl_best_practices)
+* Some implementations will layer the ETL of data into the Oncology CDM Extension tables on top of an OMOP CDM instance populated from other sources.  Other implementations will ETL data into the Oncology CDM Extension tables in a satellite OMOP CDM instance and merge the data into a main OMOP CDM instance.  This will based on local institutional practices and strategies.
+
+## Step 5: Compile the indexes and constraints.
+* Compile the OMOP CDM v5.31 indexes and constraints from the [OHDSI/CommonDataModel](https://github.com/OHDxSI/CommonDataModel) Github repository.  Find the indexes and constraints DDL relevant to your database platform (PostgreSQL, SQL Server, Oracle and Redshift).  Refer back to the OMOP CDM v5.31 release you downloaded in step 1.
+* Compile the Oncology CDM Extension indexes from the [OncologyWG](https://github.com/OHDSI/OncologyWG) Github repository.  This is a temporary additional step that will be removed once the Oncology CDM Extension has been incorporated into an official OMOP CDM release.  Find the indexes DDL relevant to your database platform (PostgreSQL, Sql Server, Oracle and Redshift).  [See DDL folder here.](https://github.com/OHDSI/OncologyWG/tree/master/ddl)
+  * For example, for the PostgreSQL database platform, execute the indexes DDL script. [See PostgreSQL indexes DDL script here.](https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/OMOP%20CDM%20postgresql%20pk%20indexes%20Oncology%20Module.txt)
+* Compile the Oncology CDM Extension constraints from the [OncologyWG](https://github.com/OHDSI/OncologyWG) Github repository.  This is a temporary additional step that will be removed once the Oncology CDM Extension has been incorporated into an official OMOP CDM release.  Find the constraints DDL relevant to your database platform (PostgreSQL, Sql Server, Oracle and Redshift).  [See DDL folder here.](https://github.com/OHDSI/OncologyWG/tree/master/ddl)
+  * For example, for the PostgreSQL database platform, execute the constraints DDL script. [See PostgreSQL constraints DDL script here.](https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/OMOP%20CDM%20postgresql%20constraints%20Oncology%20Module.txt)

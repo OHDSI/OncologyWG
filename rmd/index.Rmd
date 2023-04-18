@@ -1,0 +1,77 @@
+---
+title: '<div><img src="images/ohdsi40x40.png"></img> OHDSI Oncology WG </div>'
+output:
+   html_document:
+        toc: TRUE
+        toc_depth: 3
+        toc_float:
+          collapsed: false
+---
+
+## **Mission**
+
+The OHDSI Oncology Working Group aims to provide a foundation for representing cancer data within the OMOP CDM at the levels of granularity and abstraction required to support observational cancer research.
+
+---
+
+## **Get Involved**
+
+We communicate and coordinate through the OHDSI MS Teams environment and Github. 
+
+**MS Teams**
+
+To join the MS Teams environment you need to complete two steps:
+
+| # | task | link | 
+|:-|:-|:-|
+| 1 | Sign up for an OHDSI Teams Account | [link](https://forms.office.com/Pages/ResponsePage.aspx?id=lAAPoyCRq0q6TOVQkCOy1ZyG6Ud_r2tKuS0HcGnqiQZUQ05MOU9BSzEwOThZVjNQVVFGTDNZRENONiQlQCN0PWcu)|
+| 2 | Register for the workgroup by filling out the specified form selecting the tickbox for "Oncology" - which will automatically add you to our channel | [link](https://forms.office.com/Pages/ResponsePage.aspx?id=lAAPoyCRq0q6TOVQkCOy1ZyG6Ud_r2tKuS0HcGnqiQZUOVJFUzBFWE1aSVlLN0ozR01MUVQ4T0RGNyQlQCN0PWcu)|
+
+Once you've joined the Oncology WG teams, there is a channel "Introductions" where we encourage new members to say hi and let us know how we can best collaborate together. 
+
+**Github**
+
+We use Github in a variety of ways including project planning and topic specific discussions. 
+
+The root link to our Github page is: https://github.com/OHDSI/OncologyWG
+
+And the Github 'Project' where we manage our work can be found here: https://github.com/orgs/OHDSI/projects/13
+
+
+
+
+<br> 
+
+##   **Subgroups & Meeting Schedule**
+
+subgroup|schedule|meeting details|Team Lead
+:------------------|:--------------------------|:------------|:--------------
+|CDM/Vocabulary & Development|Second and Forth Thu 1PM EST|[link](https://teams.microsoft.com/l/meetup-join/19%3a239caede18574bc183f75a7a5eb9e826%40thread.tacv2/1608665830064?context=%7b%22Tid%22%3a%22a30f0094-9120-4aab-ba4c-e5509023b2d5%22%2c%22Oid%22%3a%22e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%22%7d)|Thomas Falconer, Michael Gurley, & Robert Miller
+|Outreach/Research|Second and Forth Tue 3PM EST |[link](https://nam04.safelinks.protection.outlook.com/ap/t-59584e83/?url=https%3A%2F%2Fteams.microsoft.com%2Fl%2Fmeetup-join%2F19%253a3d57479b0f804e26bcef0aa5b1465c12%2540thread.tacv2%2F1608669595080%3Fcontext%3D%257b%2522Tid%2522%253a%2522a30f0094-9120-4aab-ba4c-e5509023b2d5%2522%252c%2522Oid%2522%253a%2522e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%2522%257d&data=04%7C01%7Csratwani%40us.imshealth.com%7C30c5cbd8817c4cad042808d9193c1d32%7C5989ece0f90e40bf9c791a7beccdb861%7C0%7C0%7C637568569301832802%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0&sdata=AFANjWGwRVGHYHWKqJLMFZHvQ42t8TkPGERrmWyNjnc%3D&reserved=0)|Asieh Golozar & Christian Reich
+|Genomic|Second and Forth Tue 9AM EST|[link](https://teams.microsoft.com/l/meetup-join/19%3aa38d75bbaf8b4093b78f4ff4b0201f11%40thread.tacv2/1608669187453?context=%7b%22Tid%22%3a%22a30f0094-9120-4aab-ba4c-e5509023b2d5%22%2c%22Oid%22%3a%22e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%22%7d)|Asieh Golozar
+
+
+<br>
+
+## **Roadmap**
+
+Our goal is to create an interoperable, extensible standard that covers all aspects of oncology data. To view our current and near term goals see our [OHDSI Github - Oncology Release 2.0 Project](https://github.com/orgs/OHDSI/projects/13)
+
+
+<br>
+
+
+
+## **Publications/Presentation**
+
+- [2020 OHDSI Symposium - Oncology Tutorial](https://github.com/OHDSI/OncologyWG/wiki/Oncology-Tutorial)
+
+- [2020 OHDSI Symposium - Genomic Variant Harmonization Poster Presentation](https://github.com/OHDSI/OncologyWG/wiki/Genomic-Variant-Harmonization)
+
+- [Bladder Cancer Study](https://github.com/OHDSI/OncologyWG/wiki/Bladder-Cancer-Study)
+
+- [JCO Clinical Cancer Informatics](https://ascopubs.org/doi/10.1200/CCI.20.00079)
+
+<br>
+
+
