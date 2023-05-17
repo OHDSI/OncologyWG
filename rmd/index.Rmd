@@ -20,14 +20,14 @@ Oncology support in OMOP is a work in progress. We welcome your participation!
 
 This site contains the following sections:
 
-Section | Content
-:-------------------------------------------|:------------------
-[Background](background.html) | Describes the features of oncology clinical data that exceed the capabilities of the existing OMOP CDM and conventions, including detailed diagnosis, complex treatments, and cancer-epecific outcomes.
-[Approach->Model](model.html) | Describes the conceptual representation of cancer diagnosis and treatment and the new OMOP vocabularies created to realize the concepts. This includes the EPISODE entity that was adopted by the OMOP CDM at the behest of the Oncology WG and is used to represent distinct cancer diagnoses and phases for the same patient as well as lines of therapy as high-level objects.
-[Approach->Conventions](conventions.html)  | Describes how to map various components of cancer data to the OMOP CDM and vocabularies, using the oncology extension vocabularies. Includes ETL snippets at a conceptual level (specific ETL will vary by data source).
-[Implementation->Install](installation.html) | Lists the steps required to overlay the oncology extensions on the standard OMOP CDM.
-[Implementaiton->Populate Data](population.html) | Describes how to cancer-=specific data from sources not heretofore typically loaded in OMOP, including cancer registries.
-[Tooling](tooling.html) | Lists software tools developed to support oncology-specific ETL and entity derivation, such as derivation of treatment episodes from medication exposure events.
+Section | Content 
+:-------------------------|:----------------------------------------------
+| [Background](background.html) | Describes the features of oncology clinical data that exceed the capabilities of the existing OMOP CDM and conventions, including detailed diagnosis, complex treatments, and cancer-epecific outcomes. |
+| [Approach-> Model](model.html) | Describes the conceptual representation of cancer diagnosis and treatment and the new OMOP vocabularies created to realize the concepts. This includes the EPISODE entity that was adopted by the OMOP CDM at the behest of the Oncology WG and is used to represent distinct cancer diagnoses and phases for the same patient as well as lines of therapy as high-level objects.|
+| [Approach-> Conventions](conventions.html)  | Describes how to map various components of cancer data to the OMOP CDM and vocabularies, using the oncology extension vocabularies. Includes ETL snippets at a conceptual level (specific ETL will vary by data source).
+| [Implementation-> Install](installation.html) | Lists the steps required to overlay the oncology extensions on the standard OMOP CDM.|
+| [Implementaiton-> Populate Data](population.html) | Describes how to cancer-=specific data from sources not heretofore typically loaded in OMOP, including cancer registries.
+| [Tooling](tooling.html) | Lists software tools developed to support oncology-specific ETL and entity derivation, such as derivation of treatment episodes from medication exposure events. |
 
 ---
 
