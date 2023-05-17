@@ -427,12 +427,75 @@ OHDSI Oncology WG</h1>
 representing cancer data within the OMOP CDM at the levels of
 granularity and abstraction required to support observational cancer
 research.</p>
+<p>Oncology support in OMOP is a work in progress. We welcome your
+participation!</p>
+<hr />
+</div>
+<div id="site-map" class="section level2">
+<h2>Site Map</h2>
+<p>This site contains the following sections:</p>
+<table>
+<colgroup>
+<col width="69%" />
+<col width="30%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Section</th>
+<th align="left">Content</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><a href="background.html">Background</a></td>
+<td align="left">Describes the features of oncology clinical data that
+exceed the capabilities of the existing OMOP CDM and conventions,
+including detailed diagnosis, complex treatments, and cancer-epecific
+outcomes.</td>
+</tr>
+<tr class="even">
+<td align="left"><a href="model.html">Approach-&gt;Model</a></td>
+<td align="left">Describes the conceptual representation of cancer
+diagnosis and treatment and the new OMOP vocabularies created to realize
+the concepts. This includes the EPISODE entity that was adopted by the
+OMOP CDM at the behest of the Oncology WG and is used to represent
+distinct cancer diagnoses and phases for the same patient as well as
+lines of therapy as high-level objects.</td>
+</tr>
+<tr class="odd">
+<td align="left"><a
+href="conventions.html">Approach-&gt;Conventions</a></td>
+<td align="left">Describes how to map various components of cancer data
+to the OMOP CDM and vocabularies, using the oncology extension
+vocabularies. Includes ETL snippets at a conceptual level (specific ETL
+will vary by data source).</td>
+</tr>
+<tr class="even">
+<td align="left"><a
+href="installation.html">Implementation-&gt;Install</a></td>
+<td align="left">Lists the steps required to overlay the oncology
+extensions on the standard OMOP CDM.</td>
+</tr>
+<tr class="odd">
+<td align="left"><a href="population.html">Implementaiton-&gt;Populate
+Data</a></td>
+<td align="left">Describes how to cancer-=specific data from sources not
+heretofore typically loaded in OMOP, including cancer registries.</td>
+</tr>
+<tr class="even">
+<td align="left"><a href="tooling.html">Tooling</a></td>
+<td align="left">Lists software tools developed to support
+oncology-specific ETL and entity derivation, such as derivation of
+treatment episodes from medication exposure events.</td>
+</tr>
+</tbody>
+</table>
 <hr />
 </div>
 <div id="get-involved" class="section level2">
 <h2><strong>Get Involved</strong></h2>
-<p>We communicate and coordinate through the OHDSI MS Teams environment
-and Github.</p>
+<p>We communicate and coordinate through the OHDSI Microsoft Teams
+environment and Github.</p>
 <p><strong>MS Teams</strong></p>
 <p>To join the MS Teams environment you need to complete two steps:</p>
 <table>
@@ -465,9 +528,9 @@ href="https://forms.office.com/Pages/ResponsePage.aspx?id=lAAPoyCRq0q6TOVQkCOy1Z
 </tr>
 </tbody>
 </table>
-<p>Once you’ve joined the Oncology WG teams, there is a channel
-“Introductions” where we encourage new members to say hi and let us know
-how we can best collaborate together.</p>
+<p>Once you’ve joined the Oncology WG teams, there is a “Workgroup -
+Oncology -&gt; General” channel where we encourage new members to say hi
+and let us know how we can best collaborate together.</p>
 <p><strong>Github</strong></p>
 <p>We use Github in a variety of ways including project planning and
 topic specific discussions.</p>
@@ -499,7 +562,7 @@ class="uri">https://github.com/orgs/OHDSI/projects/13</a></p>
 <tbody>
 <tr class="odd">
 <td align="left">CDM/Vocabulary &amp; Development</td>
-<td align="left">Second and Forth Thu 1PM EST</td>
+<td align="left">First Thu 1PM EST<br>Third Thu 9AM EST</td>
 <td align="left"><a
 href="https://teams.microsoft.com/l/meetup-join/19%3a239caede18574bc183f75a7a5eb9e826%40thread.tacv2/1608665830064?context=%7b%22Tid%22%3a%22a30f0094-9120-4aab-ba4c-e5509023b2d5%22%2c%22Oid%22%3a%22e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%22%7d">link</a></td>
 <td align="left">Thomas Falconer, Michael Gurley, &amp; Robert
@@ -507,14 +570,14 @@ Miller</td>
 </tr>
 <tr class="even">
 <td align="left">Outreach/Research</td>
-<td align="left">Second and Forth Tue 3PM EST</td>
+<td align="left">Second Tue 3PM EST<br>Fourth Wed 9AM EST</td>
 <td align="left"><a
 href="https://nam04.safelinks.protection.outlook.com/ap/t-59584e83/?url=https%3A%2F%2Fteams.microsoft.com%2Fl%2Fmeetup-join%2F19%253a3d57479b0f804e26bcef0aa5b1465c12%2540thread.tacv2%2F1608669595080%3Fcontext%3D%257b%2522Tid%2522%253a%2522a30f0094-9120-4aab-ba4c-e5509023b2d5%2522%252c%2522Oid%2522%253a%2522e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%2522%257d&amp;data=04%7C01%7Csratwani%40us.imshealth.com%7C30c5cbd8817c4cad042808d9193c1d32%7C5989ece0f90e40bf9c791a7beccdb861%7C0%7C0%7C637568569301832802%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0&amp;sdata=AFANjWGwRVGHYHWKqJLMFZHvQ42t8TkPGERrmWyNjnc%3D&amp;reserved=0">link</a></td>
 <td align="left">Asieh Golozar &amp; Christian Reich</td>
 </tr>
 <tr class="odd">
 <td align="left">Genomic</td>
-<td align="left">Second and Forth Tue 9AM EST</td>
+<td align="left">Second and Fourth Tue 9AM EST</td>
 <td align="left"><a
 href="https://teams.microsoft.com/l/meetup-join/19%3aa38d75bbaf8b4093b78f4ff4b0201f11%40thread.tacv2/1608669187453?context=%7b%22Tid%22%3a%22a30f0094-9120-4aab-ba4c-e5509023b2d5%22%2c%22Oid%22%3a%22e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%22%7d">link</a></td>
 <td align="left">Asieh Golozar</td>
@@ -525,10 +588,11 @@ href="https://teams.microsoft.com/l/meetup-join/19%3aa38d75bbaf8b4093b78f4ff4b02
 </div>
 <div id="roadmap" class="section level2">
 <h2><strong>Roadmap</strong></h2>
-<p>Our goal is to create an interoperable, extensible standard that
-covers all aspects of oncology data. To view our current and near term
-goals see our <a href="https://github.com/orgs/OHDSI/projects/13">OHDSI
-Github - Oncology Release 2.0 Project</a></p>
+<p>Our goal is to create an interoperable OMOP extension that enables
+application of all OMOP analysis tools to rich oncology data.</p>
+<p>To view our current and near term goals see our <a
+href="https://github.com/orgs/OHDSI/projects/13">OHDSI Github - Oncology
+Release 2.0 Project</a></p>
 <p><br></p>
 </div>
 <div id="publicationspresentation" class="section level2">
