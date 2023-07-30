@@ -130,7 +130,7 @@ To find the correct standard concept, you need to join to the concept code, as s
 ### <img src="images/stop.png"></img> Stage Group 
 
 - TODO 
-
+(placeholder)
 ---
 
 ### <img src="images/stop.png"></img> Stage Group Grading
