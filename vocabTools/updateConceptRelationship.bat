@@ -16,7 +16,7 @@ for %%F in (.\concept_relationship\*.csv) do (
 	
 	REM TODO: Still not sure how to handle dropping concept_relationship records
 	REM Delete records from dev.concept based on concept IDs marked 'D' from the temporary table 
-    psql -U postgres -d vocab -h localhost -p 5432 -f updateConceptRelationship.sql
+    psql -U postgres -d vocab -h localhost -p 5432 -f ./sql/updateConceptRelationship.sql
 	
 	echo !filename! copied to dev.concept_relationship
 	
