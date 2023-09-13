@@ -10,5 +10,3 @@ WHERE EXISTS (
 );
 
 INSERT INTO dev.concept_relationship SELECT * FROM dev.temp_concept_relationship_data;
-
-DROP TABLE dev.temp_concept_relationship_data;

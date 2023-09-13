@@ -2,11 +2,11 @@
 SETLOCAL ENABLEDELAYEDEXPANSION
 SET PGPASSWORD=postgres
 
-REM Create a temporary table and copy the entire CSV into it
+REM Create a temporary table
 psql -U postgres -d vocab -h localhost -p 5432 -c ^
 "CREATE TABLE dev.temp_concept_data (concept_id integer NOT NULL, concept_name varchar(255) NOT NULL, domain_id varchar(20) NOT NULL, vocabulary_id varchar(20) NOT NULL, concept_class_id varchar(20) NOT NULL, standard_concept varchar(1) NULL, concept_code varchar(50) NOT NULL, valid_start_date date NOT NULL, valid_end_date date NOT NULL, invalid_reason varchar(1) NULL);"
 	
-for %%F in (.\concept\*.csv) do (
+for %%F in (.\vocabTools\concept\*.csv) do (
 	
 	set "filename=%%~nF"
 	
@@ -28,7 +28,7 @@ for /f "tokens=1" %%i in (duplicate_concept_ids.txt) do (
 REM Clean up the temporary file
 del duplicate_concept_ids.txt
 
-if not "!DUPLICATE_IDS!"=="" (
+if not "!DUPLICATE_IDS!" == "" (
     echo Error: Duplicate concept_id values found in temp_concept_data: !DUPLICATE_IDS!
 
 	REM Drop the temporary table
@@ -42,7 +42,7 @@ if not "!DUPLICATE_IDS!"=="" (
 )
 
 REM Drop constraints, update table, add constraints
-psql -U postgres -d vocab -h localhost -p 5432 -f ./sql/updateConcept.sql
+psql -U postgres -d vocab -h localhost -p 5432 -f ./vocabTools/sql/updateConcept.sql
 
 REM Drop the temporary table
 psql -U postgres -d vocab -h localhost -p 5432 -c ^
