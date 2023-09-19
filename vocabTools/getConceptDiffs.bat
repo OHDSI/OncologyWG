@@ -1,9 +1,28 @@
 @echo off
-SET PGPASSWORD=postgres
+SETLOCAL ENABLEDELAYEDEXPANSION
+
+REM Specify the path to the configuration file
+set "CONFIG_FILE=%~dp0config.txt"
+
+REM Check if the configuration file exists
+if not exist !CONFIG_FILE! (
+    echo Configuration file "!CONFIG_FILE!" not found. Please create a file in the same directory as the bat file called config.txt with variables:
+	echo PGPASSWORD
+	echo DB_USER
+	echo DB_NAME
+	echo DB_HOST
+	echo DB_PORT
+	pause
+	exit
+) else (
+    REM Read the configuration file and set the variables
+    for /f "usebackq tokens=1,* delims==" %%a in (!CONFIG_FILE!) do (
+        set "%%a=%%b"
+    )
+)
 
 echo "Checking differences between dev and prod concept tables..."
 
-psql -U postgres -d vocab -h localhost -p 5432 -c ^
-"SELECT * FROM dev.concept EXCEPT SELECT * FROM prod.concept;"
+psql -U !DB_USER! -d !DB_NAME! -h !DB_HOST! -p !DB_PORT! -c "SELECT * FROM dev.concept EXCEPT SELECT * FROM prod.concept;"
 
 pause
