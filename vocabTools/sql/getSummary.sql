@@ -227,5 +227,5 @@ select 'concept' as table_name, * from dev.get_summary ('concept','prod')
 union ALL
 select 'concept_relationship' as table_name, * from dev.get_summary ('concept_relationship','prod')
 union ALL
-select 'concept_ancestor' as table_name, * from dev.get_summary ('concept_ancestor','prod')
+select 'concept_ancestor' as table_name, * from dev.get_summary ('concept_ancestor','prod');
 
