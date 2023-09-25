@@ -29,7 +29,7 @@ To enable the scripts in vocabTools, enter your database connection details into
 
 Create two folders in the vocabTools folder: concept and concept_relationship.
 
-Move the deltaConcept and deltaConceptRelationship files to the new concept and concept_relationship folders, respectively.
+Move the deltaConcept.csv and deltaConceptRelationship.csv files to the new concept and concept_relationship folders, respectively.
 
 Run **updateConcept.bat** to implement the changes from deltaConcept to the dev schema in your database.
 

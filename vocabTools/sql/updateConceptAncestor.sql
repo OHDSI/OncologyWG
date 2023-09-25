@@ -1,10 +1,5 @@
 set search_path to dev;
 
-do $$
-begin 
-	raise notice 'Creating base table...';
-end; $$
-
 CREATE TABLE temporary_ca_base$ AS
 	SELECT r.concept_id_1 AS ancestor_concept_id,
 		r.concept_id_2 AS descendant_concept_id,
@@ -27,11 +22,6 @@ CREATE INDEX idx_temp_ca_base$ ON temporary_ca_base$ (ancestor_concept_id,descen
 ANALYZE temporary_ca_base$;
 
 --create a 'groups' table. we want to split a whole bunch of data into N separate chunks, this will give a good perfomance boost due to less temporary tablespace usage
-do $$
-begin
-	raise notice 'Creating groups table...';
-end; $$
-
 CREATE TABLE temporary_ca_groups$ AS
 SELECT s1.n,
 	COALESCE(LAG(s1.ancestor_concept_id) OVER (
@@ -59,7 +49,6 @@ do $$
 declare cRecord RECORD;
 
 begin
-	raise notice 'Creating temp Concept Ancestor...';
 	
 	FOR cRecord IN (SELECT * FROM temporary_ca_groups$ ORDER BY n) LOOP
 		INSERT INTO temporary_ca$
@@ -97,23 +86,12 @@ begin
 end; $$
 
 
---remove non-standard records in descendant_concept_id
-do $$
-begin
-	raise notice 'Removing non-standard records from temp table...';
-end; $$
-
-DELETE
-FROM temporary_ca$ ca USING concept c
-WHERE c.standard_concept IS NULL
-	AND c.concept_id = ca.descendant_concept_id;
+-- --remove non-standard records in descendant_concept_id
+-- DELETE FROM temporary_ca$ ca USING concept c
+-- WHERE c.standard_concept IS NULL
+-- 	AND c.concept_id = ca.descendant_concept_id;
 
 --Add connections to self for those vocabs having at least one concept in the concept_relationship table
-do $$
-begin
-	raise notice 'Adding connections to self...';
-end; $$
-
 INSERT INTO temporary_ca$
 SELECT c.concept_id AS ancestor_concept_id,
 	c.concept_id AS descendant_concept_id,
@@ -133,11 +111,6 @@ WHERE c.vocabulary_id IN (
 CREATE INDEX idx_tmp_ca$ ON temporary_ca$ (ancestor_concept_id, descendant_concept_id, min_levels_of_separation, max_levels_of_separation) WITH (FILLFACTOR=100);
 ANALYZE temporary_ca$;
 
-do $$
-begin
-	raise notice 'Adding new records to concept_ancestor...';
-end; $$
-
 INSERT INTO dev.concept_ancestor (ancestor_concept_id, descendant_concept_id, min_levels_of_separation, max_levels_of_separation)
 SELECT tca.ancestor_concept_id, tca.descendant_concept_id, tca.min_levels_of_separation, tca.max_levels_of_separation
 FROM temporary_ca$ tca
@@ -149,12 +122,6 @@ WHERE NOT EXISTS (
 );
 
 -- Remove non-standard concepts from both concept columns
-
-do $$
-begin
-	raise notice 'Removing non-standard concepts from Concept Ancestor...';
-end; $$
-
 DELETE FROM concept_ancestor ca
 WHERE ancestor_concept_id IN (
     select concept_id

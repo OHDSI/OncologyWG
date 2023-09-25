@@ -1,10 +1,10 @@
 @echo off
 SETLOCAL ENABLEDELAYEDEXPANSION
 
-REM Specify the path to the configuration file
+:: Specify the path to the configuration file
 set "CONFIG_FILE=%~dp0config.txt"
 
-REM Check if the configuration file exists
+:: Check if the configuration file exists
 if not exist !CONFIG_FILE! (
     echo Configuration file "!CONFIG_FILE!" not found. Please create a file in the same directory as the bat file called config.txt with variables:
 	echo PGPASSWORD
@@ -15,7 +15,7 @@ if not exist !CONFIG_FILE! (
 	pause
 	exit
 ) else (
-    REM Read the configuration file and set the variables
+    :: Read the configuration file and set the variables
     for /f "usebackq tokens=1,* delims==" %%a in (!CONFIG_FILE!) do (
         set "%%a=%%b"
     )

@@ -110,6 +110,3 @@ select public.update_vocabulary();
 
 SET search_path TO dev;
 select public.update_vocabulary();
-
-SET search_path TO gisdev;
-select public.update_vocabulary();
