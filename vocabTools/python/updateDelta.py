@@ -11,8 +11,8 @@ except ImportError:
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Define the file paths for your CSV files relative to the script's location
-delta_concept_path = os.path.join(script_dir, "../output/deltaConcept.csv")
-delta_concept_relationship_path = os.path.join(script_dir, "../output/deltaConceptRelationship.csv")
+delta_concept_path = os.path.join(script_dir, "../../deltaVocab/deltaConcept.csv")
+delta_concept_relationship_path = os.path.join(script_dir, "../../deltaVocab/deltaConceptRelationship.csv")
 
 concept_dir = os.path.join(script_dir, "../concept") 
 concept_relationship_dir = os.path.join(script_dir, "../concept_relationship") 
@@ -55,8 +55,8 @@ merged_concept_relationship.drop_duplicates(inplace=True)
 # These would be specific to the data being merged (e.g. contradicting relationships, etc.)
 
 # Save the final merged data to a CSV file
-merged_concept_path = os.path.join(script_dir, "../output/deltaConcept.csv")
-merged_concept_relationship_path = os.path.join(script_dir, "../output/deltaConceptRelationship.csv")
+merged_concept_path = os.path.join(script_dir, "../../deltaVocab/deltaConcept.csv")
+merged_concept_relationship_path = os.path.join(script_dir, "../../deltaVocab/deltaConceptRelationship.csv")
 
 merged_concept.to_csv(merged_concept_path, index=False)
 merged_concept_relationship.to_csv(merged_concept_relationship_path, index=False)
