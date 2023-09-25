@@ -13,7 +13,7 @@
 
 <title>Oncology Conventions</title>
 
-<script src="site_libs/header-attrs-2.21/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -29,14 +29,14 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 
 <style type="text/css">
@@ -430,7 +430,7 @@ conventions</em></p>
 <h1><strong>Diagnostic</strong></h1>
 <p><br></p>
 <div id="primary-diagnosis" class="section level2">
-<h2><img src="images/green-check.png"></img> Primary Diagnosis</h2>
+<h2>Primary Diagnosis</h2>
 <p>(Placeholder)</p>
 <p>Cancer diagnoses are recorded within the CONDITION table, ideally
 with ICDO3 concepts. Specific attributes or details about that condition
@@ -471,10 +471,11 @@ would contain:</p>
 <p><br></p>
 <hr />
 </div>
-<div id="date-of-initial-diagnosis" class="section level3">
-<h3><img src="images/green-check.png"></img> Date of Initial
-Diagnosis</h3>
-<p>(Placeholder)</p>
+<div id="date-of-initial-diagnosis"
+class="section level3 tabset tabset-fade">
+<h3 class="tabset tabset-fade">Date of Initial Diagnosis</h3>
+<div id="description" class="section level4">
+<h4>Description</h4>
 <p>The date of initial diagnosis can be represented in the OMOP CDM by
 mapping to the correct concept in the Cancer Modifier vocabulary and
 represented as a MEASUREMENT, or rather, a cancer modifier. This can be
@@ -524,6 +525,9 @@ the modifier is not used.</p>
 </tr>
 </tbody>
 </table>
+</div>
+<div id="mapping" class="section level4">
+<h4>Mapping</h4>
 <p>Adding this condition modifier would look something like:</p>
 <pre class="sql"><code>  INSERT INTO MEASUREMENT
   SELECT
@@ -531,11 +535,27 @@ the modifier is not used.</p>
   734306 as measurement_concept_id -- &quot;Initial Diagnosis&quot; ****** 
   1147127 as modifier_of_field_concept_id -- static for all condition modifiers
   temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to </code></pre>
-<p><br></p>
 <hr />
 </div>
-<div id="tnm" class="section level3">
-<h3><img src="images/green-check.png"></img> TNM</h3>
+<div id="usage" class="section level4">
+<h4>Usage</h4>
+<p>Finding conditions which have the “initial diagnosis date” flag
+(modifier) can be done by:</p>
+<pre class="sql"><code>  SELECT * 
+  FROM CONDITION_OCCURRENCE co
+  WHERE CONDITION_OCCURRENCE_ID IN (
+    SELECT modifier_of_event_id
+    FROM measurement
+    WHERE measurement_concept_id = 734306 -- Initial diagnosis
+    AND modifier_of_field_concept_id = 1147127 -- Condition_Occurrence
+)</code></pre>
+<hr />
+</div>
+</div>
+<div id="tnm" class="section level3 tabset tabset-fade">
+<h3 class="tabset tabset-fade"><strong>TNM</strong></h3>
+<div id="description-1" class="section level4">
+<h4>Description</h4>
 <p>Circumvent the concept mappings and map directly to the standard
 concepts within the ‘Cancer Modifier’ vocabulary by concatenating your
 source data and joining on the concept code.</p>
@@ -549,8 +569,13 @@ concatenate to match. Those components are:</p>
 </ol>
 <p>The concept code format is : [c/p]-[version]th_AJCC/UICC-[TNM
 Value]</p>
-<p>For example : c-7th_AJCC/UICC-T1c2 Above: TNM value of T1c2,
-clinically staged, defined by the 7th version of AJCC/UICC</p>
+<hr />
+</div>
+<div id="mapping-1" class="section level4">
+<h4>Mapping</h4>
+<p>For example : c-7th_AJCC/UICC-T1c2</p>
+<p>Above: TNM value of T1c2, clinically staged, defined by the 7th
+version of AJCC/UICC</p>
 <p>To find the correct standard concept, you need to join to the concept
 code, as shown here:</p>
 <pre class="sql"><code>  SELECT concept_id
@@ -561,19 +586,73 @@ code, as shown here:</p>
   AND concept_code = &#39;c-7th_AJCC/UICC-T1c2&#39;</code></pre>
 <hr />
 </div>
-<div id="stage-group" class="section level3">
-<h3><img src="images/stop.png"></img> Stage Group</h3>
-<ul>
-<li>TODO</li>
-</ul>
+<div id="usage-1" class="section level4">
+<h4>Usage</h4>
+<p>There are multiple methods of navigating concept hierarchies for TNM
+depending on the use case.</p>
+<p>Using M1a for example:</p>
+<p>Find all concepts that fall under “M1a”, regardless of version or
+clin vs. path</p>
+<pre class="sql"><code>  SELECT descendant_concept_id
+  FROM concept_ancestor
+  WHERE ancestor_concept_id = 1635100 -- AJCC/UICC M1a Category</code></pre>
+<p>Find all concepts that fall under “M1a”, regardless of version but
+ONLY path</p>
+<pre class="sql"><code>  SELECT descendant_concept_id
+  FROM concept_ancestor
+  WHERE ancestor_concept_id = 1634312 -- AJCC/UICC Pathological M1a Category</code></pre>
+<p>Find all concepts that fall under “M1a”, are pathological only, and
+are only using the 7th version</p>
+<pre class="sql"><code>  SELECT descendant_concept_id
+  FROM concept_ancestor
+  WHERE ancestor_concept_id = 1634268 -- AJCC/UICC 7th Pathological M1a Category</code></pre>
+<p>Lastly, you can search for the concept directly given the structured
+concept codes. For the same example as above:</p>
+<pre class="sql"><code>  SELECT concept_id
+  FROM concept
+  WHERE vocabulary_id = &#39;Cancer Modifier&#39;
+  AND concept_class_id = &#39;Staging/Grading&#39;
+  AND standard_concept = &#39;S&#39;
+  AND concept_code = &#39;p-7th_AJCC/UICC-M1a&#39;  -- Pathological + version + code</code></pre>
 <hr />
 </div>
-<div id="stage-group-grading" class="section level3">
-<h3><img src="images/stop.png"></img> Stage Group Grading</h3>
-<ul>
-<li>TODO</li>
-</ul>
+</div>
+<div id="stage-group" class="section level3 tabset tabset-fade">
+<h3 class="tabset tabset-fade"><strong>Stage Group</strong></h3>
+<div id="description-2" class="section level4">
+<h4>Description</h4>
+<p>Abcdefg</p>
 <hr />
+</div>
+<div id="mapping-2" class="section level4">
+<h4>Mapping</h4>
+<p>HIJKLM</p>
+<hr />
+</div>
+<div id="usage-2" class="section level4">
+<h4>Usage</h4>
+<p>NOPQ</p>
+<hr />
+</div>
+</div>
+<div id="grading" class="section level3 tabset tabset-fade">
+<h3 class="tabset tabset-fade"><strong>Grading</strong></h3>
+<div id="description-3" class="section level4">
+<h4>Description</h4>
+<p>Abcdefg</p>
+<hr />
+</div>
+<div id="mapping-3" class="section level4">
+<h4>Mapping</h4>
+<p>HIJKLM</p>
+<hr />
+</div>
+<div id="usage-3" class="section level4">
+<h4>Usage</h4>
+<p>NOPQ</p>
+<hr />
+<hr />
+</div>
 </div>
 <div id="metastasis" class="section level3">
 <h3><img src="images/stop.png"></img> Metastasis</h3>

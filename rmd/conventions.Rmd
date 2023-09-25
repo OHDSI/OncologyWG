@@ -21,7 +21,7 @@ Conventions
 
 <br>
 
-## <img src="images/green-check.png"></img> Primary Diagnosis
+## Primary Diagnosis
 
 (Placeholder)
 
@@ -65,9 +65,9 @@ An example condition modifier record within the measurement table would contain:
 
 ---
 
-### <img src="images/green-check.png"></img> Date of Initial Diagnosis 
+###  Date of Initial Diagnosis {.tabset .tabset-fade}
 
-(Placeholder)
+#### Description
 
 The date of initial diagnosis can be represented in the OMOP CDM by mapping to the correct concept in the Cancer Modifier vocabulary and represented as a MEASUREMENT, or rather, a cancer modifier. This can be an important data point from the source to distinguish this particular date as the most reliable diagnosis date of a patient's cancer and can, depending on various factors, substantially vary in a non-trivial way from other diagnosis dates in the CONDITION_OCCURRENCE table for the same disease occurrence.
 
@@ -83,6 +83,8 @@ If the source data record in question is not confirmed to reliably represent the
 |Concept ID | **734306**|
 |Concept code | init_diag|
 
+#### Mapping
+
 Adding this condition modifier would look something like:
 
 ```{sql eval=FALSE, echo=TRUE}
@@ -93,12 +95,26 @@ Adding this condition modifier would look something like:
   1147127 as modifier_of_field_concept_id -- static for all condition modifiers
   temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
 ```
-
-<br>
-
 ---
 
-### <img src="images/green-check.png"></img> TNM  
+#### Usage
+
+Finding conditions which have the "initial diagnosis date" flag (modifier) can be done by:
+```{sql eval=FALSE, echo=TRUE}
+  SELECT * 
+  FROM CONDITION_OCCURRENCE co
+  WHERE CONDITION_OCCURRENCE_ID IN (
+    SELECT modifier_of_event_id
+    FROM measurement
+    WHERE measurement_concept_id = 734306 -- Initial diagnosis
+    AND modifier_of_field_concept_id = 1147127 -- Condition_Occurrence
+)
+```
+---
+
+### **TNM** {.tabset .tabset-fade}
+
+#### Description
 
 Circumvent the concept mappings and map directly to the standard concepts within the 'Cancer Modifier' vocabulary by concatenating your source data and joining on the concept code. 
 
@@ -111,7 +127,12 @@ The concept code has 4 components that the ETL developer will need to concatenat
 
 The concept code format is : [c/p]-[version]th_AJCC/UICC-[TNM Value]
 
+---
+
+#### Mapping 
+
 For example : c-7th_AJCC/UICC-T1c2
+
 Above: TNM value of T1c2, clinically staged, defined by the 7th version of AJCC/UICC
   
 To find the correct standard concept, you need to join to the concept code, as shown here:
@@ -127,14 +148,86 @@ To find the correct standard concept, you need to join to the concept code, as s
 
 ---
 
-### <img src="images/stop.png"></img> Stage Group 
+#### Usage 
 
-- TODO 
+There are multiple methods of navigating concept hierarchies for TNM depending on the use case. 
+
+Using M1a for example:
+
+Find all concepts that fall under "M1a", regardless of version or clin vs. path
+```{sql eval=FALSE, echo=TRUE}
+  SELECT descendant_concept_id
+  FROM concept_ancestor
+  WHERE ancestor_concept_id = 1635100 -- AJCC/UICC M1a Category
+```
+
+Find all concepts that fall under "M1a", regardless of version but ONLY path
+```{sql eval=FALSE, echo=TRUE}
+  SELECT descendant_concept_id
+  FROM concept_ancestor
+  WHERE ancestor_concept_id = 1634312 -- AJCC/UICC Pathological M1a Category
+```
+
+Find all concepts that fall under "M1a", are pathological only, and are only using the 7th version
+```{sql eval=FALSE, echo=TRUE}
+  SELECT descendant_concept_id
+  FROM concept_ancestor
+  WHERE ancestor_concept_id = 1634268 -- AJCC/UICC 7th Pathological M1a Category
+```
+
+Lastly, you can search for the concept directly given the structured concept codes. For the same example as above:
+```{sql eval=FALSE, echo=TRUE}
+  SELECT concept_id
+  FROM concept
+  WHERE vocabulary_id = 'Cancer Modifier'
+  AND concept_class_id = 'Staging/Grading'
+  AND standard_concept = 'S'
+  AND concept_code = 'p-7th_AJCC/UICC-M1a'  -- Pathological + version + code
+```
+
 
 ---
 
-### <img src="images/stop.png"></img> Stage Group Grading
-- TODO 
+### **Stage Group** {.tabset .tabset-fade}
+
+#### Description
+
+  Abcdefg
+  
+---
+
+#### Mapping
+
+  HIJKLM
+  
+---
+
+#### Usage
+
+  NOPQ
+
+---
+
+### **Grading** {.tabset .tabset-fade}
+
+#### Description
+
+  Abcdefg
+
+---
+
+#### Mapping
+
+  HIJKLM
+
+---
+
+#### Usage
+
+  NOPQ
+  
+---
+
 
 ---
 
