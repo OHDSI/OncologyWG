@@ -1,0 +1,37 @@
+      table_name      | vocabulary_id_1  | vocabulary_id_2 | standard_concept | concept_class_id |   relationship_id   | invalid_reason | concept_delta | concept_delta_percentage 
+----------------------+------------------+-----------------+------------------+------------------+---------------------+----------------+---------------+-------------------------- 
+ concept              | Cancer Modifier  |                 | S                | Staging/Grading  |                     |                |             3 | 0.114%
+ concept              | Cancer Modifier  |                 |                  | Staging/Grading  |                     | U              |            -3 | -0.53%
+ concept              | LOINC            |                 | S                | Answer           |                     |                |           -50 | -0.259%
+ concept              | LOINC            |                 |                  | Answer           |                     |                |            50 | 
+ concept              | NAACCR           |                 | S                | NAACCR Value     |                     |                |           -64 | -0.307%
+ concept              | NAACCR           |                 |                  | NAACCR Value     |                     |                |            64 | 0.643%
+ concept              | Nebraska Lexicon |                 | S                | Qualifier Value  |                     |                |            -1 | -2.041%
+ concept              | Nebraska Lexicon |                 |                  | Qualifier Value  |                     |                |             1 | 0.009%
+ concept              | OMOP Extension   |                 | S                | Qualifier Value  |                     |                |            -1 | -33.333%
+ concept              | OMOP Extension   |                 |                  | Qualifier Value  |                     |                |             1 | 
+ concept              | SNOMED           |                 | S                | Qualifier Value  |                     |                |           -42 | -0.305%
+ concept              | SNOMED           |                 |                  | Qualifier Value  |                     |                |            42 | 2.353%
+ concept_relationship | Cancer Modifier  | Cancer Modifier |                  |                  | Concept replaced by | D              |             6 | 
+ concept_relationship | Cancer Modifier  | Cancer Modifier |                  |                  | Concept replaces    | D              |             6 | 
+ concept_relationship | Cancer Modifier  | Cancer Modifier |                  |                  | Is a                |                |             6 | 0.089%
+ concept_relationship | Cancer Modifier  | Cancer Modifier |                  |                  | Mapped from         | D              |             6 | 
+ concept_relationship | Cancer Modifier  | Cancer Modifier |                  |                  | Mapped from         |                |             6 | 0.101%
+ concept_relationship | Cancer Modifier  | Cancer Modifier |                  |                  | Maps to             | D              |             6 | 
+ concept_relationship | Cancer Modifier  | Cancer Modifier |                  |                  | Maps to             |                |             6 | 0.101%
+ concept_relationship | Cancer Modifier  | Cancer Modifier |                  |                  | Subsumes            |                |             6 | 0.089%
+ concept_relationship | Cancer Modifier  | LOINC           |                  |                  | Mapped from         |                |           140 | 
+ concept_relationship | Cancer Modifier  | NAACCR          |                  |                  | Mapped from         |                |            62 | 1.707%
+ concept_relationship | Cancer Modifier  | OMOP Extension  |                  |                  | Mapped from         |                |             1 | 
+ concept_relationship | Cancer Modifier  | SNOMED          |                  |                  | Mapped from         |                |            34 | 80.952%
+ concept_relationship | LOINC            | Cancer Modifier |                  |                  | Maps to             |                |           140 | 
+ concept_relationship | NAACCR           | Cancer Modifier |                  |                  | Maps to             |                |            62 | 1.707%
+ concept_relationship | OMOP Extension   | Cancer Modifier |                  |                  | Maps to             |                |             1 | 
+ concept_relationship | SNOMED           | Cancer Modifier |                  |                  | Maps to             |                |            34 | 80.952%
+ concept_ancestor     | Cancer Modifier  |                 |                  |                  |                     |                |             3 | 0.012%
+ concept_ancestor     | LOINC            |                 |                  |                  |                     |                |           -50 | -0.004%
+ concept_ancestor     | NAACCR           |                 |                  |                  |                     |                |           -64 | -0.281%
+ concept_ancestor     | Nebraska Lexicon |                 |                  |                  |                     |                |            -1 | -0.015%
+ concept_ancestor     | OMOP Extension   |                 |                  |                  |                     |                |            -1 | -0.032%
+ concept_ancestor     | SNOMED           |                 |                  |                  |                     |                |          -222 | -0.003%
+
