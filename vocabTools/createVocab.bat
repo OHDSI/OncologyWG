@@ -28,7 +28,7 @@ psql -U !DB_USER! -d !DB_NAME! -h !DB_HOST! -p !DB_PORT! -f "%~dp0\sql\prodVocab
 
 echo "Populating prod vocabulary tables..."
 
-psql -U !DB_USER! -d !DB_NAME! -h !DB_HOST! -p !DB_PORT! -c "SET search_path to prod; SELECT public.update_vocabulary('!BASE_PATH!');"
+psql -U !DB_USER! -d !DB_NAME! -h !DB_HOST! -p !DB_PORT! -c "SET search_path to prod; SELECT public.populate_vocabulary('!BASE_PATH!');"
 
 echo "Indexing prod vocabulary tables..."
 
