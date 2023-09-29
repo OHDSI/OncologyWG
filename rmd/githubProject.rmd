@@ -1,0 +1,44 @@
+---
+title: '<div><img src="images/ohdsi40x40.png"></img> Github Project</div>'
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 3
+        toc_float:
+          collapsed: false
+---
+
+--- 
+
+# **Approach**
+
+TODO: bullet summary points
+e.g. breaking up into small pieces; everything ends with documentation; linear development cycle; evolving scope, etc. 
+
+---
+
+## Architecture 
+
+ - (TODO) Explanation of project vs. github repo 
+ - (TODO) Navigation of project vs. Github issues
+ - (TODO) End deliverables will be: building concept and concept_relationship tables; documentation/conventions; deployment tool
+
+
+## Project Views 
+
+ - (TODO) 1) illustrate the intention of each view
+ - (TODO) 2) show can one can contribute to specific task types by navigating views 
+    If you’d like to contribute to a specific Task Group,  add yourself as an assignee and change the status from Outstanding to In Progress
+
+
+
+# **Example vertical sprint walkthrough**
+
+ - Top level: Task groups 
+
+<div><img src="images/gp_taskview.png"></img>
+
+
+ - While discussions will be had in Teams, the project will be tracked and managed through Github. 
+ - The link to the project can be found here: https://github.com/orgs/OHDSI/projects/13
+ - Please review the Project Orientation materials (TODO: below, or provide link)

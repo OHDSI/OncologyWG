@@ -11,9 +11,9 @@
 
 
 
-<title>Background</title>
+<title> Development Overview</title>
 
-<script src="site_libs/header-attrs-2.21/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -29,14 +29,14 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 
 <style type="text/css">
@@ -332,70 +332,60 @@ div.tocify {
   <a href="index.html">
     <span class="fa fa-home"></span>
      
+     Home
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-people-group"></span>
+     
+       Development Effort
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="development.html">
+        <span class="fa fa-map"></span>
+         
+         Overview
+      </a>
+    </li>
+    <li>
+      <a href="githubProject.html">
+        <span class="fa fa-github"></span>
+         
+         Github Project Orientation
+      </a>
+    </li>
+    <li>
+      <a href="gettingInvolved.html">
+        <span class="fa fa-user-plus"></span>
+         
+           Getting Involved
+      </a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="conventions.html">
+    <span class="fa fa-gavel"></span>
+     
+     Conventions
   </a>
 </li>
 <li>
-  <a href="background.html">
-    <span class="fa fa-info-circle"></span>
+  <a href="model.html">
+    <span class="fa fa-sitemap"></span>
      
-     Background
+     Model
   </a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <span class="fa fa-cogs"></span>
-     
-     Approach
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="model.html">
-        <span class="fa fa-sitemap"></span>
-         
-         Model
-      </a>
-    </li>
-    <li>
-      <a href="conventions.html">
-        <span class="fa fa-gavel"></span>
-         
-         Conventions
-      </a>
-    </li>
-  </ul>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <span class="fa fa-plug"></span>
-     
-    Implementation
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="installation.html">
-        <span class="fa fa-download"></span>
-         
-         Install
-      </a>
-    </li>
-    <li>
-      <a href="population.html">
-        <span class="fa fa-database"></span>
-         
-         Populate Data
-      </a>
-    </li>
-  </ul>
 </li>
 <li>
   <a href="tooling.html">
     <span class="fa fa-wrench"></span>
      
-     Tooling
+     Tools
   </a>
 </li>
       </ul>
@@ -415,96 +405,145 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>Background</h1>
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
+Development Overview</h1>
 
 </div>
 
 
-<div id="problem-space-and-goals" class="section level1">
-<h1><strong>Problem Space and Goals</strong></h1>
-<p>In a typical observational study, the definition of the study
-population (cohort), exposures and outcomes are usually based on
-diagnostic codes in addition to drug exposures, procedure occurrences or
-lab measurements. For cancer studies, this information is typically not
-sufficient, as more details are required for the proper identification
-of the study population, treatment and subsequent outcomes.</p>
-<p>Appropriate characterization of cancer requires details such as
-anatomical site, morphology, local penetration, affected lymph nodes,
-metastatic spread, biomarkers, and disease staging and grading. In
-typical observational data sources, this necessary level of detail is
-not regularly present. Patient results from diagnostic procedures are
-collected but may not be available within the given data source or what
-is collected cannot appropriately serve as a surrogate for the above
-attributes. Correct identification of cancer treatment regimens also
-tends to be more complex compared to other disease modalities within
-observational data. Most cancer treatments are administered in
-chemotherapy regimens with complex dosing and scheduling in multiple
-cycles and are often combined with targeted therapies, immunotherapies,
-surgery or radiotherapy. None of these attributes follow standard
-definition to be applied to observational data, as most regimens are
-personalized to the individual patient need, making a priori
-standardized definitions more complex. Additionally, clinically relevant
-information on disease, treatment and outcomes that appropriately
-reflects a patient’s journey including information on the time of
-diagnosis, response to treatments, time to treatment failure, disease
-progression, recurrence and (disease-free and overall) survival requires
-data abstraction and is rarely available in the source data and has not
-been traditionally supported in OMOP CDM.</p>
-<p>The Oncology CDM Extension of the OMOP CDM aims to provide a
-foundation for representing cancer data at the levels of granularity and
-abstraction required to support observational cancer research.</p>
-<p>The extension has been tested in EHR and Cancer Registry data against
-a number of typical use cases.</p>
+<div id="overview" class="section level1">
+<h1><strong>Overview</strong></h1>
+<p>TODO: Description of maturity sprint</p>
 <hr />
+<div id="goals" class="section level2">
+<h2>Goals</h2>
+<ul>
+<li>Collaboratively mature the oncology standards in OMOP</li>
+<li>Enable asynchronous mechanisms of collaboration for greater
+international interoperability</li>
+<li>Establish conventions that apply to the various representations of
+oncology data</li>
+<li>Thoroughly document all conventions from both an ETL and analysis
+perspective to facilitate standardized representation</li>
+</ul>
 </div>
-<div id="onramp" class="section level1">
-<h1><strong>Onramp </strong></h1>
-<p><br></p>
-<div id="ohdsi-scope" class="section level3">
-<h3>OHDSI Scope</h3>
+<div id="scope-timeline" class="section level2">
+<h2>Scope / Timeline</h2>
 <ul>
-<li>OHDSI Problem Space
+<li>An extensive and international outreach effort has been conducted to
+aggregate the gaps and pain points of implementing oncology data in
+OMOP, which is the starting point of this project</li>
+<li>Complete as much as we can, prioritized by use cases, in preparation
+for a new stable release at the beginning of 2024. After that milestone
+is reached, we will continue to iterate and improve while adhering to a
+stable release schedule TBD.<br />
+</li>
+<li>The majority of the outlined work is either investigating or
+modifying the vocabularies. These have been and/or will be broken down
+into smaller more easily tackled chunks such as “investigating an issue”
+or “complete outstanding vocabulary changes that have content provided”,
+or “documentation of _”. This is to help enable lots of small
+contributions from a larger community.</li>
+<li>We are moving at a faster pace than the official OHDSI vocabulary
+releases and consequently will be maintaining a “delta”, or
+“development”, version of the vocabularies. At the end of this effort we
+plan to have these changes folded back into the standards. Additionally
+we will consult with the vocabulary team when applicable.</li>
+</ul>
+</div>
+<div id="core-values" class="section level2">
+<h2>Core Values</h2>
 <ul>
-<li>include SOS diagram</li>
+<li>Inclusion of as diverse of data as possible
+<ul>
+<li>International applicability</li>
+<li>Clinical, registry, and other specialized data sources</li>
+<li>Source EMR agnostic</li>
 </ul></li>
-<li>What OMOP Oncology can do today
+<li>Enabling interoperability and standardized analytics
 <ul>
-<li>Incidence, survival</li>
-<li>Treatment practices</li>
-<li>Safety</li>
-</ul></li>
-<li>What OMOP Oncology cannot do (without outcomes)
-<ul>
-<li>Treatment response</li>
-<li>Comparative effectiveness</li>
-<li>PFS/DFS</li>
+<li>Non-ambiguous, Standardized representation within OMOP; For a
+specific type of source data, there is a single standard representation
+for it</li>
+<li>Improving and sometimes inventing new vocabulary relation mechanisms
+to enable reliable and reusable phenotyping and analysis</li>
+<li>Encourage a diverse community to contribute towards a universal
+representation</li>
 </ul></li>
 </ul>
-<p><br></p>
 </div>
-<div id="oncology-use-cases" class="section level3">
-<h3>Oncology Use Cases</h3>
+<div id="what-we-need" class="section level2">
+<h2>What we need</h2>
+<ul>
+<li>Diverse community contribution</li>
+<li>Feedback on decision points from oncology data holders and SME</li>
+<li>Experienced issues &amp; hurdles</li>
+<li>Use cases</li>
+<li>Development/vocabulary effort</li>
+</ul>
+</div>
+<div id="distinction-of-efforts" class="section level2">
+<h2>Distinction of efforts</h2>
 <ul>
 <li>TODO</li>
+<li>Oncology maturity sprint vs.</li>
+<li>OHDSI Oncology Vanguard Network vs. </li>
+<li>OHDSI Oncology Working group</li>
 </ul>
-<p><br></p>
+<hr />
 </div>
-<div id="data-sources" class="section level3">
-<h3>Data Sources</h3>
+</div>
+<div id="project-management" class="section level1">
+<h1><strong>Project Management</strong></h1>
+<p>(TODO): bullet summary points</p>
+<div id="collaborative-approach" class="section level2">
+<h2>Collaborative approach</h2>
 <ul>
-<li>what data sources do I need to get oncology value from OMOP
+<li>Everyone is welcome and encouraged to join the effort</li>
+<li>To enable international contributions and rapid progress, we are
+facilitating communication both within meetings and asynchronously
+through Github and Teams. Any decision points discussed during the calls
+will also be represented in Teams for further discussion before final
+decisions are made</li>
+<li>The Github Project will be the main resource for tracking the
+project deliverables, progress, and avenues for contribution</li>
+<li>Discussions around items will be held off-line within MS Teams
+environment</li>
+</ul>
+</div>
+<div id="meetings" class="section level2">
+<h2>Meetings</h2>
 <ul>
-<li>Required</li>
-<li>Optional</li>
+<li>PM: Danielle Boyce</li>
+<li>Cadence: (TODO) Bi-Weekly; alternating EST morning and evening.</li>
+<li>Agenda Template :
+<ol style="list-style-type: decimal">
+<li>Introductions/ Updates</li>
+<li>Project deliverable updates: Scrum/Agile style</li>
+<li>Any study updates</li>
+<li>Remainder: (if discussion needed) Proposals
+<ul>
+<li>Only presentations and clarifying questions during call. Discussions
+and decisionsto be had in teams</li>
+<li>Prompt presenters/speakers beforehand</li>
+<li>If possible, put video recording of “framing” during meeting into
+discussion area</li>
 </ul></li>
+</ol></li>
 </ul>
-<p><br></p>
 </div>
-<div id="how-will-we-get-outcomes-data" class="section level3">
-<h3>How will we get outcomes data?</h3>
+<div id="github-project" class="section level2">
+<h2>Github Project</h2>
 <ul>
-<li>Manual curation</li>
-<li>NLP</li>
+<li>While discussions will be had in Teams, the project will be tracked
+and managed through Github.</li>
+<li>The link to the project can be found here: <a
+href="https://github.com/orgs/OHDSI/projects/13"
+class="uri">https://github.com/orgs/OHDSI/projects/13</a></li>
+<li>Please review the Github Project Orientation materials: <a
+href="githubProject.html">Github Project Documentation</a></li>
+<li>To learn how to best get involved, please also visit: <a
+href="gettingInvolved.html">Getting Involved</a></li>
 </ul>
 </div>
 </div>
