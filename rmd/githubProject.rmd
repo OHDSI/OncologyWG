@@ -36,9 +36,103 @@ e.g. breaking up into small pieces; everything ends with documentation; linear d
 
  - Top level: Task groups 
 
-<div><img src="images/gp_taskview.png"></img>
+<div><img src="images/gp_taskview.png"></img></div>
 
 
  - While discussions will be had in Teams, the project will be tracked and managed through Github. 
  - The link to the project can be found here: https://github.com/orgs/OHDSI/projects/13
  - Please review the Project Orientation materials (TODO: below, or provide link)
+
+## Task group walkthrough
+Start with a Task Group: a unit of work of orders related to a component of oncology research.
+If you'd like to contribute to a specific Task Group, add yourself as an assignee and change the status from **Outstanding** to **In Progress**
+
+<div><img src="images/problemSpace.png"></img></div>
+
+Within the top comment on the Task Group issue, the Problem Space section contextualizes the problem and the Tasks section links to subissues that outline the steps for solving it.
+
+Within each Task Group, there are typically five subissues: Resolve decision points, Investigate & create tasks, Complete outstanding work, Validate and ingest, and Document.
+
+### Resolve Decision points
+This subissue lists the decision points that need to be finalized before work can begin on the Task Group. Decision points must be finalized by the OHDSI Oncology WG and often require input from oncologists and informaticists before they are introduced as discussion topics at a WG meeting. Generally, all decision point issues should be finalized and closed before work begins on a task group.
+
+<div><img src="images/resolveDecisionPoints.png"></img></div>
+
+### Investigate and Create Tasks
+
+The next task in the Task Group involves scoping the work necessary to solve the problems laid out in the Problem Space. In the context of vocabulary development, this task may be broken into two main steps. The first involves outlining the preparatory work necessary to enable the Task Group’s main work. This means identifying vocabularies with problematic terms and creating a checklist for the preparatory work required:
+
+<div><img src="images/investigateCreateEmpty.png"></img></div>
+
+After outlining the preparatory work, the second step of this task involves compiling the lists of terms from problematic vocabularies that will be addressed and repaired in the following task. Each of these lists of terms should become their own individual issue which is then linked to next task (Complete outstanding work):
+
+<div><img src="images/workOrder.png"></img></div>
+
+These issues, which contain the first actual work orders, should be structured as shown above: a brief description of the work that needs to be done and a set of tables containing all of the concepts involved. In the task pictured above, the tables involved are a comprehensive “source” table of the concepts that need to be altered (likely destandardized and mapped to standard concepts), and the table of “target” concepts that should be mapped to.
+
+- **NOTE**: *Linking to work orders.* A key part of this Task is to populate the Complete outstanding work ticket by linking to the work order tickets. This can be done by editing the top comment in the Complete outstanding work ticket as such:
+
+<div><img src="images/linkToWorkOrders.png"></img></div>
+
+Notice that checkboxes for task lists are created using “- [ ]” (note the space between the dash and open bracket, and the space between brackets). Issues are linked to checkboxes by referencing their issue number.
+
+After all work order issues are created, linked to the “Complete outstanding work” issue, and referenced in a comment on this issue, all checkboxes in this issue can be checked and the issue closed:
+
+<div><img src="images/InvestigateAndCreateTasksFinished.png"></img></div>
+
+### Complete outstanding work
+
+In the last task, you worked to add content to the top comment in this issue:
+
+<div><img src="images/completeOutstandingWorkEmpty.png"></img></div>
+
+At this point, you are ready to start preparing the tables to create changes in the OHDSI Development Vocabulary.
+
+The example above demonstrated the structure of the work order: a description of work to be done and a set of tables necessary to do the work. To complete the work order, we will download the linked CSV files, create empty concept and concept_relationship files, and start destandardizing
+
+<div><img src="images/excelFiles.png"></img></div>
+
+It's a good idea to adopt a naming convention that works for your data management style. Here, concept_SNOMEDtoCM_sg indicates that these are the SNOMED stage group concepts that are being destandardized and will be mapped to the Cancer Modifier stage group concepts.
+
+<div><img src="images/conceptTableExcel.png"></img></div>
+
+The delta concept table (bottom) is fairly easy to create in this case. Since we are destandardizing all of these SNOMED concepts (left), we simply need to copy all of the terms to our new concept table and remove the ‘S’ from the standard_concept column.
+
+- **NOTE**: watch out for the date formats. While accurate dates are not explicitly necessary for the Oncology WG efforts, having dates formatted as above (DD/MM/YYYY) can create errors for downstream tools. Use MM/DD/YYYY, MM-DD-YYYY, or YYYY-MM-DD, and always double check that your dates are saved correctly by opening your files in a non-Excel editor.
+
+<div><img src="images/conceptRelationshipExcel.png"></img></div>
+
+Now that the SNOMED concepts are destandardized, they need to be mapped to the standard Cancer Modifier concepts. This step involves combing through the table of Cancer Modifier concepts (bottom left) to find the “matching” term and adding a row to delta concept_relationship table (right). Remember that every “Maps to” relationship should have a reciprocal “Mapped from” relationship (not shown).
+
+As you work, it can be very useful to leave comments on your thought process or anything out of the ordinary directly on the work order ticket:
+
+<div><img src="images/leaveCommentsThoughtProcess.png"></img></div>
+
+After you've completed the work for a work order ticket, attach your output files to a comment and close the issue:
+
+<div><img src="images/attachOutputFileToComment.png"></img></div>
+
+Closing the tickets will automatically check the boxes in the Task issue. Once all of the listed tasks have been completed, the entire Task issue can be closed:
+
+<div><img src="images/completeOutstandingWorkDONE.png"></img></div>
+
+### Validate and ingest
+
+You will need the vocabTools directory and its contents downloaded to your computer to make use of the tools in the following steps. The easiest way to download vocabTools (and subsequently push Oncology Development Vocabulary changes back to GitHub) is by cloning the OncologyWG:
+
+`git clone https://github.com/OHDSI/OncologyWG.git`
+
+Part of the validate and ingest process involves standing up a “vocab” database. The tools presented here expect and require a PostgreSQL database with schemas “prod” (an “official” OMOP Vocabulary) and “dev” (a copy of prod that will be altered and used for staging). You can assume these tools will work for you if you have a prod and dev schema set up in a Postgres database, or follow detailed instructions for setting them up [here](https://github.com/OHDSI/OncologyWG/blob/master/vocabTools/README.md#setting-up-a-development-database).
+
+In the last task, you created concept and concept_relationship table fragments to complete the vocabulary work orders. In this step, we will validate these locally by integrating them into the dev schema of the database we have set up and comparing the augmented dev schema and prod schema.
+
+First, move all of the concept_*.csv and concept_relationship_*.csv files to the concept and concept_relationship directories in your local copy of vocabTools:
+
+<div><img src="images/conceptFolders.png"></img></div>
+
+...
+...
+...
+
+
+### Document
