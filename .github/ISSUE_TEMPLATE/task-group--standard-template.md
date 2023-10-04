@@ -20,4 +20,4 @@ TODO
 - [ ] Investigate & create tasks: X
 - [ ] Complete outstanding work: X
 - [ ] Validate and ingest: X
-- [ ] Document: Grade X
+- [ ] Document: X
