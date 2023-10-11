@@ -83,7 +83,7 @@ begin
 		GROUP BY hc.root_ancestor_concept_id,
 			hc.descendant_concept_id;
 	END LOOP;
-end; $$
+end $$;
 
 
 -- --remove non-standard records in descendant_concept_id
