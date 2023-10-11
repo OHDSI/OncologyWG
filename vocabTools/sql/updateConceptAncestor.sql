@@ -129,10 +129,7 @@ WHERE ancestor_concept_id IN (
     	SELECT *
     	FROM dev.concept
     	where standard_concept is null
-    	or standard_concept = ''
-    	EXCEPT 
-    	SELECT * 
-    	FROM prod.concept) c
+    	or standard_concept = '') c
 );
 
 DELETE FROM concept_ancestor ca
@@ -142,10 +139,7 @@ WHERE descendant_concept_id IN (
     	SELECT *
     	FROM dev.concept
     	where standard_concept is null
-    	or standard_concept = ''
-    	EXCEPT 
-    	SELECT * 
-    	FROM prod.concept) c
+    	or standard_concept = '') c
 );
 
 drop table temporary_ca_groups$ cascade;
