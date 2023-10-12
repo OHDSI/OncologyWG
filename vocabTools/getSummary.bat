@@ -31,8 +31,24 @@ echo "Summary table saved as deltaSummary_temp.txt."
 set "header1=      table_name      | vocabulary_id_1  | vocabulary_id_2 | standard_concept | concept_class_id |   relationship_id   | invalid_reason | concept_delta | concept_delta_percentage"
 set "header2=----------------------+------------------+-----------------+------------------+------------------+---------------------+----------------+---------------+--------------------------"
 
-:: Combine the headers with the temporary file and save the result
-(echo !header1! & echo !header2! & type "%~dp0\..\deltaVocab\deltaSummary_temp.txt") > "%~dp0\..\deltaVocab\deltaSummary.txt"
+:: Get current date
+for /f "delims=" %%a in ('wmic os get localdatetime ^| find "."') do set datetime=%%a
+
+:: Extract and format the date
+set year=!datetime:~0,4!
+set month=!datetime:~4,2!
+set day=!datetime:~6,2!
+
+:: Check for the optional filename parameter
+if "%~1"=="full" (
+	:: User should only specify full if they want to update the main deltaSummary table
+	set "FILENAME=deltaSummary"
+) else (
+	set "FILENAME=deltaSummary%year%%month%%day%"
+)
+
+:: Write the header lines and the contents of the temporary file to the output file
+(echo !header1! & echo !header2! & type "%~dp0\..\deltaVocab\deltaSummary_temp.txt") > "%~dp0\..\deltaVocab\%FILENAME%.txt"
 
 :: Clean up the temporary file
 del "%~dp0\..\deltaVocab\deltaSummary_temp.txt"
