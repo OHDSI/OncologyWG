@@ -22,7 +22,6 @@ TODO: Description of maturity sprint
  - Thoroughly document all conventions from both an ETL and analysis perspective to facilitate standardized representation
 
 
-
 ## Scope / Timeline
 
  - An extensive and international outreach effort has been conducted to aggregate the gaps and pain points of implementing oncology data in OMOP, which is the starting point of this project 
@@ -49,12 +48,6 @@ TODO: Description of maturity sprint
  - Use cases
  - Development/vocabulary effort
 
-## Distinction of efforts 
-
- - TODO
-  - Oncology maturity sprint vs.
-  - OHDSI Oncology Vanguard Network vs. 
-  - OHDSI Oncology Working group
 
 ---
 
@@ -74,16 +67,7 @@ TODO: Description of maturity sprint
 
 ## Meetings
 
- - PM: Danielle Boyce
- - Cadence: (TODO) Bi-Weekly; alternating EST morning and evening.
- - Agenda Template : 
-   1) Introductions/ Updates
-   2) Project deliverable updates: Scrum/Agile style
-   3) Any study updates
-   4) Remainder: (if discussion needed) Proposals
-      - Only presentations and clarifying questions during call. Discussions and decisionsto be had in teams 
-      - Prompt presenters/speakers beforehand
-      - If possible, put video recording of "framing" during meeting into discussion area
+
 
 
 ## Github Project

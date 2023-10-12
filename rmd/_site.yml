@@ -16,12 +16,18 @@ navbar:
     - text: " Home"
       icon: fa-home
       href: index.html
+    - text: " Background"      
+      icon: fa-circle-info
+      href: background.html
     - text: "   Development Effort"
       icon: fa-people-group
       menu:
-        - text: " Overview"
+        - text: " Development Overview"
           href: development.html
           icon: fa-map
+        - text: " Progress Map"
+          href: progressMap.html
+          icon: fa-list-check
         - text: " Github Project Orientation"
           href: githubProject.html
           icon: fa-github

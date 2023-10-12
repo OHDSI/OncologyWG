@@ -1,0 +1,22 @@
+---
+title: '<div><img src="images/ohdsi40x40.png"></img> Progress Map</div>'
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 3
+        toc_float:
+          collapsed: false
+---
+
+<br>
+
+---
+
+# **Roadmap**
+
+Our goal is to create an interoperable OMOP extension that enables application of all OMOP analysis tools to rich oncology data.
+
+To view our current and near term goals see our:
+
+  - [Development Effort documentation](development.html) 
+  - and [OHDSI Github - Oncology Release 2.0 Project](https://github.com/orgs/OHDSI/projects/13)
