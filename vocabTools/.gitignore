@@ -1,4 +1,7 @@
+# Ignore everything in the specified folders
 /concept/*
 /concept_relationship/*
 /vocab/*
-/output/*
+
+# allow readme.md files
+!*/readme.md
