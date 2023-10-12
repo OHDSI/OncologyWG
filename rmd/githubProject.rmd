@@ -140,11 +140,62 @@ With your concept and concept_relationship CSV files in the appropriate folders,
 
 Once the concept and concept_relationship tables have been updated from the CSV files you created, you can update the concept_ancestor hierarchy by running `updateConceptAncestor.bat`.
 
+> This process may take an hour or more to complete.
+
+After you've updated the concept_ancestor table, you can visually verify that the changes were made by running `getConceptAncestorDiffs.bat`. Again, this script may take a few minutes to run.
+
 #### Ingest
 
-...
-...
-...
+The Oncology Development Vocabulary is persisted as two CSV files that represent the set of changes that should be made to the concept and concept_relationship table. These files are stored on the OncologyWG GitHub repository in the [deltaVocab directory](https://github.com/OHDSI/OncologyWG/tree/vocabTools/deltaVocab). More information on "deltatVocab" can be found [here](https://github.com/OHDSI/OncologyWG/blob/vocabTools/deltaVocab/README.md).
+
+To "ingest" the changes that you have made to the Oncology Development Vocabulary, you will need to:
+1. Add your changes to the deltaConcept.csv and deltaConceptRelationship.csv files
+2. Add a deltaSummary file to summarize the changes that your additions make to the official OMOP Vocabulary
+3. Create a pull request from a fork or branch of the OncologyWG GH to the master branch
+
+These steps are detailed below.
+
+##### Add changes to deltaVocab
+
+Changes can be easily incorporated into the deltaVocab files by running `updateDelta.bat`. This script will look for, and ingest, any files in the vocabTools/concept and vocabTools/concept_relationship directories. It will also ensure that the most up-to-date deltaVocab is used as a starting point, and that only new changes are being added. Once this script has run successfully, the deltaVocab files on your computer will reflect your changes to the official OMOP Vocabulary, as well as all previously ingested changes.
+
+##### Add a deltaSummary file
+
+A standardized script is used to create a summary of the changes made. You can use `getSummary.bat` to generate a table that summarizes the difference between what is in your dev schema and your prod schema across the concept, concept_relationship, and concept_ancestor tables. This script will output the summary table as a file called deltaSummary<currentDate>.txt in the deltaVocab folder.
+
+> Note: The summary table will *not* be accurate if you have made any additional changes to the dev or prod schema since running the updateConcept*.bat scripts.
+
+###### Optional:
+
+You can also choose to update the main deltaSummary file (deltaSummary.txt with no date in the filename), though this requires you to run the updateConcept*.bat scripts on the updated deltaVocab files. To update the main deltaSummary file:
+1. Copy the deltaConcept and deltaConceptRelationship files to the vocabTools/concept and vocabTools/concept_relationship folders, respectively.
+2. Rerun each update script (updateConcept.bat, updateConceptRelationship.bat, updateConceptAncestor.bat), thus updating your dev schema to the most up-to-date version of the Oncology Development Vocabulary (as of your changes).
+3. Run `getSummary.bat full`. Specifying the argument "full" will update the main getSummary.txt file in deltaVocab.
+
+##### Ingest to GitHub
+
+Changes should be "ingested" via a Pull Request from your branch or fork of the OncologyWG to the master branch of OncologyWG:
+
+<div><img src="images/PRbranch2branch.png"></img></div>
+
+<div><img src="images/PRfork2fork.png"></img></div>
+
+If you've been working on your own branch/fork of the repo, simply commit and push your changes, select your branch/fork on [a PR to OncologyWG GitHub](https://github.com/OHDSI/OncologyWG/compare), and click **Create Pull Request**.
+
+If you've been working directly on the master branch, you will need to first move your changes to a new branch, commit, and push the branch to GitHub:
+
+```
+git checkout -b your_branch_name
+
+git add .
+git commit -m "Your commit message here"
+
+git push origin your_branch_name
+```
+
+After that, you can select your new branch on [a PR to OncologyWG GitHub](https://github.com/OHDSI/OncologyWG/compare), and click **Create Pull Request**.
+
+> Note: Keep an eye out for feedback from the Oncology Development Vocabulary maintainers in the form of comments on your PR. They will let you if any changes need to be made before the PR can be accepted.
 
 
 ### Document
