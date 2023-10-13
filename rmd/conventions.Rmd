@@ -7,7 +7,9 @@ output:
         toc_float:
           collapsed: false
 ---
-
+```{r load_packages, message=FALSE, warning=FALSE, include=FALSE} 
+library(fontawesome)
+```
 
 Conventions
 
@@ -19,11 +21,10 @@ Conventions
 
 # **Diagnostic**
 
-<br>
+
 
 ## Primary Diagnosis
 
-(Placeholder)
 
 Cancer diagnoses are recorded within the CONDITION table, ideally with ICDO3 concepts. Specific attributes or details about that condition which are not contained within the concept are attached to these condition records as MEASUREMENTS, referred to as Condition Modifiers, which are described below. 
 
@@ -32,6 +33,9 @@ Cancer diagnoses are recorded within the CONDITION table, ideally with ICDO3 con
 ---
 
 ## **Condition Modifiers**
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
 
 ---
 
@@ -66,6 +70,12 @@ An example condition modifier record within the measurement table would contain:
 ---
 
 ###  Date of Initial Diagnosis {.tabset .tabset-fade}
+
+> `r fa("circle-check", fill="green")` Complete
+
+
+> `r fa("circle-info", prefer_type="solid")`         Condition Modifier
+
 
 #### Description
 
@@ -110,9 +120,16 @@ Finding conditions which have the "initial diagnosis date" flag (modifier) can b
     AND modifier_of_field_concept_id = 1147127 -- Condition_Occurrence
 )
 ```
+
 ---
 
-### **TNM** {.tabset .tabset-fade}
+### TNM {.tabset .tabset-fade}
+
+
+> `r fa("circle-check", fill="green")` Complete
+
+> `r fa("circle-info", prefer_type="solid")`         Condition Modifier
+
 
 #### Description
 
@@ -188,7 +205,12 @@ Lastly, you can search for the concept directly given the structured concept cod
 
 ---
 
-### **Stage Group** {.tabset .tabset-fade}
+### Stage Group {.tabset .tabset-fade}
+
+> `r fa("circle-check", fill="green")` Complete
+
+
+> `r fa("circle-info", prefer_type="solid")`         Condition Modifier
 
 #### Description
 
@@ -267,7 +289,13 @@ Lastly, you can search for the concept directly given the structured concept cod
 
 ---
 
-### **Grading** {.tabset .tabset-fade}
+### Grading {.tabset .tabset-fade} 
+
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
+> `r fa("circle-info", prefer_type="solid")`         Condition Modifier
+
 
 #### Description
 
@@ -288,10 +316,70 @@ Lastly, you can search for the concept directly given the structured concept cod
 ---
 
 
+### Dimension  {.tabset .tabset-fade} 
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
+> `r fa("circle-info", prefer_type="solid")`         Condition Modifier
+
+
+#### Description
+
+*Caveat*
+
+TODO
+
 ---
 
-### <img src="images/stop.png"></img> Metastasis
-- Revision to come 
+#### Mapping
+
+  HIJKLM
+
+---
+
+#### Usage
+
+  NOPQ
+  
+---
+
+### Laterality  {.tabset .tabset-fade} 
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
+> `r fa("circle-info", prefer_type="solid")`         Condition Modifier
+
+
+#### Description
+
+*Caveat*
+
+TODO
+
+---
+
+#### Mapping
+
+  HIJKLM
+
+---
+
+#### Usage
+
+  NOPQ
+  
+---
+
+---
+
+### Metastasis {.tabset .tabset-fade} 
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
+
+
+
+#### Description
 
 (Placeholder)
 
@@ -308,7 +396,18 @@ The standard Metastasis concepts can be found within:
 
 There is an overarching concept of 'Metastasis' (https://athena.ohdsi.org/search-terms/terms/36769180) . For one, this is important as it is a destination standard concept for sources where the data is vague to the point that you only know metastasis occurred. A secondary usage of this would be to find all of the standard concepts in which fall under it. 
 
-To find all concepts in that hierarchy:
+
+---
+
+#### Mapping
+
+  TODO
+
+---
+
+#### Usage
+
+ To find all concepts in that hierarchy:
 
 ```{sql eval=FALSE, echo=TRUE}
   SELECT descendant_concept_id -- The various concepts under the metasis hierarchy
@@ -329,27 +428,47 @@ For example, a record of 'Metastasis to Lung' would look like:
   temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
 ```
 
+  
+---
 
 ---
 
-### <img src="images/stop.png"></img> Extension/Invasion
-- Revision to come
+### Extension/Invasion {.tabset .tabset-fade} 
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
+
+
+#### Description
 
 *Caveat*
 
 These will be implemented similarly to the Metastasis approach, as Cancer Modifiers or MEASUREMENTS, but we are currently waiting on a revision of the concepts within this class of the Cancer Modifier vocabulary before mapping and providing examples as there is an absence of hierarchical relationships.  
 
+
 ---
 
-### <img src="images/stop.png"></img> Dimension 
-- TODO 
+#### Mapping
 
---- 
+  HIJKLM
+
+---
+
+#### Usage
+
+  NOPQ
+  
+---
+
+
+---
+
 
 # **Treatment**
 
 
-(Placeholder)
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
 
 **Treatment representation is currently being finalized and this documentation will be updated accordingly** 
 
@@ -357,8 +476,10 @@ Treatment records are similar to conditions in that the concepts themselves do n
 
 ---
 
-## <img src="images/stop.png"></img> Surgery   
-(TODO)
+## Surgery   
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
 
 Representation: 
 
@@ -375,9 +496,9 @@ Examples:
 
 ---
 
-## <img src="images/stop.png"></img> Drug Therapy 
+## Drug Therapy 
 
-(TODO) 
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
  
 **Scope**
 
@@ -405,8 +526,10 @@ Examples:
 
 ---
 
-##  <img src="images/stop.png"></img> Radiotherapy
-(TODO)
+##  Radiotherapy
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
 
 Representation:
 
