@@ -12,11 +12,22 @@ output:
 
 ---
 
+# **Miro Map**
+
+<iframe width="768" height="432" src="https://miro.com/app/live-embed/uXjVNeNGMhQ=/?moveToViewport=7473,-157,1086,1135&embedId=264604379153" frameborder="0" scrolling="no" allow="fullscreen; clipboard-read; clipboard-write" allowfullscreen></iframe>
+
+TODO: Explanation of intent and links 
+
+# **Prioritization**
+
+  (TODO)
+
+
 # **Roadmap**
 
 Our goal is to create an interoperable OMOP extension that enables application of all OMOP analysis tools to rich oncology data.
 
-To view our current and near term goals see our:
+For more information see:
 
   - [Development Effort documentation](development.html) 
   - and [OHDSI Github - Oncology Release 2.0 Project](https://github.com/orgs/OHDSI/projects/13)
