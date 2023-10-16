@@ -36,10 +36,44 @@ subgroup|schedule|meeting details|Team Lead
 
 ## **Site Map**
 
-**(TODO: Redo )**
 
 This site contains the following sections:
 
-Section | Content 
-:-------------------------|:----------------------------------------------
+<br>
 
+**[Background](background.html)**
+
+|  |    |
+| -------- | :----------- |
+| [Problem Space](background.html#Problem_Space)      | High level summary of working group mission |
+| [Goals](background.html#Goals)        | Goals of working group |
+| [Challenges](background.html#Challenges)      | Core challenges of effort |
+| [Publications/Presentations](background.html#PublicationsPresentation)      | Links to some relevant publications & presentations |
+
+**Development Effort** 
+ 
+| | | 
+| -------- | :----------- |
+| **[Development Overview](development.html)**      | Overview of current development effort |
+| [Project Management](development.html#Project_Management)      | Overview of current development effort |
+| **[Progress](progressMap.html)**      |   |
+| [Prioritization](progressMap.html#Prioritization)      | Overview of current development effort |
+| [Miro Map](progressMap.html#Miro_Map)      | Overview of current development effort |
+| [Roadmap](progressMap.html#Roadmap)      | Overview of current development effort |
+| **[Github Project Orientation](githubProject.html)**      |   |
+| [Approach](githubProject.html#Approach)      | Overview of current development effort |
+| [Architecture](githubProject.html#Architecture)      | Overview of current development effort |
+| [Project Views](githubProject.html#Project_Views)      | Overview of current development effort |
+| [Example Walkthrough](githubProject.html#Approach)      | Overview of current development effort |
+| **[Getting Involved](gettingInvolved.html)**      |  |
+| [Collaboration Channels](gettingInvolved.html#join_collaboration_channels)      | Overview of current development effort |
+| [Review Project Documentation](gettingInvolved.html#Review_Project_Documentation)      | Overview of current development effort |
+
+
+**[Conventions](conventions.html)**
+
+ 
+| | | 
+| -------- | :----------- |
+| [Diagnostic](conventions.html#Diagnostic)      | Overview of current development effort |  |
+| [Treatment](conventions.html#Treatment)      | Overview of current development effort |

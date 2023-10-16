@@ -8,23 +8,38 @@ output:
           collapsed: false
 ---
 
+
+
+# **Overview**
+
+<br>
+
+## **Architecture**
+
+ - While most of the relevant "issues" exist within the OHDSI/OncologyWG repository, the project itself lives at the organization (OHDSI) level: https://github.com/orgs/OHDSI/projects/13
+ - You can navigate the issues through the repository if you wish but it is much more organized and intuitive to leverage the "Views" within the project (see: Project Views below)
+
+ 
 --- 
 
-# **Approach**
+## **Strategy**
 
-TODO: bullet summary points
-e.g. breaking up into small pieces; everything ends with documentation; linear development cycle; evolving scope, etc. 
+ - Leverage community feedback to establish dynamic inventory of maturity tasks 
+ - Break down the problems into granular tasks
+ - Follow a linear development cycle (see below) that always ends in validation and documentation 
+ - Enable asynchronous development and contributions independent of whether able to attend meetings 
+ - Prioritize work based on use cases but allow contributors to focus on what content applies to them 
+ - Enable contributions from all levels of technical experience 
+ - The end deliverables for each convention include:
+    - Documentation within the Github.io page
+    - Additions to delta "concept" and "concept_relationship" tables (see: [delta vocab readme](https://github.com/OHDSI/OncologyWG/tree/master/deltaVocab#ohdsi-oncology-workgroup-deltavocab))
 
----
-
-## Architecture 
-
- - (TODO) Explanation of project vs. github repo 
- - (TODO) Navigation of project vs. Github issues
- - (TODO) End deliverables will be: building concept and concept_relationship tables; documentation/conventions; deployment tool
+--- 
 
 
-## Project Views 
+
+
+## **Project Views**
 
  - (TODO) 1) illustrate the intention of each view
  - (TODO) 2) show can one can contribute to specific task types by navigating views 
@@ -32,7 +47,12 @@ e.g. breaking up into small pieces; everything ends with documentation; linear d
 
 
 
-# **Example vertical sprint walkthrough**
+
+---
+
+<br>
+
+# **Example walkthrough**
 
  - Top level: Task groups 
 

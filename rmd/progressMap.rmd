@@ -12,15 +12,17 @@ output:
 
 ---
 
+# **Prioritization**
+
+  (TODO)
+
+
+
 # **Miro Map**
 
 <iframe width="768" height="432" src="https://miro.com/app/live-embed/uXjVNeNGMhQ=/?moveToViewport=7473,-157,1086,1135&embedId=264604379153" frameborder="0" scrolling="no" allow="fullscreen; clipboard-read; clipboard-write" allowfullscreen></iframe>
 
 TODO: Explanation of intent and links 
-
-# **Prioritization**
-
-  (TODO)
 
 
 # **Roadmap**
