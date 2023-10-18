@@ -83,7 +83,7 @@ begin
 		GROUP BY hc.root_ancestor_concept_id,
 			hc.descendant_concept_id;
 	END LOOP;
-end; $$
+end $$;
 
 
 -- --remove non-standard records in descendant_concept_id
@@ -129,10 +129,7 @@ WHERE ancestor_concept_id IN (
     	SELECT *
     	FROM dev.concept
     	where standard_concept is null
-    	or standard_concept = ''
-    	EXCEPT 
-    	SELECT * 
-    	FROM prod.concept) c
+    	or standard_concept = '') c
 );
 
 DELETE FROM concept_ancestor ca
@@ -142,10 +139,7 @@ WHERE descendant_concept_id IN (
     	SELECT *
     	FROM dev.concept
     	where standard_concept is null
-    	or standard_concept = ''
-    	EXCEPT 
-    	SELECT * 
-    	FROM prod.concept) c
+    	or standard_concept = '') c
 );
 
 drop table temporary_ca_groups$ cascade;

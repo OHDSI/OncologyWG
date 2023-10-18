@@ -7,7 +7,9 @@ output:
         toc_float:
           collapsed: false
 ---
-
+```{r load_packages, message=FALSE, warning=FALSE, include=FALSE} 
+library(fontawesome)
+```
 
 Conventions
 
@@ -19,11 +21,10 @@ Conventions
 
 # **Diagnostic**
 
-<br>
 
-## <img src="images/green-check.png"></img> Primary Diagnosis
 
-(Placeholder)
+## Primary Diagnosis
+
 
 Cancer diagnoses are recorded within the CONDITION table, ideally with ICDO3 concepts. Specific attributes or details about that condition which are not contained within the concept are attached to these condition records as MEASUREMENTS, referred to as Condition Modifiers, which are described below. 
 
@@ -32,6 +33,9 @@ Cancer diagnoses are recorded within the CONDITION table, ideally with ICDO3 con
 ---
 
 ## **Condition Modifiers**
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
 
 ---
 
@@ -65,9 +69,15 @@ An example condition modifier record within the measurement table would contain:
 
 ---
 
-### <img src="images/green-check.png"></img> Date of Initial Diagnosis 
+###  Date of Initial Diagnosis {.tabset .tabset-fade}
 
-(Placeholder)
+> `r fa("circle-check", fill="green")` Complete
+
+
+> `r fa("circle-info", prefer_type="solid")`         Condition Modifier
+
+
+#### Description
 
 The date of initial diagnosis can be represented in the OMOP CDM by mapping to the correct concept in the Cancer Modifier vocabulary and represented as a MEASUREMENT, or rather, a cancer modifier. This can be an important data point from the source to distinguish this particular date as the most reliable diagnosis date of a patient's cancer and can, depending on various factors, substantially vary in a non-trivial way from other diagnosis dates in the CONDITION_OCCURRENCE table for the same disease occurrence.
 
@@ -83,6 +93,8 @@ If the source data record in question is not confirmed to reliably represent the
 |Concept ID | **734306**|
 |Concept code | init_diag|
 
+#### Mapping
+
 Adding this condition modifier would look something like:
 
 ```{sql eval=FALSE, echo=TRUE}
@@ -93,12 +105,33 @@ Adding this condition modifier would look something like:
   1147127 as modifier_of_field_concept_id -- static for all condition modifiers
   temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
 ```
+---
 
-<br>
+#### Usage
+
+Finding conditions which have the "initial diagnosis date" flag (modifier) can be done by:
+```{sql eval=FALSE, echo=TRUE}
+  SELECT * 
+  FROM CONDITION_OCCURRENCE co
+  WHERE CONDITION_OCCURRENCE_ID IN (
+    SELECT modifier_of_event_id
+    FROM measurement
+    WHERE measurement_concept_id = 734306 -- Initial diagnosis
+    AND modifier_of_field_concept_id = 1147127 -- Condition_Occurrence
+)
+```
 
 ---
 
-### <img src="images/green-check.png"></img> TNM  
+### TNM {.tabset .tabset-fade}
+
+
+> `r fa("circle-check", fill="green")` Complete
+
+> `r fa("circle-info", prefer_type="solid")`         Condition Modifier
+
+
+#### Description
 
 Circumvent the concept mappings and map directly to the standard concepts within the 'Cancer Modifier' vocabulary by concatenating your source data and joining on the concept code. 
 
@@ -111,7 +144,12 @@ The concept code has 4 components that the ETL developer will need to concatenat
 
 The concept code format is : [c/p]-[version]th_AJCC/UICC-[TNM Value]
 
+---
+
+#### Mapping 
+
 For example : c-7th_AJCC/UICC-T1c2
+
 Above: TNM value of T1c2, clinically staged, defined by the 7th version of AJCC/UICC
   
 To find the correct standard concept, you need to join to the concept code, as shown here:
@@ -127,19 +165,221 @@ To find the correct standard concept, you need to join to the concept code, as s
 
 ---
 
-### <img src="images/stop.png"></img> Stage Group 
+#### Usage 
 
-- TODO 
+There are multiple methods of navigating concept hierarchies for TNM depending on the use case. 
+
+Using M1a for example:
+
+Find all concepts that fall under "M1a", regardless of version or clin vs. path
+```{sql eval=FALSE, echo=TRUE}
+  SELECT descendant_concept_id
+  FROM concept_ancestor
+  WHERE ancestor_concept_id = 1635100 -- AJCC/UICC M1a Category
+```
+
+Find all concepts that fall under "M1a", regardless of version but ONLY path
+```{sql eval=FALSE, echo=TRUE}
+  SELECT descendant_concept_id
+  FROM concept_ancestor
+  WHERE ancestor_concept_id = 1634312 -- AJCC/UICC Pathological M1a Category
+```
+
+Find all concepts that fall under "M1a", are pathological only, and are only using the 7th version
+```{sql eval=FALSE, echo=TRUE}
+  SELECT descendant_concept_id
+  FROM concept_ancestor
+  WHERE ancestor_concept_id = 1634268 -- AJCC/UICC 7th Pathological M1a Category
+```
+
+Lastly, you can search for the concept directly given the structured concept codes. For the same example as above:
+```{sql eval=FALSE, echo=TRUE}
+  SELECT concept_id
+  FROM concept
+  WHERE vocabulary_id = 'Cancer Modifier'
+  AND concept_class_id = 'Staging/Grading'
+  AND standard_concept = 'S'
+  AND concept_code = 'p-7th_AJCC/UICC-M1a'  -- Pathological + version + code
+```
+
 
 ---
 
-### <img src="images/stop.png"></img> Stage Group Grading
-- TODO 
+### Stage Group {.tabset .tabset-fade}
+
+> `r fa("circle-check", fill="green")` Complete
+
+
+> `r fa("circle-info", prefer_type="solid")`         Condition Modifier
+
+#### Description
+
+Circumvent the concept mappings and map directly to the standard concepts within the 'Cancer Modifier' vocabulary by concatenating your source data and joining on the concept code. 
+
+The concept code has 4 components that the ETL developer will need to concatenate to match. Those components are:
+
+1. Clinical vs. Pathological ( c or p)
+2. Version of AJCC/UICC (6th, 7th or 8th supported)
+3. Specification of AJCC/UICC-Stage (static value)
+4. The Stage Group from the source
+
+The concept code format is : [c/p]-[version]th_AJCC/UICC-Stage-[Stage Group]
+
+  
+---
+
+#### Mapping
+
+For example : c-7th_AJCC/UICC-Stage-3A1
+
+Above: Stage Group of 3A1, clinically staged, defined by the 7th version of AJCC/UICC
+  
+To find the correct standard concept, you need to join to the concept code, as shown here:
+
+```{sql eval=FALSE, echo=TRUE}
+  SELECT concept_id
+  FROM concept
+  WHERE vocabulary_id = 'Cancer Modifier'
+  AND concept_class_id = 'Staging/Grading'
+  AND standard_concept = 'S'
+  AND concept_code = 'c-7th_AJCC/UICC-Stage-3A1'
+```
+
+  
+---
+
+#### Usage
+
+There are multiple methods of navigating concept hierarchies for Stage Group depending on the use case. 
+
+Using Stage Group 3A1 for example:
+
+Find all concepts that fall under "3A1", regardless of version or clin vs. path
+```{sql eval=FALSE, echo=TRUE}
+  SELECT descendant_concept_id
+  FROM concept_ancestor
+  WHERE ancestor_concept_id = 1635412 -- AJCC/UICC Stage 3A1 Category
+```
+
+Find all concepts that fall under "3A1", regardless of version but ONLY path
+```{sql eval=FALSE, echo=TRUE}
+  SELECT descendant_concept_id
+  FROM concept_ancestor
+  WHERE ancestor_concept_id = 1633303 -- AJCC/UICC Pathological 3A1 Category
+```
+
+Find all concepts that fall under "3A1", are pathological only, and are only using the 7th version
+```{sql eval=FALSE, echo=TRUE}
+  SELECT descendant_concept_id
+  FROM concept_ancestor
+  WHERE ancestor_concept_id = 1635016 -- AJCC/UICC 7th Pathological 3A1 Category
+```
+
+Lastly, you can search for the concept directly given the structured concept codes. For the same example as above:
+```{sql eval=FALSE, echo=TRUE}
+  SELECT concept_id
+  FROM concept
+  WHERE vocabulary_id = 'Cancer Modifier'
+  AND concept_class_id = 'Staging/Grading'
+  AND standard_concept = 'S'
+  AND concept_code = 'p-7th_AJCC/UICC-Stage-3A1'  -- Pathological + version + code
+```
+
+
 
 ---
 
-### <img src="images/stop.png"></img> Metastasis
-- Revision to come 
+### Grading {.tabset .tabset-fade} 
+
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
+> `r fa("circle-info", prefer_type="solid")`         Condition Modifier
+
+
+#### Description
+
+  Abcdefg
+
+---
+
+#### Mapping
+
+  HIJKLM
+
+---
+
+#### Usage
+
+  NOPQ
+  
+---
+
+
+### Dimension  {.tabset .tabset-fade} 
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
+> `r fa("circle-info", prefer_type="solid")`         Condition Modifier
+
+
+#### Description
+
+*Caveat*
+
+TODO
+
+---
+
+#### Mapping
+
+  HIJKLM
+
+---
+
+#### Usage
+
+  NOPQ
+  
+---
+
+### Laterality  {.tabset .tabset-fade} 
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
+> `r fa("circle-info", prefer_type="solid")`         Condition Modifier
+
+
+#### Description
+
+*Caveat*
+
+TODO
+
+---
+
+#### Mapping
+
+  HIJKLM
+
+---
+
+#### Usage
+
+  NOPQ
+  
+---
+
+---
+
+### Metastasis {.tabset .tabset-fade} 
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
+
+
+
+#### Description
 
 (Placeholder)
 
@@ -156,7 +396,18 @@ The standard Metastasis concepts can be found within:
 
 There is an overarching concept of 'Metastasis' (https://athena.ohdsi.org/search-terms/terms/36769180) . For one, this is important as it is a destination standard concept for sources where the data is vague to the point that you only know metastasis occurred. A secondary usage of this would be to find all of the standard concepts in which fall under it. 
 
-To find all concepts in that hierarchy:
+
+---
+
+#### Mapping
+
+  TODO
+
+---
+
+#### Usage
+
+ To find all concepts in that hierarchy:
 
 ```{sql eval=FALSE, echo=TRUE}
   SELECT descendant_concept_id -- The various concepts under the metasis hierarchy
@@ -177,27 +428,47 @@ For example, a record of 'Metastasis to Lung' would look like:
   temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
 ```
 
+  
+---
 
 ---
 
-### <img src="images/stop.png"></img> Extension/Invasion
-- Revision to come
+### Extension/Invasion {.tabset .tabset-fade} 
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
+
+
+#### Description
 
 *Caveat*
 
 These will be implemented similarly to the Metastasis approach, as Cancer Modifiers or MEASUREMENTS, but we are currently waiting on a revision of the concepts within this class of the Cancer Modifier vocabulary before mapping and providing examples as there is an absence of hierarchical relationships.  
 
+
 ---
 
-### <img src="images/stop.png"></img> Dimension 
-- TODO 
+#### Mapping
 
---- 
+  HIJKLM
+
+---
+
+#### Usage
+
+  NOPQ
+  
+---
+
+
+---
+
 
 # **Treatment**
 
 
-(Placeholder)
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
 
 **Treatment representation is currently being finalized and this documentation will be updated accordingly** 
 
@@ -205,8 +476,10 @@ Treatment records are similar to conditions in that the concepts themselves do n
 
 ---
 
-## <img src="images/stop.png"></img> Surgery   
-(TODO)
+## Surgery   
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
 
 Representation: 
 
@@ -223,9 +496,9 @@ Examples:
 
 ---
 
-## <img src="images/stop.png"></img> Drug Therapy 
+## Drug Therapy 
 
-(TODO) 
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
  
 **Scope**
 
@@ -253,8 +526,10 @@ Examples:
 
 ---
 
-##  <img src="images/stop.png"></img> Radiotherapy
-(TODO)
+##  Radiotherapy
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
 
 Representation:
 

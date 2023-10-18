@@ -1,0 +1,112 @@
+---
+title: '<div><img src="images/ohdsi40x40.png"></img> Development Overview</div>'
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 2
+        toc_float:
+          collapsed: false
+---
+
+
+---
+
+# **Purpose and Goals**
+
+<br> 
+
+> **"<ins>Collaboratively</ins> mature and <ins>expand</ins> the representation of oncology data in OMOP by establishing <ins>standard</ins> and <ins>transparent</ins> conventions"**
+
+<br> 
+
+**Collaboration**
+
+ - Encourage a diverse community to contribute towards global, comprehensive standards
+ - Leverage asynchronous mechanisms of collaboration for greater international interoperability
+
+
+
+**Expand**
+
+ - Create and expand conventions to accommodate the various representations of oncology data in the OHDSI community
+ - Supporting both observational and curated data sources
+ - Source EMR and nation agnostic
+ 
+**Standard**
+
+ - Unambiguous, standardized conventions
+ - For a specific type of source data, there is a single standard representation for it
+
+**Transparent**
+
+ - Thoroughly document all conventions from both an ETL and analysis perspective to facilitate standardized adoption and interoperability 
+ - Clearly and publicly describe the processes and outcomes of this effort
+
+<br>
+
+---
+
+# **Context**
+
+ - An extensive and international outreach effort has been conducted to aggregate the gaps and pain points of implementing oncology data in OMOP, which is the starting point of this project. All of that feedback has been ingested and organized within a Github Project. That said, we know what we know now but that list is always expanding, for the better. 
+ -	We are moving at a faster pace than the official OHDSI vocabulary releases and consequently will be maintaining a “delta”, or “development”, version of the vocabularies. At the end of this effort we plan to have these changes folded back into the standards. Additionally we will consult with the vocabulary team when applicable.
+ -  A global oncology standard cannot be static. It must be iteratively expanding and maturing and requires an active community and extensible solutions. 
+ - A philanthropic funder has invested in this effort and is exploring additional collaborations and opportunities to accelerate and expand upon it. 
+ 
+<br>
+
+--- 
+ 
+# **Scope**
+
+ - The majority of the outlined work is either falls into one of four buckets:
+    1) Deciding on a convention
+    2) Investigating vocabularies
+    3) Modifying the vocabularies 
+    4) Creating documentation
+ - The tasks have been broken down into smaller more easily tackled chunks such as “investigating an issue” or “complete outstanding vocabulary changes that have content provided”, or “documentation of _”. The intent is to enable many small contributions rather than few large ones.
+ - The plan is to complete as much as we can, prioritized by use cases, in preparation for a new stable release. After that milestone is reached, we will continue to iterate and improve while adhering to a stable release schedule.
+
+<br>
+
+---
+
+
+# **What we need**
+
+ - Diverse community feedback 
+   - Feedback on decision points - *Will this solution work for your data?*
+   - Any experienced issues, hurdles or ambiguities
+   - Use cases, studies, ambitions 
+ - Community contributions
+    - Vocabulary:
+      - Investigations - *e.g., are there duplicate standard concepts for laterality?*  
+      - Modifications  - *e.g., provide the modifications to de-standardize duplicate laterality concepts*
+    - Documentation
+      - Identifying gaps 
+      - Populating content 
+
+
+<br>
+
+---
+
+
+# **Project Management**
+
+ - Enabling studies is the primary determining factor for prioritization of effort
+ - The Github Project will be the main resource for tracking the project deliverables, progress, and avenues for contribution
+ - To enable international contributions and rapid progress, we are facilitating communication both within meetings and asynchronously through Github and the OHDSI Oncology MS Teams. Any decision points discussed during the calls will also be represented in Github/Teams for further discussion before final decisions are made
+
+<br>
+
+
+
+## Github Project
+
+-   This development effort will be tracked and managed through Github.
+-   The link to the project can be found here: <https://github.com/orgs/OHDSI/projects/13>
+-   Please review the Github Project Orientation materials: [Github Project Documentation](githubProject.html)
+-   To learn how to best get involved, please also visit: [Getting Involved](gettingInvolved.html)
+
+

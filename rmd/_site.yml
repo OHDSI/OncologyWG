@@ -13,29 +13,33 @@ navbar:
     - icon: fa-github
       href: https://github.com/OHDSI/OncologyWG
   left:
-    - icon: fa-home
+    - text: " Home"
+      icon: fa-home
       href: index.html
-    - text: " Background"
-      icon: fa-info-circle
+    - text: " Background"      
+      icon: fa-circle-info
       href: background.html
-    - text: " Approach"
-      icon: fa-cogs
+    - text: "   Development Effort"
+      icon: fa-people-group
       menu:
-        - text: " Model"
-          href: model.html
-          icon: fa-sitemap
-        - text: " Conventions"
-          icon: fa-gavel
-          href: conventions.html
-    - text: "Implementation"
-      icon: fa-plug
-      menu:
-        - text: " Install"
-          href: installation.html
-          icon: fa-download
-        - text: " Populate Data"
-          href: population.html
-          icon: fa-database
-    - text: " Tooling"
+        - text: " Development Overview"
+          href: development.html
+          icon: fa-map
+        - text: " Progress Map"
+          href: progressMap.html
+          icon: fa-list-check
+        - text: " Github Project Orientation"
+          href: githubProject.html
+          icon: fa-github
+        - text: "   Getting Involved"
+          href: gettingInvolved.html
+          icon: fa-user-plus
+    - text: " Conventions"
+      icon: fa-gavel
+      href: conventions.html
+    - text: " Model"
+      href: model.html
+      icon: fa-sitemap
+    - text: " Tools"
       icon: fa-wrench
       href: tooling.html  

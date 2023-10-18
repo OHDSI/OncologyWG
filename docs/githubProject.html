@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title> Github Project</title>
+
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"><div><img src="images/ohdsi16x16.png"></img> OHDSI Oncology WG </div></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+     Home
+  </a>
+</li>
+<li>
+  <a href="background.html">
+    <span class="fa fa-circle-info"></span>
+     
+     Background
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-people-group"></span>
+     
+       Development Effort
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="development.html">
+        <span class="fa fa-map"></span>
+         
+         Development Overview
+      </a>
+    </li>
+    <li>
+      <a href="progressMap.html">
+        <span class="fa fa-list-check"></span>
+         
+         Progress Map
+      </a>
+    </li>
+    <li>
+      <a href="githubProject.html">
+        <span class="fa fa-github"></span>
+         
+         Github Project Orientation
+      </a>
+    </li>
+    <li>
+      <a href="gettingInvolved.html">
+        <span class="fa fa-user-plus"></span>
+         
+           Getting Involved
+      </a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="conventions.html">
+    <span class="fa fa-gavel"></span>
+     
+     Conventions
+  </a>
+</li>
+<li>
+  <a href="model.html">
+    <span class="fa fa-sitemap"></span>
+     
+     Model
+  </a>
+</li>
+<li>
+  <a href="tooling.html">
+    <span class="fa fa-wrench"></span>
+     
+     Tools
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/OHDSI/OncologyWG">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
+Github Project</h1>
+
+</div>
+
+
+<div id="overview" class="section level1">
+<h1><strong>Overview</strong></h1>
+<p><br></p>
+<div id="architecture" class="section level2">
+<h2><strong>Architecture</strong></h2>
+<ul>
+<li>While most of the relevant “issues” exist within the
+OHDSI/OncologyWG repository, the project itself lives at the
+organization (OHDSI) level: <a
+href="https://github.com/orgs/OHDSI/projects/13"
+class="uri">https://github.com/orgs/OHDSI/projects/13</a></li>
+<li>You can navigate the issues through the repository if you wish but
+it is much more organized and intuitive to leverage the “Views” within
+the project (see: Project Views below)</li>
+</ul>
+<hr />
+</div>
+<div id="strategy" class="section level2">
+<h2><strong>Strategy</strong></h2>
+<ul>
+<li>Leverage community feedback to establish dynamic inventory of
+maturity tasks</li>
+<li>Break down the problems into granular tasks</li>
+<li>Follow a linear development cycle (see below) that always ends in
+validation and documentation</li>
+<li>Enable asynchronous development and contributions independent of
+whether able to attend meetings</li>
+<li>Prioritize work based on use cases but allow contributors to focus
+on what content applies to them</li>
+<li>Enable contributions from all levels of technical experience</li>
+<li>The end deliverables for each convention include:
+<ul>
+<li>Documentation within the Github.io page</li>
+<li>Additions to delta “concept” and “concept_relationship” tables (see:
+<a
+href="https://github.com/OHDSI/OncologyWG/tree/master/deltaVocab#ohdsi-oncology-workgroup-deltavocab">delta
+vocab readme</a>)</li>
+</ul></li>
+</ul>
+<hr />
+</div>
+</div>
+<div id="project-navigation" class="section level1">
+<h1><strong>Project Navigation</strong></h1>
+<p><br></p>
+<div id="task-status" class="section level2">
+<h2><strong>Task status</strong></h2>
+<p><br></p>
+<p>All views within the project use the same four “status” groups:</p>
+<div>
+<img src="images/task_status.png"></img>
+</div>
+<p><br></p>
+<dl>
+<dt>Blocked</dt>
+<dd>
+The prerequisites tasks are not complete and consequently the task is
+blocked.
+</dd>
+<dt>Outstanding</dt>
+<dd>
+Available to be worked on but currently unassigned.
+</dd>
+<dt>In Progress</dt>
+<dd>
+Assigned and being worked on.
+</dd>
+<dt>Complete</dt>
+<dd>
+Finished.
+</dd>
+</dl>
+<p><br></p>
+<hr />
+</div>
+<div id="project-views" class="section level2">
+<h2><strong>Project Views</strong></h2>
+<p><br></p>
+<p>The Github “project” can be thought of as a mechanism to “slice up”
+or organize the Github issues into different groupings and subsets. Each
+“view” is a custom representation of those issues displayed for a
+specific reason. The most relevant of these views are described
+below.</p>
+<div>
+<img src="images/project_views.png"></img>
+</div>
+<p><strong>Board</strong></p>
+<ul>
+<li>This view display all issues independent of type, grouped by status.
+This is the best option for viewing available tasks, changing their
+status, and assigning the tasks to individuals</li>
+</ul>
+<p><strong>Task Groups</strong></p>
+<ul>
+<li>‘Task groups’ are a collection of steps that we repeat for every
+convention. The intent is that every convention needs to go through the
+same (linear) process and end with the same steps of validation and
+documentation. Clicking on any task group issue will give you the same
+five sub-tasks (with slightly different names to represent the parent
+task group):</li>
+</ul>
+<div>
+<img src="images/tasks.png"></img>
+</div>
+<p><br></p>
+<ul>
+<li>Task groups allow us to view the overall progress of “components”
+and assist with prioritization. For example, if a use case requires that
+conventions for “Metastasis” to be completed, we can view what the
+remaining work is.</li>
+<li>The “example walkthrough” below gives more detail into Task
+Groups</li>
+</ul>
+<p><strong>Others</strong></p>
+<ul>
+<li>The remaining views are intended to view all issues of a specific
+type within the “Task Group” process for instances where you want to
+drill down to a specific action.</li>
+<li>Those are:
+<ul>
+<li>Decision Points</li>
+<li>Investigations</li>
+<li>Outstanding (vocab) Work</li>
+<li>Validate and Ingest</li>
+<li>Documentation</li>
+</ul></li>
+<li>These views can be helpful if a particular contributor is
+comfortable in a certain domain and can allow them to view the
+available</li>
+</ul>
+<hr />
+<p><br></p>
+</div>
+</div>
+<div id="example-walkthrough" class="section level1">
+<h1><strong>Example walkthrough</strong></h1>
+<p><br></p>
+<hr />
+<div id="task-group" class="section level2">
+<h2><strong>Task group</strong></h2>
+<p>Start with a Task Group: a unit of work of orders related to a
+component of oncology research. If you’d like to contribute to a
+specific Task Group, add yourself as an assignee and change the status
+from <strong>Outstanding</strong> to <strong>In Progress</strong></p>
+<div>
+<img src="images/gp_taskview.png"></img>
+</div>
+<p><br></p>
+<p>Within the top comment on the Task Group issue, the Problem Space
+section contextualizes the problem and the Tasks section links to
+subissues that outline the steps for solving it.</p>
+<p>Within each Task Group, there are typically five subissues: Resolve
+decision points, Investigate &amp; create tasks, Complete outstanding
+work, Validate and ingest, and Document.</p>
+<div>
+<img src="images/problemSpace.png"></img>
+</div>
+<p><br></p>
+<hr />
+</div>
+<div id="resolve-decision-points" class="section level2">
+<h2><strong>Resolve Decision points</strong></h2>
+<p>This subissue lists the decision points that need to be finalized
+before work can begin on the Task Group. Decision points must be
+finalized by the OHDSI Oncology WG and often require input from
+oncologists and informaticists before they are introduced as discussion
+topics at a WG meeting. Generally, all decision point issues should be
+finalized and closed before work begins on a task group.</p>
+<div>
+<img src="images/resolveDecisionPoints.png"></img>
+</div>
+<p><br></p>
+<hr />
+</div>
+<div id="investigate-and-create-tasks" class="section level2">
+<h2><strong>Investigate and Create Tasks</strong></h2>
+<p>The next task in the Task Group involves scoping the work necessary
+to solve the problems laid out in the Problem Space. In the context of
+vocabulary development, this task may be broken into two main steps. The
+first involves outlining the preparatory work necessary to enable the
+Task Group’s main work. This means identifying vocabularies with
+problematic terms and creating a checklist for the preparatory work
+required:</p>
+<div>
+<img src="images/investigateCreateEmpty.png"></img>
+</div>
+<p>After outlining the preparatory work, the second step of this task
+involves compiling the lists of terms from problematic vocabularies that
+will be addressed and repaired in the following task. Each of these
+lists of terms should become their own individual issue which is then
+linked to next task (Complete outstanding work):</p>
+<div>
+<img src="images/workOrder.png"></img>
+</div>
+<p>These issues, which contain the first actual work orders, should be
+structured as shown above: a brief description of the work that needs to
+be done and a set of tables containing all of the concepts involved. In
+the task pictured above, the tables involved are a comprehensive
+“source” table of the concepts that need to be altered (likely
+destandardized and mapped to standard concepts), and the table of
+“target” concepts that should be mapped to.</p>
+<ul>
+<li><strong>NOTE</strong>: <em>Linking to work orders.</em> A key part
+of this Task is to populate the Complete outstanding work ticket by
+linking to the work order tickets. This can be done by editing the top
+comment in the Complete outstanding work ticket as such:</li>
+</ul>
+<div>
+<img src="images/linkToWorkOrders.png"></img>
+</div>
+<p>Notice that checkboxes for task lists are created using “- [ ]” (note
+the space between the dash and open bracket, and the space between
+brackets). Issues are linked to checkboxes by referencing their issue
+number.</p>
+<p>After all work order issues are created, linked to the “Complete
+outstanding work” issue, and referenced in a comment on this issue, all
+checkboxes in this issue can be checked and the issue closed:</p>
+<div>
+<img src="images/InvestigateAndCreateTasksFinished.png"></img>
+</div>
+<p><br></p>
+<hr />
+</div>
+<div id="complete-outstanding-work" class="section level2">
+<h2><strong>Complete outstanding work</strong></h2>
+<p>In the last task, you worked to add content to the top comment in
+this issue:</p>
+<div>
+<img src="images/completeOutstandingWorkEmpty.png"></img>
+</div>
+<p>At this point, you are ready to start preparing the tables to create
+changes in the OHDSI Development Vocabulary.</p>
+<p>The example above demonstrated the structure of the work order: a
+description of work to be done and a set of tables necessary to do the
+work. To complete the work order, we will download the linked CSV files,
+create empty concept and concept_relationship files, and start
+destandardizing</p>
+<div>
+<img src="images/excelFiles.png"></img>
+</div>
+<p>It’s a good idea to adopt a naming convention that works for your
+data management style. Here, concept_SNOMEDtoCM_sg indicates that these
+are the SNOMED stage group concepts that are being destandardized and
+will be mapped to the Cancer Modifier stage group concepts.</p>
+<div>
+<img src="images/conceptTableExcel.png"></img>
+</div>
+<p>The delta concept table (bottom) is fairly easy to create in this
+case. Since we are destandardizing all of these SNOMED concepts (left),
+we simply need to copy all of the terms to our new concept table and
+remove the ‘S’ from the standard_concept column.</p>
+<ul>
+<li><strong>NOTE</strong>: watch out for the date formats. While
+accurate dates are not explicitly necessary for the Oncology WG efforts,
+having dates formatted as above (DD/MM/YYYY) can create errors for
+downstream tools. Use MM/DD/YYYY, MM-DD-YYYY, or YYYY-MM-DD, and always
+double check that your dates are saved correctly by opening your files
+in a non-Excel editor.</li>
+</ul>
+<div>
+<img src="images/conceptRelationshipExcel.png"></img>
+</div>
+<p>Now that the SNOMED concepts are destandardized, they need to be
+mapped to the standard Cancer Modifier concepts. This step involves
+combing through the table of Cancer Modifier concepts (bottom left) to
+find the “matching” term and adding a row to delta concept_relationship
+table (right). Remember that every “Maps to” relationship should have a
+reciprocal “Mapped from” relationship (not shown).</p>
+<p>As you work, it can be very useful to leave comments on your thought
+process or anything out of the ordinary directly on the work order
+ticket:</p>
+<div>
+<img src="images/leaveCommentsThoughtProcess.png"></img>
+</div>
+<p>After you’ve completed the work for a work order ticket, attach your
+output files to a comment and close the issue:</p>
+<div>
+<img src="images/attachOutputFileToComment.png"></img>
+</div>
+<p>Closing the tickets will automatically check the boxes in the Task
+issue. Once all of the listed tasks have been completed, the entire Task
+issue can be closed:</p>
+<div>
+<img src="images/completeOutstandingWorkDONE.png"></img>
+</div>
+<p><br></p>
+<hr />
+</div>
+<div id="validate-and-ingest" class="section level2">
+<h2><strong>Validate and ingest</strong></h2>
+<blockquote>
+<p><svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM192 160H320c17.7 0 32 14.3 32 32V320c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32V192c0-17.7 14.3-32 32-32z"/></svg>
+A small number of community members (who are familiar with this process)
+will handle the majority of validation and ingestion requests thus it is
+not required that these processes be fully understood by the majority.
+For more information see the Validation tooling <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/vocabTools#tools-used-to-assist-with-developing-omop-vocabulary">readme</a></p>
+</blockquote>
+<p>You will need the vocabTools directory and its contents downloaded to
+your computer to make use of the tools in the following steps. The
+easiest way to download vocabTools (and subsequently push Oncology
+Development Vocabulary changes back to GitHub) is by cloning the
+OncologyWG:</p>
+<p><code>git clone https://github.com/OHDSI/OncologyWG.git</code></p>
+<p>Part of the validate and ingest process involves standing up a
+“vocab” database. The tools presented here expect and require a
+PostgreSQL database with schemas “prod” (an “official” OMOP Vocabulary)
+and “dev” (a copy of prod that will be altered and used for staging).
+You can assume these tools will work for you if you have a prod and dev
+schema set up in a Postgres database, or follow detailed instructions
+for setting them up <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/vocabTools/README.md#setting-up-a-development-database">here</a>.</p>
+<p>After your database is set up with a prod and a dev schema, update
+the config.txt file to the correct connection information.</p>
+<div>
+<img src="images/vocab_config_txt.png"></img>
+</div>
+<div id="validate" class="section level3">
+<h3>Validate</h3>
+<p>In the last task, you created concept and concept_relationship table
+fragments to complete the vocabulary work orders. In this step, we will
+validate these locally by integrating them into the dev schema of the
+database we have set up and comparing the augmented dev schema and prod
+schema.</p>
+<p>First, move all of the concept_<em>.csv and
+concept_relationship_</em>.csv files to the concept and
+concept_relationship directories in your local copy of vocabTools:</p>
+<div>
+<img src="images/conceptFolders.png"></img>
+</div>
+<p>With your concept and concept_relationship CSV files in the
+appropriate folders, you can start ingesting them using the Batch files
+in the vocabTools directory. Start with <code>updateConcept.bat</code>
+to update the concept table in the dev schema. After that has run,
+execute <code>updateConceptRelationship.bat</code> to update the
+concept_relationship table. You can visually verify that these scripts
+ran correctly by executing and examining the output from the
+<code>getConceptDiffs.bat</code> and
+<code>getConceptRelationshipDiffs.bat</code> scripts. These scripts
+output all rows from concept and concept_relationship table in the dev
+schema that don’t exist in the prod schema version.</p>
+<p>Once the concept and concept_relationship tables have been updated
+from the CSV files you created, you can update the concept_ancestor
+hierarchy by running <code>updateConceptAncestor.bat</code>.</p>
+<blockquote>
+<p>This process may take an hour or more to complete.</p>
+</blockquote>
+<p>After you’ve updated the concept_ancestor table, you can visually
+verify that the changes were made by running
+<code>getConceptAncestorDiffs.bat</code>. Again, this script may take a
+few minutes to run.</p>
+</div>
+<div id="ingest" class="section level3">
+<h3>Ingest</h3>
+<p>The Oncology Development Vocabulary is persisted as two CSV files
+that represent the set of changes that should be made to the concept and
+concept_relationship table. These files are stored on the OncologyWG
+GitHub repository in the <a
+href="https://github.com/OHDSI/OncologyWG/tree/vocabTools/deltaVocab">deltaVocab
+directory</a>. More information on “deltatVocab” can be found <a
+href="https://github.com/OHDSI/OncologyWG/blob/vocabTools/deltaVocab/README.md">here</a>.</p>
+<p>To “ingest” the changes that you have made to the Oncology
+Development Vocabulary, you will need to: 1. Add your changes to the
+deltaConcept.csv and deltaConceptRelationship.csv files 2. Add a
+deltaSummary file to summarize the changes that your additions make to
+the official OMOP Vocabulary 3. Create a pull request from a fork or
+branch of the OncologyWG GH to the master branch</p>
+<p>These steps are detailed below.</p>
+<div id="add-changes-to-deltavocab" class="section level4">
+<h4>Add changes to deltaVocab</h4>
+<p>Changes can be easily incorporated into the deltaVocab files by
+running <code>updateDelta.bat</code>. This script will look for, and
+ingest, any files in the vocabTools/concept and
+vocabTools/concept_relationship directories. It will also ensure that
+the most up-to-date deltaVocab is used as a starting point, and that
+only new changes are being added. Once this script has run successfully,
+the deltaVocab files on your computer will reflect your changes to the
+official OMOP Vocabulary, as well as all previously ingested
+changes.</p>
+</div>
+<div id="add-a-deltasummary-file" class="section level4">
+<h4>Add a deltaSummary file</h4>
+<p>A standardized script is used to create a summary of the changes
+made. You can use <code>getSummary.bat</code> to generate a table that
+summarizes the difference between what is in your dev schema and your
+prod schema across the concept, concept_relationship, and
+concept_ancestor tables. This script will output the summary table as a
+file called deltaSummary<currentDate>.txt in the deltaVocab folder.</p>
+<blockquote>
+<p>Note: The summary table will <em>not</em> be accurate if you have
+made any additional changes to the dev or prod schema since running the
+updateConcept*.bat scripts.</p>
+</blockquote>
+<div id="optional" class="section level5">
+<h5>Optional:</h5>
+<p>You can also choose to update the main deltaSummary file
+(deltaSummary.txt with no date in the filename), though this requires
+you to run the updateConcept*.bat scripts on the updated deltaVocab
+files. To update the main deltaSummary file: 1. Copy the deltaConcept
+and deltaConceptRelationship files to the vocabTools/concept and
+vocabTools/concept_relationship folders, respectively. 2. Rerun each
+update script (updateConcept.bat, updateConceptRelationship.bat,
+updateConceptAncestor.bat), thus updating your dev schema to the most
+up-to-date version of the Oncology Development Vocabulary (as of your
+changes). 3. Run <code>getSummary.bat full</code>. Specifying the
+argument “full” will update the main getSummary.txt file in
+deltaVocab.</p>
+</div>
+</div>
+<div id="ingest-to-github" class="section level4">
+<h4>Ingest to GitHub</h4>
+<p>Changes should be “ingested” via a Pull Request from your branch or
+fork of the OncologyWG to the master branch of OncologyWG:</p>
+<div>
+<img src="images/PRbranch2branch.png"></img>
+</div>
+<div>
+<img src="images/PRfork2fork.png"></img>
+</div>
+<p>If you’ve been working on your own branch/fork of the repo, simply
+commit and push your changes, select your branch/fork on <a
+href="https://github.com/OHDSI/OncologyWG/compare">a PR to OncologyWG
+GitHub</a>, and click <strong>Create Pull Request</strong>.</p>
+<p>If you’ve been working directly on the master branch, you will need
+to first move your changes to a new branch, commit, and push the branch
+to GitHub:</p>
+<pre><code>git checkout -b your_branch_name
+
+git add .
+git commit -m &quot;Your commit message here&quot;
+
+git push origin your_branch_name</code></pre>
+<p>After that, you can select your new branch on <a
+href="https://github.com/OHDSI/OncologyWG/compare">a PR to OncologyWG
+GitHub</a>, and click <strong>Create Pull Request</strong>.</p>
+<blockquote>
+<p>Note: Keep an eye out for feedback from the Oncology Development
+Vocabulary maintainers in the form of comments on your PR. They will let
+you if any changes need to be made before the PR can be accepted.</p>
+</blockquote>
+<p><br></p>
+<hr />
+</div>
+</div>
+</div>
+<div id="document" class="section level2">
+<h2><strong>Document</strong></h2>
+<p>TODO - (ironically…)</p>
+<p>// Placeholder:</p>
+<ul>
+<li>Documentation ends up in the ‘Conventions’ part of this site</li>
+<li>We use rmarkdown
+<ul>
+<li>Edit the RMD files</li>
+<li>rmarkdown::render_site() to produce html files with “docs/” - which
+is where github.io pages looks</li>
+</ul></li>
+<li>There are two methods for adding documentation:
+<ol style="list-style-type: decimal">
+<li><p>Use RStudio</p>
+<ul>
+<li>Edit the RMD files</li>
+<li>rmarkdown::render_site() to produce html files with “docs/” - which
+is where github.io pages looks</li>
+</ul></li>
+<li><p>Use GithubDev or other markdown editor</p>
+<ul>
+<li>Can edit and visualize resulting documentation without needing to
+use R</li>
+<li>Once completed, create a Pull Request</li>
+<li>There is a (finicky) Github Action in place that has the logic:
+<ul>
+<li>If a pull request gets created where anything in the “rmd/” folder
+was edited, then generate the HTML files</li>
+</ul></li>
+<li>By the time the pull request is reviewed, the “docs/” folder and
+contained HTML files should have been automatically generated from
+whatever you edited in “rmd/”</li>
+</ul></li>
+</ol></li>
+</ul>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

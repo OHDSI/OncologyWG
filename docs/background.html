@@ -11,9 +11,9 @@
 
 
 
-<title>Background</title>
+<title> Background</title>
 
-<script src="site_libs/header-attrs-2.21/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -29,14 +29,14 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 
 <style type="text/css">
@@ -332,70 +332,74 @@ div.tocify {
   <a href="index.html">
     <span class="fa fa-home"></span>
      
+     Home
   </a>
 </li>
 <li>
   <a href="background.html">
-    <span class="fa fa-info-circle"></span>
+    <span class="fa fa-circle-info"></span>
      
      Background
   </a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <span class="fa fa-cogs"></span>
+    <span class="fa fa-people-group"></span>
      
-     Approach
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="model.html">
-        <span class="fa fa-sitemap"></span>
-         
-         Model
-      </a>
-    </li>
-    <li>
-      <a href="conventions.html">
-        <span class="fa fa-gavel"></span>
-         
-         Conventions
-      </a>
-    </li>
-  </ul>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <span class="fa fa-plug"></span>
-     
-    Implementation
+       Development Effort
      
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="installation.html">
-        <span class="fa fa-download"></span>
+      <a href="development.html">
+        <span class="fa fa-map"></span>
          
-         Install
+         Development Overview
       </a>
     </li>
     <li>
-      <a href="population.html">
-        <span class="fa fa-database"></span>
+      <a href="progressMap.html">
+        <span class="fa fa-list-check"></span>
          
-         Populate Data
+         Progress Map
+      </a>
+    </li>
+    <li>
+      <a href="githubProject.html">
+        <span class="fa fa-github"></span>
+         
+         Github Project Orientation
+      </a>
+    </li>
+    <li>
+      <a href="gettingInvolved.html">
+        <span class="fa fa-user-plus"></span>
+         
+           Getting Involved
       </a>
     </li>
   </ul>
 </li>
 <li>
+  <a href="conventions.html">
+    <span class="fa fa-gavel"></span>
+     
+     Conventions
+  </a>
+</li>
+<li>
+  <a href="model.html">
+    <span class="fa fa-sitemap"></span>
+     
+     Model
+  </a>
+</li>
+<li>
   <a href="tooling.html">
     <span class="fa fa-wrench"></span>
      
-     Tooling
+     Tools
   </a>
 </li>
       </ul>
@@ -415,13 +419,15 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>Background</h1>
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
+Background</h1>
 
 </div>
 
 
-<div id="problem-space-and-goals" class="section level1">
-<h1><strong>Problem Space and Goals</strong></h1>
+<p><br></p>
+<div id="problem-space" class="section level1">
+<h1><strong>Problem Space</strong></h1>
 <p>In a typical observational study, the definition of the study
 population (cohort), exposures and outcomes are usually based on
 diagnostic codes in addition to drug exposures, procedure occurrences or
@@ -457,56 +463,99 @@ abstraction required to support observational cancer research.</p>
 a number of typical use cases.</p>
 <hr />
 </div>
-<div id="onramp" class="section level1">
-<h1><strong>Onramp </strong></h1>
+<div id="goals" class="section level1">
+<h1><strong>Goals</strong></h1>
+<p>The overarching goals of the OHDSI Oncology Working Group:</p>
 <p><br></p>
-<div id="ohdsi-scope" class="section level3">
-<h3>OHDSI Scope</h3>
+<div id="oncology-research" class="section level3">
+<h3>1) Oncology research</h3>
 <ul>
-<li>OHDSI Problem Space
+<li>Enabling</li>
+<li>Conducting</li>
+<li>Promoting</li>
+</ul>
+</div>
+<div id="maturing-oncology-standards" class="section level3">
+<h3>2) Maturing oncology standards</h3>
 <ul>
-<li>include SOS diagram</li>
+<li>Data model, ontologies and conventions</li>
+<li>A shared, international oncology data standard</li>
+<li>Support of observational, claims and curated data sources</li>
+</ul>
+</div>
+<div id="community-growth" class="section level3">
+<h3>3) Community growth</h3>
+<ul>
+<li>Model adoption and growth of network</li>
+<li>Data holders, developers, and subject matter experts</li>
+<li>Research use cases and applications</li>
+</ul>
+</div>
+<div id="transparency" class="section level3">
+<h3>4) Transparency</h3>
+<ul>
+<li>Clear processes and mechanisms for collaboration</li>
+<li>Thorough documentation of conventions and approaches</li>
+<li>Open-source development and project management</li>
+</ul>
+<p><br></p>
+<hr />
+</div>
+</div>
+<div id="notable-challenges" class="section level1">
+<h1><strong>Notable Challenges</strong></h1>
+<p><br></p>
+<div id="oncology-data-in-omop" class="section level3">
+<h3>1) Oncology data in OMOP</h3>
+<ul>
+<li>OMOP typically a person-centric model
+<ul>
+<li>Oncology data often requires additional levels of detail</li>
+<li>e.g., “Observations about observations”</li>
 </ul></li>
-<li>What OMOP Oncology can do today
-<ul>
-<li>Incidence, survival</li>
-<li>Treatment practices</li>
-<li>Safety</li>
-</ul></li>
-<li>What OMOP Oncology cannot do (without outcomes)
-<ul>
-<li>Treatment response</li>
-<li>Comparative effectiveness</li>
-<li>PFS/DFS</li>
-</ul></li>
+<li>Novel entity relationships in source data</li>
 </ul>
 <p><br></p>
 </div>
-<div id="oncology-use-cases" class="section level3">
-<h3>Oncology Use Cases</h3>
+<div id="source-data-representations" class="section level3">
+<h3>2) Source data representations</h3>
 <ul>
-<li>TODO</li>
-</ul>
-<p><br></p>
-</div>
-<div id="data-sources" class="section level3">
-<h3>Data Sources</h3>
+<li>Differing granularity and detail between data sources</li>
+<li>Goal of maximum accommodation while maintaing FAIR principles</li>
+<li>Sources include observational, claims and curated data
 <ul>
-<li>what data sources do I need to get oncology value from OMOP
-<ul>
-<li>Required</li>
-<li>Optional</li>
+<li>Sources often overlap and can provide complementary data for same
+patient population</li>
 </ul></li>
 </ul>
 <p><br></p>
+<figure>
+<p><img src="https://user-images.githubusercontent.com/57408355/76053847-9c1c5380-5f3c-11ea-8ac2-4efbcc4ee66e.png" alt="Condition Map"/></p>
+<figcaption>
+Diagram illustrating condition modifier representation
+</figcaption>
+</figure>
+<p><br></p>
+<hr />
 </div>
-<div id="how-will-we-get-outcomes-data" class="section level3">
-<h3>How will we get outcomes data?</h3>
+</div>
+<div id="publicationspresentation" class="section level1">
+<h1><strong>Publications/Presentation</strong></h1>
 <ul>
-<li>Manual curation</li>
-<li>NLP</li>
+<li><p><a
+href="https://github.com/OHDSI/OncologyWG/wiki/Oncology-Tutorial">2020
+OHDSI Symposium - Oncology Tutorial</a></p></li>
+<li><p><a
+href="https://github.com/OHDSI/OncologyWG/wiki/Genomic-Variant-Harmonization">2020
+OHDSI Symposium - Genomic Variant Harmonization Poster
+Presentation</a></p></li>
+<li><p><a
+href="https://github.com/OHDSI/OncologyWG/wiki/Bladder-Cancer-Study">Bladder
+Cancer Study</a></p></li>
+<li><p><a href="https://ascopubs.org/doi/10.1200/CCI.20.00079">JCO
+Clinical Cancer Informatics</a></p></li>
 </ul>
-</div>
+<p><br></p>
 </div>
 
 
@@ -558,7 +607,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2,h3",
+      selectors: "h1,h2",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {

@@ -8,6 +8,9 @@ output:
           collapsed: false
 ---
 
+
+<br>
+
 ## **Mission**
 
 The OHDSI Oncology Working Group aims to provide a foundation for representing cancer data within the OMOP CDM at the levels of granularity and abstraction required to support observational cancer research.
@@ -16,48 +19,7 @@ Oncology support in OMOP is a work in progress. We welcome your participation!
 
 ---
 
-## Site Map
 
-This site contains the following sections:
-
-Section | Content 
-:-------------------------|:----------------------------------------------
-| [Background](background.html) | Describes the features of oncology clinical data that exceed the capabilities of the existing OMOP CDM and conventions, including detailed diagnosis, complex treatments, and cancer-epecific outcomes. |
-| [Approach-> Model](model.html) | Describes the conceptual representation of cancer diagnosis and treatment and the new OMOP vocabularies created to realize the concepts. This includes the EPISODE entity that was adopted by the OMOP CDM at the behest of the Oncology WG and is used to represent distinct cancer diagnoses and phases for the same patient as well as lines of therapy as high-level objects.|
-| [Approach-> Conventions](conventions.html)  | Describes how to map various components of cancer data to the OMOP CDM and vocabularies, using the oncology extension vocabularies. Includes ETL snippets at a conceptual level (specific ETL will vary by data source).
-| [Implementation-> Install](installation.html) | Lists the steps required to overlay the oncology extensions on the standard OMOP CDM.|
-| [Implementaiton-> Populate Data](population.html) | Describes how to cancer-=specific data from sources not heretofore typically loaded in OMOP, including cancer registries.
-| [Tooling](tooling.html) | Lists software tools developed to support oncology-specific ETL and entity derivation, such as derivation of treatment episodes from medication exposure events. |
-
----
-
-## **Get Involved**
-
-We communicate and coordinate through the OHDSI Microsoft Teams environment and Github. 
-
-**MS Teams**
-
-To join the MS Teams environment you need to complete two steps:
-
-| # | task | link | 
-|:-|:-|:-|
-| 1 | Sign up for an OHDSI Teams Account | [link](https://forms.office.com/Pages/ResponsePage.aspx?id=lAAPoyCRq0q6TOVQkCOy1ZyG6Ud_r2tKuS0HcGnqiQZUQ05MOU9BSzEwOThZVjNQVVFGTDNZRENONiQlQCN0PWcu)|
-| 2 | Register for the workgroup by filling out the specified form selecting the tickbox for "Oncology" - which will automatically add you to our channel | [link](https://forms.office.com/Pages/ResponsePage.aspx?id=lAAPoyCRq0q6TOVQkCOy1ZyG6Ud_r2tKuS0HcGnqiQZUOVJFUzBFWE1aSVlLN0ozR01MUVQ4T0RGNyQlQCN0PWcu)|
-
-Once you've joined the Oncology WG teams, there is a "Workgroup - Oncology -> General" channel where we encourage new members to say hi and let us know how we can best collaborate together. 
-
-**Github**
-
-We use Github in a variety of ways including project planning and topic specific discussions. 
-
-The root link to our Github page is: https://github.com/OHDSI/OncologyWG
-
-And the Github 'Project' where we manage our work can be found here: https://github.com/orgs/OHDSI/projects/13
-
-
-
-
-<br> 
 
 ##   **Subgroups & Meeting Schedule**
 
@@ -70,27 +32,47 @@ subgroup|schedule|meeting details|Team Lead
 
 <br>
 
-## **Roadmap**
+---
 
-Our goal is to create an interoperable OMOP extension that enables application of all OMOP analysis tools to rich oncology data.
-
-To view our current and near term goals see our [OHDSI Github - Oncology Release 2.0 Project](https://github.com/orgs/OHDSI/projects/13)
+## **Site Map**
 
 
-<br>
-
-
-
-## **Publications/Presentation**
-
-- [2020 OHDSI Symposium - Oncology Tutorial](https://github.com/OHDSI/OncologyWG/wiki/Oncology-Tutorial)
-
-- [2020 OHDSI Symposium - Genomic Variant Harmonization Poster Presentation](https://github.com/OHDSI/OncologyWG/wiki/Genomic-Variant-Harmonization)
-
-- [Bladder Cancer Study](https://github.com/OHDSI/OncologyWG/wiki/Bladder-Cancer-Study)
-
-- [JCO Clinical Cancer Informatics](https://ascopubs.org/doi/10.1200/CCI.20.00079)
+This site contains the following sections:
 
 <br>
 
+#### **[Background](background.html)**
 
+|  |    |
+| -------- | :----------- |
+| [Problem Space](background.html#Problem_Space)      | High level summary of working group mission |
+| [Goals](background.html#Goals)        | Goals of working group |
+| [Notable Challenges](background.html#Notable_Challenges)      | Core challenges of effort |
+| [Publications/Presentations](background.html#PublicationsPresentation)      | Links to some relevant publications & presentations |
+
+#### **Development Effort** 
+ 
+| | | 
+| -------- | :----------- |
+| **[Development Overview](development.html)**    <br> [Purpose and Goals](development.html#Purpose_and_Goals) <br> [Context](development.html#Context) <br> [Scope](development.html#Scope) <br> [What we need](development.html##What_we_need) <br> [Project Management](development.html#Project_Management)| Overview of current development effort |
+| **[Progress Map](progressMap.html)**  <br> [Miro Map](progressMap.html#Miro_Map)  <br> [Roadmap](progressMap.html#Roadmap)  | Miro Map of completed and outstanding work within scope (with links)  |
+| **[Github Project Orientation](githubProject.html)**    <br> [Approach](githubProject.html#Approach)   <br> [Architecture](githubProject.html#Architecture) <br> [Project Views](githubProject.html#Project_Views)  <br> [Example Walkthrough](githubProject.html#Approach)   | Documentation about navigating and understanding the Github Project and approach  |
+| **[Getting Involved](gettingInvolved.html)** <br> [Collaboration Channels](gettingInvolved.html#join_collaboration_channels) <br> [Review Project Documentation](gettingInvolved.html#Review_Project_Documentation)      | Suggestions and links for getting started in the effort!  |
+
+
+
+#### **[Conventions](conventions.html)**
+
+
+| | | 
+| -------- | :----------- |
+| [Diagnostic](conventions.html#Diagnostic)      | Overview of current development effort |  |
+| [Treatment](conventions.html#Treatment)      | Overview of current development effort |
+
+---
+
+#### **[Model](model.html)**
+
+---
+
+#### **[Tools](tooling.html)**

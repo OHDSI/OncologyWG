@@ -1,0 +1,41 @@
+---
+title: '<div><img src="images/ohdsi40x40.png"></img> Progress Map</div>'
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 3
+        toc_float:
+          collapsed: false
+---
+
+<br>
+
+------------------------------------------------------------------------
+
+# **Miro Map**
+
+The Miro Map below is an alternate way to view the progress of the development effort at the task group level.
+
+-   **Green** indicates the task group is **complete** and should contain **a link to the documentation**
+-   **Orange** indicates the task group is still **in progress** and should contain **a link to the Github ticket**
+
+<br>
+
+<iframe width="768" height="432" src="https://miro.com/app/live-embed/uXjVNeNGMhQ=/?moveToViewport=7473,-157,1086,1135&amp;embedId=264604379153" frameborder="0" scrolling="no" allow="fullscreen; clipboard-read; clipboard-write" allowfullscreen>
+
+</iframe>
+
+<br>
+
+
+---
+
+
+# **Roadmap**
+
+Our goal is to create an comprehensive, interoperable representation for oncology data in OMOP and consequently leverage the full suite of OMOP analysis tools.
+
+For more information see:
+
+-   [Development Effort documentation](development.html)
+-   and [OHDSI Github - Oncology Release 2.0 Project](https://github.com/orgs/OHDSI/projects/13)

@@ -31,7 +31,4 @@ echo Updating delta tables...
 :: Run the Python script for data merging
 python %~dp0python/updateDelta.py
 
-:: Other batch script commands here (e.g., moving files, creating backups, etc.)
-:: ...
-
 endlocal

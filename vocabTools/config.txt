@@ -3,3 +3,4 @@ DB_USER=postgres
 DB_NAME=vocab
 DB_HOST=localhost
 DB_PORT=5432
+BASE_PATH=./vocab/
