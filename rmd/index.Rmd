@@ -41,38 +41,38 @@ This site contains the following sections:
 
 <br>
 
-**[Background](background.html)**
+#### **[Background](background.html)**
 
 |  |    |
 | -------- | :----------- |
 | [Problem Space](background.html#Problem_Space)      | High level summary of working group mission |
 | [Goals](background.html#Goals)        | Goals of working group |
-| [Challenges](background.html#Challenges)      | Core challenges of effort |
+| [Notable Challenges](background.html#Notable_Challenges)      | Core challenges of effort |
 | [Publications/Presentations](background.html#PublicationsPresentation)      | Links to some relevant publications & presentations |
 
-**Development Effort** 
+#### **Development Effort** 
  
 | | | 
 | -------- | :----------- |
-| **[Development Overview](development.html)**      | Overview of current development effort |
-| [Project Management](development.html#Project_Management)      | Overview of current development effort |
-| **[Progress](progressMap.html)**      |   |
-| [Miro Map](progressMap.html#Miro_Map)      | Overview of current development effort |
-| [Roadmap](progressMap.html#Roadmap)      | Overview of current development effort |
-| **[Github Project Orientation](githubProject.html)**      |   |
-| [Approach](githubProject.html#Approach)      | Overview of current development effort |
-| [Architecture](githubProject.html#Architecture)      | Overview of current development effort |
-| [Project Views](githubProject.html#Project_Views)      | Overview of current development effort |
-| [Example Walkthrough](githubProject.html#Approach)      | Overview of current development effort |
-| **[Getting Involved](gettingInvolved.html)**      |  |
-| [Collaboration Channels](gettingInvolved.html#join_collaboration_channels)      | Overview of current development effort |
-| [Review Project Documentation](gettingInvolved.html#Review_Project_Documentation)      | Overview of current development effort |
+| **[Development Overview](development.html)**    <br> [Purpose and Goals](development.html#Purpose_and_Goals) <br> [Context](development.html#Context) <br> [Scope](development.html#Scope) <br> [What we need](development.html##What_we_need) <br> [Project Management](development.html#Project_Management)| Overview of current development effort |
+| **[Progress Map](progressMap.html)**  <br> [Miro Map](progressMap.html#Miro_Map)  <br> [Roadmap](progressMap.html#Roadmap)  | Miro Map of completed and outstanding work within scope (with links)  |
+| **[Github Project Orientation](githubProject.html)**    <br> [Approach](githubProject.html#Approach)   <br> [Architecture](githubProject.html#Architecture) <br> [Project Views](githubProject.html#Project_Views)  <br> [Example Walkthrough](githubProject.html#Approach)   | Documentation about navigating and understanding the Github Project and approach  |
+| **[Getting Involved](gettingInvolved.html)** <br> [Collaboration Channels](gettingInvolved.html#join_collaboration_channels) <br> [Review Project Documentation](gettingInvolved.html#Review_Project_Documentation)      | Suggestions and links for getting started in the effort!  |
 
 
-**[Conventions](conventions.html)**
 
- 
+#### **[Conventions](conventions.html)**
+
+
 | | | 
 | -------- | :----------- |
 | [Diagnostic](conventions.html#Diagnostic)      | Overview of current development effort |  |
 | [Treatment](conventions.html#Treatment)      | Overview of current development effort |
+
+---
+
+#### **[Model](model.html)**
+
+---
+
+#### **[Tools](tooling.html)**

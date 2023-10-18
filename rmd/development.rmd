@@ -3,7 +3,7 @@ title: '<div><img src="images/ohdsi40x40.png"></img> Development Overview</div>'
 output: 
   html_document:
         toc: TRUE
-        toc_depth: 3
+        toc_depth: 2
         toc_float:
           collapsed: false
 ---
@@ -51,6 +51,7 @@ output:
  - An extensive and international outreach effort has been conducted to aggregate the gaps and pain points of implementing oncology data in OMOP, which is the starting point of this project. All of that feedback has been ingested and organized within a Github Project. That said, we know what we know now but that list is always expanding, for the better. 
  -	We are moving at a faster pace than the official OHDSI vocabulary releases and consequently will be maintaining a “delta”, or “development”, version of the vocabularies. At the end of this effort we plan to have these changes folded back into the standards. Additionally we will consult with the vocabulary team when applicable.
  -  A global oncology standard cannot be static. It must be iteratively expanding and maturing and requires an active community and extensible solutions. 
+ - A philanthropic funder has invested in this effort and is exploring additional collaborations and opportunities to accelerate and expand upon it. 
  
 <br>
 
@@ -99,7 +100,7 @@ output:
 
 <br>
 
----
+
 
 ## Github Project
 

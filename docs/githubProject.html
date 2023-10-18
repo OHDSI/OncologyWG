@@ -466,14 +466,94 @@ vocab readme</a>)</li>
 </ul>
 <hr />
 </div>
+</div>
+<div id="project-navigation" class="section level1">
+<h1><strong>Project Navigation</strong></h1>
+<p><br></p>
+<div id="task-status" class="section level2">
+<h2><strong>Task status</strong></h2>
+<p><br></p>
+<p>All views within the project use the same four “status” groups:</p>
+<div>
+<img src="images/task_status.png"></img>
+</div>
+<p><br></p>
+<dl>
+<dt>Blocked</dt>
+<dd>
+The prerequisites tasks are not complete and consequently the task is
+blocked.
+</dd>
+<dt>Outstanding</dt>
+<dd>
+Available to be worked on but currently unassigned.
+</dd>
+<dt>In Progress</dt>
+<dd>
+Assigned and being worked on.
+</dd>
+<dt>Complete</dt>
+<dd>
+Finished.
+</dd>
+</dl>
+<p><br></p>
+<hr />
+</div>
 <div id="project-views" class="section level2">
 <h2><strong>Project Views</strong></h2>
+<p><br></p>
+<p>The Github “project” can be thought of as a mechanism to “slice up”
+or organize the Github issues into different groupings and subsets. Each
+“view” is a custom representation of those issues displayed for a
+specific reason. The most relevant of these views are described
+below.</p>
+<div>
+<img src="images/project_views.png"></img>
+</div>
+<p><strong>Board</strong></p>
 <ul>
-<li>(TODO) 1) illustrate the intention of each view</li>
-<li>(TODO) 2) show can one can contribute to specific task types by
-navigating views If you’d like to contribute to a specific Task Group,
-add yourself as an assignee and change the status from Outstanding to In
-Progress</li>
+<li>This view display all issues independent of type, grouped by status.
+This is the best option for viewing available tasks, changing their
+status, and assigning the tasks to individuals</li>
+</ul>
+<p><strong>Task Groups</strong></p>
+<ul>
+<li>‘Task groups’ are a collection of steps that we repeat for every
+convention. The intent is that every convention needs to go through the
+same (linear) process and end with the same steps of validation and
+documentation. Clicking on any task group issue will give you the same
+five sub-tasks (with slightly different names to represent the parent
+task group):</li>
+</ul>
+<div>
+<img src="images/tasks.png"></img>
+</div>
+<p><br></p>
+<ul>
+<li>Task groups allow us to view the overall progress of “components”
+and assist with prioritization. For example, if a use case requires that
+conventions for “Metastasis” to be completed, we can view what the
+remaining work is.</li>
+<li>The “example walkthrough” below gives more detail into Task
+Groups</li>
+</ul>
+<p><strong>Others</strong></p>
+<ul>
+<li>The remaining views are intended to view all issues of a specific
+type within the “Task Group” process for instances where you want to
+drill down to a specific action.</li>
+<li>Those are:
+<ul>
+<li>Decision Points</li>
+<li>Investigations</li>
+<li>Outstanding (vocab) Work</li>
+<li>Validate and Ingest</li>
+<li>Documentation</li>
+</ul></li>
+<li>These views can be helpful if a particular contributor is
+comfortable in a certain domain and can allow them to view the
+available</li>
 </ul>
 <hr />
 <p><br></p>
@@ -481,38 +561,32 @@ Progress</li>
 </div>
 <div id="example-walkthrough" class="section level1">
 <h1><strong>Example walkthrough</strong></h1>
-<ul>
-<li>Top level: Task groups</li>
-</ul>
-<div>
-<img src="images/gp_taskview.png"></img>
-</div>
-<ul>
-<li>While discussions will be had in Teams, the project will be tracked
-and managed through Github.</li>
-<li>The link to the project can be found here: <a
-href="https://github.com/orgs/OHDSI/projects/13"
-class="uri">https://github.com/orgs/OHDSI/projects/13</a></li>
-<li>Please review the Project Orientation materials (TODO: below, or
-provide link)</li>
-</ul>
-<div id="task-group-walkthrough" class="section level2">
-<h2>Task group walkthrough</h2>
+<p><br></p>
+<hr />
+<div id="task-group" class="section level2">
+<h2><strong>Task group</strong></h2>
 <p>Start with a Task Group: a unit of work of orders related to a
 component of oncology research. If you’d like to contribute to a
 specific Task Group, add yourself as an assignee and change the status
 from <strong>Outstanding</strong> to <strong>In Progress</strong></p>
 <div>
-<img src="images/problemSpace.png"></img>
+<img src="images/gp_taskview.png"></img>
 </div>
+<p><br></p>
 <p>Within the top comment on the Task Group issue, the Problem Space
 section contextualizes the problem and the Tasks section links to
 subissues that outline the steps for solving it.</p>
 <p>Within each Task Group, there are typically five subissues: Resolve
 decision points, Investigate &amp; create tasks, Complete outstanding
 work, Validate and ingest, and Document.</p>
-<div id="resolve-decision-points" class="section level3">
-<h3>Resolve Decision points</h3>
+<div>
+<img src="images/problemSpace.png"></img>
+</div>
+<p><br></p>
+<hr />
+</div>
+<div id="resolve-decision-points" class="section level2">
+<h2><strong>Resolve Decision points</strong></h2>
 <p>This subissue lists the decision points that need to be finalized
 before work can begin on the Task Group. Decision points must be
 finalized by the OHDSI Oncology WG and often require input from
@@ -522,9 +596,11 @@ finalized and closed before work begins on a task group.</p>
 <div>
 <img src="images/resolveDecisionPoints.png"></img>
 </div>
+<p><br></p>
+<hr />
 </div>
-<div id="investigate-and-create-tasks" class="section level3">
-<h3>Investigate and Create Tasks</h3>
+<div id="investigate-and-create-tasks" class="section level2">
+<h2><strong>Investigate and Create Tasks</strong></h2>
 <p>The next task in the Task Group involves scoping the work necessary
 to solve the problems laid out in the Problem Space. In the context of
 vocabulary development, this task may be broken into two main steps. The
@@ -569,9 +645,11 @@ checkboxes in this issue can be checked and the issue closed:</p>
 <div>
 <img src="images/InvestigateAndCreateTasksFinished.png"></img>
 </div>
+<p><br></p>
+<hr />
 </div>
-<div id="complete-outstanding-work" class="section level3">
-<h3>Complete outstanding work</h3>
+<div id="complete-outstanding-work" class="section level2">
+<h2><strong>Complete outstanding work</strong></h2>
 <p>In the last task, you worked to add content to the top comment in
 this issue:</p>
 <div>
@@ -632,12 +710,19 @@ issue can be closed:</p>
 <div>
 <img src="images/completeOutstandingWorkDONE.png"></img>
 </div>
+<p><br></p>
+<hr />
 </div>
-<div id="validate-and-ingest" class="section level3">
-<h3>Validate and ingest</h3>
-<p>// <a
-href="https://github.com/OHDSI/OncologyWG/tree/master/vocabTools#tools-used-to-assist-with-developing-omop-vocabulary"
-class="uri">https://github.com/OHDSI/OncologyWG/tree/master/vocabTools#tools-used-to-assist-with-developing-omop-vocabulary</a></p>
+<div id="validate-and-ingest" class="section level2">
+<h2><strong>Validate and ingest</strong></h2>
+<blockquote>
+<p><svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM192 160H320c17.7 0 32 14.3 32 32V320c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32V192c0-17.7 14.3-32 32-32z"/></svg>
+A small number of community members (who are familiar with this process)
+will handle the majority of validation and ingestion requests thus it is
+not required that these processes be fully understood by the majority.
+For more information see the Validation tooling <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/vocabTools#tools-used-to-assist-with-developing-omop-vocabulary">readme</a></p>
+</blockquote>
 <p>You will need the vocabTools directory and its contents downloaded to
 your computer to make use of the tools in the following steps. The
 easiest way to download vocabTools (and subsequently push Oncology
@@ -657,8 +742,8 @@ the config.txt file to the correct connection information.</p>
 <div>
 <img src="images/vocab_config_txt.png"></img>
 </div>
-<div id="validate" class="section level4">
-<h4>Validate</h4>
+<div id="validate" class="section level3">
+<h3>Validate</h3>
 <p>In the last task, you created concept and concept_relationship table
 fragments to complete the vocabulary work orders. In this step, we will
 validate these locally by integrating them into the dev schema of the
@@ -692,8 +777,8 @@ verify that the changes were made by running
 <code>getConceptAncestorDiffs.bat</code>. Again, this script may take a
 few minutes to run.</p>
 </div>
-<div id="ingest" class="section level4">
-<h4>Ingest</h4>
+<div id="ingest" class="section level3">
+<h3>Ingest</h3>
 <p>The Oncology Development Vocabulary is persisted as two CSV files
 that represent the set of changes that should be made to the concept and
 concept_relationship table. These files are stored on the OncologyWG
@@ -708,8 +793,8 @@ deltaSummary file to summarize the changes that your additions make to
 the official OMOP Vocabulary 3. Create a pull request from a fork or
 branch of the OncologyWG GH to the master branch</p>
 <p>These steps are detailed below.</p>
-<div id="add-changes-to-deltavocab" class="section level5">
-<h5>Add changes to deltaVocab</h5>
+<div id="add-changes-to-deltavocab" class="section level4">
+<h4>Add changes to deltaVocab</h4>
 <p>Changes can be easily incorporated into the deltaVocab files by
 running <code>updateDelta.bat</code>. This script will look for, and
 ingest, any files in the vocabTools/concept and
@@ -720,8 +805,8 @@ the deltaVocab files on your computer will reflect your changes to the
 official OMOP Vocabulary, as well as all previously ingested
 changes.</p>
 </div>
-<div id="add-a-deltasummary-file" class="section level5">
-<h5>Add a deltaSummary file</h5>
+<div id="add-a-deltasummary-file" class="section level4">
+<h4>Add a deltaSummary file</h4>
 <p>A standardized script is used to create a summary of the changes
 made. You can use <code>getSummary.bat</code> to generate a table that
 summarizes the difference between what is in your dev schema and your
@@ -733,8 +818,8 @@ file called deltaSummary<currentDate>.txt in the deltaVocab folder.</p>
 made any additional changes to the dev or prod schema since running the
 updateConcept*.bat scripts.</p>
 </blockquote>
-<div id="optional" class="section level6">
-<h6>Optional:</h6>
+<div id="optional" class="section level5">
+<h5>Optional:</h5>
 <p>You can also choose to update the main deltaSummary file
 (deltaSummary.txt with no date in the filename), though this requires
 you to run the updateConcept*.bat scripts on the updated deltaVocab
@@ -749,8 +834,8 @@ argument “full” will update the main getSummary.txt file in
 deltaVocab.</p>
 </div>
 </div>
-<div id="ingest-to-github" class="section level5">
-<h5>Ingest to GitHub</h5>
+<div id="ingest-to-github" class="section level4">
+<h4>Ingest to GitHub</h4>
 <p>Changes should be “ingested” via a Pull Request from your branch or
 fork of the OncologyWG to the master branch of OncologyWG:</p>
 <div>
@@ -780,12 +865,47 @@ GitHub</a>, and click <strong>Create Pull Request</strong>.</p>
 Vocabulary maintainers in the form of comments on your PR. They will let
 you if any changes need to be made before the PR can be accepted.</p>
 </blockquote>
+<p><br></p>
+<hr />
 </div>
 </div>
 </div>
-<div id="document" class="section level3">
-<h3>Document</h3>
-</div>
+<div id="document" class="section level2">
+<h2><strong>Document</strong></h2>
+<p>TODO - (ironically…)</p>
+<p>// Placeholder:</p>
+<ul>
+<li>Documentation ends up in the ‘Conventions’ part of this site</li>
+<li>We use rmarkdown
+<ul>
+<li>Edit the RMD files</li>
+<li>rmarkdown::render_site() to produce html files with “docs/” - which
+is where github.io pages looks</li>
+</ul></li>
+<li>There are two methods for adding documentation:
+<ol style="list-style-type: decimal">
+<li><p>Use RStudio</p>
+<ul>
+<li>Edit the RMD files</li>
+<li>rmarkdown::render_site() to produce html files with “docs/” - which
+is where github.io pages looks</li>
+</ul></li>
+<li><p>Use GithubDev or other markdown editor</p>
+<ul>
+<li>Can edit and visualize resulting documentation without needing to
+use R</li>
+<li>Once completed, create a Pull Request</li>
+<li>There is a (finicky) Github Action in place that has the logic:
+<ul>
+<li>If a pull request gets created where anything in the “rmd/” folder
+was edited, then generate the HTML files</li>
+</ul></li>
+<li>By the time the pull request is reviewed, the “docs/” folder and
+contained HTML files should have been automatically generated from
+whatever you edited in “rmd/”</li>
+</ul></li>
+</ol></li>
+</ul>
 </div>
 </div>
 
@@ -838,7 +958,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2,h3",
+      selectors: "h1,h2",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {

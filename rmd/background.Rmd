@@ -3,7 +3,7 @@ title: '<div><img src="images/ohdsi40x40.png"></img> Background </div>'
 output:
    html_document:
         toc: TRUE
-        toc_depth: 3
+        toc_depth: 2
         toc_float:
           collapsed: false
 ---

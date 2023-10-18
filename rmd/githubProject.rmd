@@ -3,11 +3,13 @@ title: '<div><img src="images/ohdsi40x40.png"></img> Github Project</div>'
 output: 
   html_document:
         toc: TRUE
-        toc_depth: 3
+        toc_depth: 2
         toc_float:
           collapsed: false
 ---
-
+```{r load_packages, message=FALSE, warning=FALSE, include=FALSE} 
+library(fontawesome)
+```
 
 
 # **Overview**
@@ -39,14 +41,72 @@ output:
 
 
 
+# **Project Navigation**
+
+<br>
+
+## **Task status**
+
+<br>
+
+All views within the project use the same four "status" groups:
+
+<div><img src="images/task_status.png"></img></div>
+
+<br>
+
+Blocked
+: The prerequisites tasks are not complete and consequently the task is blocked.
+
+
+Outstanding
+: Available to be worked on but currently unassigned.
+
+
+In Progress
+: Assigned and being worked on. 
+
+
+Complete
+: Finished. 
+
+<br> 
+
+--- 
+
 ## **Project Views**
 
- - (TODO) 1) illustrate the intention of each view
- - (TODO) 2) show can one can contribute to specific task types by navigating views 
-    If you’d like to contribute to a specific Task Group,  add yourself as an assignee and change the status from Outstanding to In Progress
+<br>
 
+The Github "project" can be thought of as a mechanism to "slice up" or organize the Github issues into different groupings and subsets. Each "view" is a custom representation of those issues displayed for a specific reason. The most relevant of these views are described below.  
 
+<div><img src="images/project_views.png"></img></div>
 
+**Board**
+
+- This view display all issues independent of type, grouped by status. This is the best option for viewing available tasks, changing their status, and assigning the tasks to individuals 
+
+**Task Groups**
+
+ - 'Task groups' are a collection of steps that we repeat for every convention. The intent is that every convention needs to go through the same (linear) process and end with the same steps of validation and documentation. Clicking on any task group issue will give you the same five sub-tasks (with slightly different names to represent the parent task group):
+
+<div><img src="images/tasks.png"></img></div>
+
+<br>
+
+ - Task groups allow us to view the overall progress of "components" and assist with prioritization. For example, if a use case requires that conventions for "Metastasis" to be completed, we can view what the remaining work is. 
+ - The "example walkthrough" below gives more detail into Task Groups
+
+**Others**
+
+ - The remaining views are intended to view all issues of a specific type within the "Task Group" process for instances where you want to drill down to a specific action. 
+ - Those are:
+    - Decision Points
+    - Investigations
+    - Outstanding (vocab) Work 
+    - Validate and Ingest 
+    - Documentation
+ - These views can be helpful if a particular contributor is comfortable in a certain domain and can allow them to view the available 
 
 ---
 
@@ -54,31 +114,41 @@ output:
 
 # **Example walkthrough**
 
- - Top level: Task groups 
+<br> 
 
-<div><img src="images/gp_taskview.png"></img></div>
+--- 
 
 
- - While discussions will be had in Teams, the project will be tracked and managed through Github. 
- - The link to the project can be found here: https://github.com/orgs/OHDSI/projects/13
- - Please review the Project Orientation materials (TODO: below, or provide link)
-
-## Task group walkthrough
+## **Task group**
 Start with a Task Group: a unit of work of orders related to a component of oncology research.
 If you'd like to contribute to a specific Task Group, add yourself as an assignee and change the status from **Outstanding** to **In Progress**
 
-<div><img src="images/problemSpace.png"></img></div>
+
+<div><img src="images/gp_taskview.png"></img></div>
+
+<br>
 
 Within the top comment on the Task Group issue, the Problem Space section contextualizes the problem and the Tasks section links to subissues that outline the steps for solving it.
 
 Within each Task Group, there are typically five subissues: Resolve decision points, Investigate & create tasks, Complete outstanding work, Validate and ingest, and Document.
 
-### Resolve Decision points
+
+<div><img src="images/problemSpace.png"></img></div>
+
+<br> 
+
+--- 
+
+## **Resolve Decision points**
 This subissue lists the decision points that need to be finalized before work can begin on the Task Group. Decision points must be finalized by the OHDSI Oncology WG and often require input from oncologists and informaticists before they are introduced as discussion topics at a WG meeting. Generally, all decision point issues should be finalized and closed before work begins on a task group.
 
 <div><img src="images/resolveDecisionPoints.png"></img></div>
 
-### Investigate and Create Tasks
+<br> 
+
+--- 
+
+## **Investigate and Create Tasks**
 
 The next task in the Task Group involves scoping the work necessary to solve the problems laid out in the Problem Space. In the context of vocabulary development, this task may be broken into two main steps. The first involves outlining the preparatory work necessary to enable the Task Group’s main work. This means identifying vocabularies with problematic terms and creating a checklist for the preparatory work required:
 
@@ -100,7 +170,11 @@ After all work order issues are created, linked to the “Complete outstanding w
 
 <div><img src="images/InvestigateAndCreateTasksFinished.png"></img></div>
 
-### Complete outstanding work
+<br> 
+
+--- 
+
+## **Complete outstanding work**
 
 In the last task, you worked to add content to the top comment in this issue:
 
@@ -136,9 +210,13 @@ Closing the tickets will automatically check the boxes in the Task issue. Once a
 
 <div><img src="images/completeOutstandingWorkDONE.png"></img></div>
 
-### Validate and ingest
+<br> 
 
-// https://github.com/OHDSI/OncologyWG/tree/master/vocabTools#tools-used-to-assist-with-developing-omop-vocabulary
+--- 
+
+## **Validate and ingest**
+
+> `r fa("circle-stop", fill="red", prefer_type="solid")` A small number of community members (who are familiar with this process) will handle the majority of validation and ingestion requests thus it is not required that these processes be fully understood by the majority. For more information see the Validation tooling [readme](https://github.com/OHDSI/OncologyWG/tree/master/vocabTools#tools-used-to-assist-with-developing-omop-vocabulary)
 
 
 You will need the vocabTools directory and its contents downloaded to your computer to make use of the tools in the following steps. The easiest way to download vocabTools (and subsequently push Oncology Development Vocabulary changes back to GitHub) is by cloning the OncologyWG:
@@ -151,7 +229,7 @@ After your database is set up with a prod and a dev schema, update the config.tx
 
 <div><img src="images/vocab_config_txt.png"></img></div>
 
-#### Validate
+### Validate
 
 
 
@@ -169,7 +247,7 @@ Once the concept and concept_relationship tables have been updated from the CSV 
 
 After you've updated the concept_ancestor table, you can visually verify that the changes were made by running `getConceptAncestorDiffs.bat`. Again, this script may take a few minutes to run.
 
-#### Ingest
+### Ingest
 
 The Oncology Development Vocabulary is persisted as two CSV files that represent the set of changes that should be made to the concept and concept_relationship table. These files are stored on the OncologyWG GitHub repository in the [deltaVocab directory](https://github.com/OHDSI/OncologyWG/tree/vocabTools/deltaVocab). More information on "deltatVocab" can be found [here](https://github.com/OHDSI/OncologyWG/blob/vocabTools/deltaVocab/README.md).
 
@@ -180,24 +258,24 @@ To "ingest" the changes that you have made to the Oncology Development Vocabular
 
 These steps are detailed below.
 
-##### Add changes to deltaVocab
+#### Add changes to deltaVocab
 
 Changes can be easily incorporated into the deltaVocab files by running `updateDelta.bat`. This script will look for, and ingest, any files in the vocabTools/concept and vocabTools/concept_relationship directories. It will also ensure that the most up-to-date deltaVocab is used as a starting point, and that only new changes are being added. Once this script has run successfully, the deltaVocab files on your computer will reflect your changes to the official OMOP Vocabulary, as well as all previously ingested changes.
 
-##### Add a deltaSummary file
+#### Add a deltaSummary file
 
 A standardized script is used to create a summary of the changes made. You can use `getSummary.bat` to generate a table that summarizes the difference between what is in your dev schema and your prod schema across the concept, concept_relationship, and concept_ancestor tables. This script will output the summary table as a file called deltaSummary<currentDate>.txt in the deltaVocab folder.
 
 > Note: The summary table will *not* be accurate if you have made any additional changes to the dev or prod schema since running the updateConcept*.bat scripts.
 
-###### Optional:
+##### Optional:
 
 You can also choose to update the main deltaSummary file (deltaSummary.txt with no date in the filename), though this requires you to run the updateConcept*.bat scripts on the updated deltaVocab files. To update the main deltaSummary file:
 1. Copy the deltaConcept and deltaConceptRelationship files to the vocabTools/concept and vocabTools/concept_relationship folders, respectively.
 2. Rerun each update script (updateConcept.bat, updateConceptRelationship.bat, updateConceptAncestor.bat), thus updating your dev schema to the most up-to-date version of the Oncology Development Vocabulary (as of your changes).
 3. Run `getSummary.bat full`. Specifying the argument "full" will update the main getSummary.txt file in deltaVocab.
 
-##### Ingest to GitHub
+#### Ingest to GitHub
 
 Changes should be "ingested" via a Pull Request from your branch or fork of the OncologyWG to the master branch of OncologyWG:
 
@@ -222,5 +300,31 @@ After that, you can select your new branch on [a PR to OncologyWG GitHub](https:
 
 > Note: Keep an eye out for feedback from the Oncology Development Vocabulary maintainers in the form of comments on your PR. They will let you if any changes need to be made before the PR can be accepted.
 
+<br> 
 
-### Document
+--- 
+
+## **Document**
+
+TODO - (ironically...)
+
+// Placeholder:
+
+ - Documentation ends up in the 'Conventions' part of this site
+ - We use rmarkdown 
+   - Edit the RMD files
+   - rmarkdown::render_site() to produce html files with "docs/" - which is where github.io pages looks
+ - There are two methods for adding documentation:
+    1) Use RStudio
+      
+        - Edit the RMD files
+        - rmarkdown::render_site() to produce html files with "docs/" - which is where github.io pages looks 
+        
+    2) Use GithubDev or other markdown editor
+      
+        - Can edit and visualize resulting documentation without needing to use R 
+        - Once completed, create a Pull Request
+        - There is a (finicky) Github Action in place that has the logic:
+            - If a pull request gets created where anything in the "rmd/" folder was edited, then generate the HTML files
+        - By the time the pull request is reviewed, the "docs/" folder and contained HTML files should have been automatically generated from whatever you edited in "rmd/"
+ 
