@@ -138,6 +138,9 @@ Closing the tickets will automatically check the boxes in the Task issue. Once a
 
 ### Validate and ingest
 
+// https://github.com/OHDSI/OncologyWG/tree/master/vocabTools#tools-used-to-assist-with-developing-omop-vocabulary
+
+
 You will need the vocabTools directory and its contents downloaded to your computer to make use of the tools in the following steps. The easiest way to download vocabTools (and subsequently push Oncology Development Vocabulary changes back to GitHub) is by cloning the OncologyWG:
 
 `git clone https://github.com/OHDSI/OncologyWG.git`
@@ -149,6 +152,8 @@ After your database is set up with a prod and a dev schema, update the config.tx
 <div><img src="images/vocab_config_txt.png"></img></div>
 
 #### Validate
+
+
 
 In the last task, you created concept and concept_relationship table fragments to complete the vocabulary work orders. In this step, we will validate these locally by integrating them into the dev schema of the database we have set up and comparing the augmented dev schema and prod schema.
 

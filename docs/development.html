@@ -425,113 +425,142 @@ Development Overview</h1>
 </div>
 
 
-<div id="overview" class="section level1">
-<h1><strong>Overview</strong></h1>
 <hr />
-<div id="approach" class="section level2">
-<h2>Approach</h2>
+<div id="purpose-and-goals" class="section level1">
+<h1><strong>Purpose and Goals</strong></h1>
+<p><br></p>
+<blockquote>
+<p><strong>“<ins>Collaboratively</ins> mature and <ins>expand</ins> the
+representation of oncology data in OMOP by establishing
+<ins>standard</ins> and <ins>transparent</ins> conventions”</strong></p>
+</blockquote>
+<p><br></p>
+<p><strong>Collaboration</strong></p>
 <ul>
-<li>Estabishing “standard conventions”
-<ul>
-<li>Adequately documented</li>
-<li>Singular representation in OMOP</li>
-<li>Favoring extensible over ad hoc solutions</li>
-</ul></li>
-</ul>
-</div>
-<div id="goals" class="section level2">
-<h2>Goals</h2>
-<ul>
-<li>Collaboratively mature the oncology standards in OMOP</li>
-<li>Enable asynchronous mechanisms of collaboration for greater
+<li>Encourage a diverse community to contribute towards global,
+comprehensive standards</li>
+<li>Leverage asynchronous mechanisms of collaboration for greater
 international interoperability</li>
-<li>Establish conventions that apply to the various representations of
-oncology data</li>
-<li>Thoroughly document all conventions from both an ETL and analysis
-perspective to facilitate standardized representation</li>
 </ul>
+<p><strong>Expand</strong></p>
+<ul>
+<li>Create and expand conventions to accommodate the various
+representations of oncology data in the OHDSI community</li>
+<li>Supporting both observational and curated data sources</li>
+<li>Source EMR and nation agnostic</li>
+</ul>
+<p><strong>Standard</strong></p>
+<ul>
+<li>Unambiguous, standardized conventions</li>
+<li>For a specific type of source data, there is a single standard
+representation for it</li>
+</ul>
+<p><strong>Transparent</strong></p>
+<ul>
+<li>Thoroughly document all conventions from both an ETL and analysis
+perspective to facilitate standardized adoption and
+interoperability</li>
+<li>Clearly and publicly describe the processes and outcomes of this
+effort</li>
+</ul>
+<p><br></p>
+<hr />
 </div>
-<div id="scope-timeline" class="section level2">
-<h2>Scope / Timeline</h2>
+<div id="context" class="section level1">
+<h1><strong>Context</strong></h1>
 <ul>
 <li>An extensive and international outreach effort has been conducted to
 aggregate the gaps and pain points of implementing oncology data in
-OMOP, which is the starting point of this project</li>
-<li>Complete as much as we can, prioritized by use cases, in preparation
-for a new stable release at the beginning of 2024. After that milestone
-is reached, we will continue to iterate and improve while adhering to a
-stable release schedule TBD.<br />
-</li>
-<li>The majority of the outlined work is either investigating or
-modifying the vocabularies. These have been and/or will be broken down
-into smaller more easily tackled chunks such as “investigating an issue”
-or “complete outstanding vocabulary changes that have content provided”,
-or “documentation of _”. This is to help enable lots of small
-contributions from a larger community.</li>
+OMOP, which is the starting point of this project. All of that feedback
+has been ingested and organized within a Github Project. That said, we
+know what we know now but that list is always expanding, for the
+better.</li>
 <li>We are moving at a faster pace than the official OHDSI vocabulary
 releases and consequently will be maintaining a “delta”, or
 “development”, version of the vocabularies. At the end of this effort we
 plan to have these changes folded back into the standards. Additionally
 we will consult with the vocabulary team when applicable.</li>
+<li>A global oncology standard cannot be static. It must be iteratively
+expanding and maturing and requires an active community and extensible
+solutions.</li>
 </ul>
-</div>
-<div id="core-values" class="section level2">
-<h2>Core Values</h2>
-<ul>
-<li>Enabling studies as determining factor for prioritization of
-effort</li>
-<li>Inclusion of as diverse of data as possible
-<ul>
-<li>International applicability</li>
-<li>Clinical, registry, and other specialized data sources</li>
-<li>Source EMR agnostic</li>
-</ul></li>
-<li>Enabling interoperability and standardized analytics
-<ul>
-<li>Non-ambiguous, Standardized representation within OMOP; For a
-specific type of source data, there is a single standard representation
-for it</li>
-<li>Improving and sometimes inventing new vocabulary relation mechanisms
-to enable reliable and reusable phenotyping and analysis</li>
-<li>Encourage a diverse community to contribute towards a universal
-representation</li>
-</ul></li>
-</ul>
-</div>
-<div id="what-we-need" class="section level2">
-<h2>What we need</h2>
-<ul>
-<li>Diverse community contribution</li>
-<li>Feedback on decision points from oncology data holders and SME</li>
-<li>Experienced issues &amp; hurdles</li>
-<li>Use cases</li>
-<li>Development/vocabulary effort</li>
-</ul>
+<p><br></p>
 <hr />
 </div>
+<div id="scope" class="section level1">
+<h1><strong>Scope</strong></h1>
+<ul>
+<li>The majority of the outlined work is either falls into one of four
+buckets:
+<ol style="list-style-type: decimal">
+<li>Deciding on a convention</li>
+<li>Investigating vocabularies</li>
+<li>Modifying the vocabularies</li>
+<li>Creating documentation</li>
+</ol></li>
+<li>The tasks have been broken down into smaller more easily tackled
+chunks such as “investigating an issue” or “complete outstanding
+vocabulary changes that have content provided”, or “documentation of _”.
+The intent is to enable many small contributions rather than few large
+ones.</li>
+<li>The plan is to complete as much as we can, prioritized by use cases,
+in preparation for a new stable release. After that milestone is
+reached, we will continue to iterate and improve while adhering to a
+stable release schedule.</li>
+</ul>
+<p><br></p>
+<hr />
+</div>
+<div id="what-we-need" class="section level1">
+<h1><strong>What we need</strong></h1>
+<ul>
+<li>Diverse community feedback
+<ul>
+<li>Feedback on decision points - <em>Will this solution work for your
+data?</em></li>
+<li>Any experienced issues, hurdles or ambiguities</li>
+<li>Use cases, studies, ambitions</li>
+</ul></li>
+<li>Community contributions
+<ul>
+<li>Vocabulary:
+<ul>
+<li>Investigations - <em>e.g., are there duplicate standard concepts for
+laterality?</em><br />
+</li>
+<li>Modifications - <em>e.g., provide the modifications to
+de-standardize duplicate laterality concepts</em></li>
+</ul></li>
+<li>Documentation
+<ul>
+<li>Identifying gaps</li>
+<li>Populating content</li>
+</ul></li>
+</ul></li>
+</ul>
+<p><br></p>
+<hr />
 </div>
 <div id="project-management" class="section level1">
 <h1><strong>Project Management</strong></h1>
-<div id="collaborative-approach" class="section level2">
-<h2>Collaborative approach</h2>
 <ul>
-<li>Everyone is welcome and encouraged to join the effort</li>
-<li>To enable international contributions and rapid progress, we are
-facilitating communication both within meetings and asynchronously
-through Github and Teams. Any decision points discussed during the calls
-will also be represented in Teams for further discussion before final
-decisions are made</li>
+<li>Enabling studies is the primary determining factor for
+prioritization of effort</li>
 <li>The Github Project will be the main resource for tracking the
 project deliverables, progress, and avenues for contribution</li>
-<li>Discussions around items will be held off-line within MS Teams
-environment</li>
+<li>To enable international contributions and rapid progress, we are
+facilitating communication both within meetings and asynchronously
+through Github and the OHDSI Oncology MS Teams. Any decision points
+discussed during the calls will also be represented in Github/Teams for
+further discussion before final decisions are made</li>
 </ul>
-</div>
+<p><br></p>
+<hr />
 <div id="github-project" class="section level2">
 <h2>Github Project</h2>
 <ul>
-<li>While discussions will be had in Teams, the project will be tracked
-and managed through Github.</li>
+<li>This development effort will be tracked and managed through
+Github.</li>
 <li>The link to the project can be found here: <a
 href="https://github.com/orgs/OHDSI/projects/13"
 class="uri">https://github.com/orgs/OHDSI/projects/13</a></li>

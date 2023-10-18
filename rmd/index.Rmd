@@ -57,7 +57,6 @@ This site contains the following sections:
 | **[Development Overview](development.html)**      | Overview of current development effort |
 | [Project Management](development.html#Project_Management)      | Overview of current development effort |
 | **[Progress](progressMap.html)**      |   |
-| [Prioritization](progressMap.html#Prioritization)      | Overview of current development effort |
 | [Miro Map](progressMap.html#Miro_Map)      | Overview of current development effort |
 | [Roadmap](progressMap.html#Roadmap)      | Overview of current development effort |
 | **[Github Project Orientation](githubProject.html)**      |   |

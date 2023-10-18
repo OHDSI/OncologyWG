@@ -49,6 +49,18 @@ And the Github 'Project' where we manage our work can be found here: https://git
 
 ---
  
-# **Onboarding Form**
+# **Contributing**
 
-(TODO)
+1) Submitting use cases, questions, documentation gaps, etc.:
+
+    - (preferred) Submit an issue on the OncologyWG repository
+      - Ticket will be triaged accordingly
+    - (alternate) If Github is a barrier, send a message in the OHDSI Oncology WG MS Teams channel 
+      - If applicable, someone will create a ticket for you
+
+<br>  
+    
+2) Volunteering to contribute to a specific task
+
+    - If you are already a contributor to the OncologyWG Github repository, assign yourself to that ticket
+    - Otherwise, make a comment on the Github ticket for that task stating your intent and you will be invited to the repository and assigned accordingly 
