@@ -306,25 +306,57 @@ After that, you can select your new branch on [a PR to OncologyWG GitHub](https:
 
 ## **Document**
 
-TODO - (ironically...)
 
-// Placeholder:
-
- - Documentation ends up in the 'Conventions' part of this site
+ - Finalized documentation ends up in the 'Conventions' part of this site
  - We use rmarkdown 
-   - Edit the RMD files
-   - rmarkdown::render_site() to produce html files with "docs/" - which is where github.io pages looks
- - There are two methods for adding documentation:
-    1) Use RStudio
-      
-        - Edit the RMD files
-        - rmarkdown::render_site() to produce html files with "docs/" - which is where github.io pages looks 
-        
-    2) Use GithubDev or other markdown editor
-      
-        - Can edit and visualize resulting documentation without needing to use R 
-        - Once completed, create a Pull Request
-        - There is a (finicky) Github Action in place that has the logic:
-            - If a pull request gets created where anything in the "rmd/" folder was edited, then generate the HTML files
-        - By the time the pull request is reviewed, the "docs/" folder and contained HTML files should have been automatically generated from whatever you edited in "rmd/"
+   - We edit the markdown files and render them into html
+   - rmarkdown::render_site() to convert rmd files into html files within the "docs" directory - which is where github.io pages pulls from
+
+<br>
+
+ There are three methods for contributing to our documentation documentation.
  
+**Option 1)** Standard approach: **Use RStudio**
+      
+  - Edit the source files within the "rmd/" directory and save them
+  - The rmarkdown contains a function which converts the rmd files into a full html website (and rewrites the "docs/" directory to do so) that is automatically published when merged
+
+
+
+  ```      
+   # start in rmd/ directory
+  setwd(".../rmd")
+
+  # generate html from rmd
+  rmarkdown::render_site()
+  ```
+<br> 
+
+        
+**Option 2)** **Use Github.Dev** or other markdown editor
+  
+    - Leverages tools within Github Website
+    - Can edit and visualize resulting documentation without needing to use R 
+    
+    Steps:
+
+    1) Create a new branch from "main"
+    2) Edit the RMD files and, once satisfied, push those commits to the new branch
+    3)  Once completed, create a Pull Request
+    > - There is a (finicky) Github Action in place that has the logic:
+    >  - If a pull request gets created where anything in the "rmd/" folder was edited, then generate the HTML files
+    > - By the time the pull request is reviewed, the "docs/" folder and contained HTML files should have been automatically generated from whatever you edited in "rmd/"
+
+Tips: 
+- Change the "language to markdown" in the bottom right corner
+![Alt text](image.png)
+
+- After the language has been set to markdown, you can then switch to a split view which shows you the final visual result of the markdown file you are editing. To open the visualization tab click the split box with the magnifying glass in the top right
+![Alt text](image-3.png)
+
+<br>
+
+**Option 3)** If neither above options are feasible, you can write the documentation in whatever format you're comfortable with and 
+1) submit the content as a comment in the github ticket
+2) one of the repository maintainers will convert it into the proper format
+
