@@ -19,6 +19,7 @@ jobs:
       - name: Install known depedencies  
         run: |
           Rscript -e "install.packages('rmarkdown')"
+          Rscript -e "install.packages('fontawesome')"
       - name: Create local changes (HTML)
         run: |
           Rscript -e "rmarkdown::render_site('rmd/')"
