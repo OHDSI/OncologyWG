@@ -11,9 +11,9 @@
 
 
 
-<title> Github Project</title>
+<title>githubProject.knit</title>
 
-<script src="site_libs/header-attrs-2.24/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.15/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -29,14 +29,14 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 
 <style type="text/css">
@@ -185,8 +185,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "\e259";
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -194,9 +194,16 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "\e258";
-  font-family: 'Glyphicons Halflings';
+  content: "&#xe258;";
   border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -419,8 +426,9 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
-Github Project</h1>
+<h1 class="title toc-ignore"><div>
+<img src="images/ohdsi40x40.png"></img> Github Project
+</div></h1>
 
 </div>
 
@@ -872,40 +880,60 @@ you if any changes need to be made before the PR can be accepted.</p>
 </div>
 <div id="document" class="section level2">
 <h2><strong>Document</strong></h2>
-<p>TODO - (ironically…)</p>
-<p>// Placeholder:</p>
 <ul>
-<li>Documentation ends up in the ‘Conventions’ part of this site</li>
+<li>Finalized documentation ends up in the ‘Conventions’ part of this
+site</li>
 <li>We use rmarkdown
 <ul>
-<li>Edit the RMD files</li>
-<li>rmarkdown::render_site() to produce html files with “docs/” - which
-is where github.io pages looks</li>
+<li>We edit the markdown files and render them into html</li>
+<li>rmarkdown::render_site() to convert rmd files into html files within
+the “docs” directory - which is where github.io pages pulls from</li>
 </ul></li>
-<li>There are two methods for adding documentation:
-<ol style="list-style-type: decimal">
-<li><p>Use RStudio</p>
-<ul>
-<li>Edit the RMD files</li>
-<li>rmarkdown::render_site() to produce html files with “docs/” - which
-is where github.io pages looks</li>
-</ul></li>
-<li><p>Use GithubDev or other markdown editor</p>
-<ul>
-<li>Can edit and visualize resulting documentation without needing to
-use R</li>
-<li>Once completed, create a Pull Request</li>
-<li>There is a (finicky) Github Action in place that has the logic:
-<ul>
-<li>If a pull request gets created where anything in the “rmd/” folder
-was edited, then generate the HTML files</li>
-</ul></li>
-<li>By the time the pull request is reviewed, the “docs/” folder and
-contained HTML files should have been automatically generated from
-whatever you edited in “rmd/”</li>
-</ul></li>
-</ol></li>
 </ul>
+<p><br></p>
+<p>There are three methods for contributing to our documentation
+documentation.</p>
+<p><strong>Option 1)</strong> Standard approach: <strong>Use
+RStudio</strong></p>
+<ul>
+<li>Edit the source files within the “rmd/” directory and save them</li>
+<li>The rmarkdown contains a function which converts the rmd files into
+a full html website (and rewrites the “docs/” directory to do so) that
+is automatically published when merged</li>
+</ul>
+<pre><code> # start in rmd/ directory
+setwd(&quot;.../rmd&quot;)
+
+# generate html from rmd
+rmarkdown::render_site()</code></pre>
+<p><br></p>
+<p><strong>Option 2)</strong> <strong>Use Github.Dev</strong> or other
+markdown editor</p>
+<pre><code>- Leverages tools within Github Website
+- Can edit and visualize resulting documentation without needing to use R 
+
+Steps:
+
+1) Create a new branch from &quot;main&quot;
+2) Edit the RMD files and, once satisfied, push those commits to the new branch
+3)  Once completed, create a Pull Request
+&gt; - There is a (finicky) Github Action in place that has the logic:
+&gt;  - If a pull request gets created where anything in the &quot;rmd/&quot; folder was edited, then generate the HTML files
+&gt; - By the time the pull request is reviewed, the &quot;docs/&quot; folder and contained HTML files should have been automatically generated from whatever you edited in &quot;rmd/&quot;</code></pre>
+<p>Tips: - Change the “language to markdown” in the bottom right corner
+<img src="image.png" alt="Alt text" /></p>
+<ul>
+<li>After the language has been set to markdown, you can then switch to
+a split view which shows you the final visual result of the markdown
+file you are editing. To open the visualization tab click the split box
+with the magnifying glass in the top right <img src="image-3.png"
+alt="Alt text" /></li>
+</ul>
+<p><br></p>
+<p><strong>Option 3)</strong> If neither above options are feasible, you
+can write the documentation in whatever format you’re comfortable with
+and 1) submit the content as a comment in the github ticket 2) one of
+the repository maintainers will convert it into the proper format</p>
 </div>
 </div>
 
