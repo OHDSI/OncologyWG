@@ -1,3 +1,4 @@
+-- Running the script takes ~16 minutes
 -- In Postgres
 -- First create staging tables
 -- From Vocabulary-v5.0/working/DevV5_DDL.sql
@@ -90,14 +91,99 @@ TRUNCATE TABLE sources.concept_manual;
 COPY sources.concept_manual FROM 'C:/Archives/ohdsi/ICD-O-3/ICDO3 vocab/concept_manual.csv' CSV
 DELIMITER E'\t' HEADER QUOTE '"'
 ENCODING 'UTF8';
-
-
-
 -- 1. Vocabulary update routine
 -- Date determined by source: check SEER (check also if changed). But there will also be a version of the other ICDO3 codes we add. Probably using freezing date of community contributions.
+-- First define the function (https://github.com/OHDSI/Vocabulary-v5.0/blob/44978ec6fd5cf8ad4d8e5cf1171d869c1767c2b5/working/packages/vocabulary_pack/CheckReplacementMappings.sql)
+-- With some minor modifications.
+CREATE OR REPLACE FUNCTION SetLatestUpdate (
+  pvocabularyname varchar,
+  pvocabularydate date,
+  pvocabularyversion varchar,
+  pvocabularydevschema varchar,
+  pappendvocabulary boolean = false
+)
+RETURNS void AS
+$body$
+    /*
+     Adds (if not exists) column 'latest_update' to 'vocabulary' table and sets it to pVocabularyDate value
+     Also adds 'dev_schema_name' column what needs for 'ProcessManualRelationships' procedure
+     If pAppendVocabulary is set to TRUE, then procedure DOES NOT drops any columns, just updates the 'latest_update' and 'dev_schema_name'
+    */
+DECLARE
+  z int4;
+BEGIN
+  IF pVocabularyName IS NULL
+    THEN
+    RAISE EXCEPTION 'pVocabularyName cannot be empty!';
+  END IF;
+
+  IF pVocabularyDate IS NULL
+    THEN
+    RAISE EXCEPTION 'pVocabularyDate cannot be empty!';
+  END IF;
+
+  /*IF pVocabularyDate > CURRENT_DATE
+    THEN
+    RAISE EXCEPTION 'pVocabularyDate bigger than current date!';
+  END IF;*/ --disabled 20200713, e.g. ICD10CM may be from the 'future'
+
+  IF pVocabularyVersion IS NULL
+    THEN
+    RAISE EXCEPTION 'pVocabularyVersion cannot be empty!';
+  END IF;
+
+  IF pVocabularyDevSchema IS NULL
+    THEN
+    RAISE EXCEPTION 'pVocabularyDevSchema cannot be empty!';
+  END IF;
+  SELECT COUNT(*)
+  INTO z
+  FROM omopcdm.vocabulary
+  WHERE vocabulary_id = pVocabularyName;
+
+  IF z = 0
+    THEN
+    RAISE EXCEPTION 'Vocabulary with id=% not found', pVocabularyName;
+  END IF;
+--  SELECT COUNT(*)
+--  INTO z
+--  FROM information_schema.schemata
+--  WHERE schema_name = LOWER(pVocabularyDevSchema);
+--
+--  IF z = 0
+--    THEN
+--    RAISE EXCEPTION  'Dev schema with name % not found', pVocabularyDevSchema;
+--  END IF;
+
+  IF NOT pAppendVocabulary
+    THEN
+    ALTER TABLE omopcdm.vocabulary ADD
+  if not exists latest_update DATE, add
+  if not exists dev_schema_name VARCHAR(
+        100);
+    update omopcdm.vocabulary
+    set latest_update = null,
+        dev_schema_name = null;
+  END IF;
+  UPDATE omopcdm.vocabulary
+  SET latest_update = pVocabularyDate,
+      vocabulary_version = pVocabularyVersion,
+      dev_schema_name = pVocabularyDevSchema
+  WHERE vocabulary_id = pVocabularyName;
+  
+  ANALYZE omopcdm.vocabulary;--other queries will be able to use the index if it is linked to the vocabulary_id field from this table, e.g. select * from concept c join vocabulary v using (vocabulary_id) where v.latest_update is not null;
+END;
+$body$
+LANGUAGE 'plpgsql'
+VOLATILE
+CALLED ON NULL INPUT
+SECURITY INVOKER
+COST 100
+SET client_min_messages = error;
+-- Then
 DO $_$
 BEGIN
-	PERFORM VOCABULARY_PACK.SetLatestUpdate(
+	PERFORM SetLatestUpdate(
 	pVocabularyName			=> 'ICDO3',
 	pVocabularyDate			=> TO_DATE ('20200630', 'yyyymmdd'), -- https://seer.cancer.gov/ICDO3/
 	pVocabularyVersion		=> 'ICDO3 SEER Site/Histology Released 06/2020',
@@ -116,9 +202,10 @@ CREATE TABLE icdoscript.active_concept AS (
     SELECT DISTINCT
       c.id,
       FIRST_VALUE(c.active) OVER (PARTITION BY c.id ORDER BY c.effectivetime DESC) AS active
-    FROM snomedct.concept_f AS c
-    WHERE c.effectivetime <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
-)
+    FROM snomed.sct2_concept_full_merged AS c
+    WHERE to_date(c.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
+--	WHERE TO_DATE(c.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20230927', 'yyyymmdd')
+);
 -- Step 2: get all 'is a' relationships between active concepts determined in previous steps and get status of relationship on date of interest
 DROP TABLE IF EXISTS icdoscript.active_status;
 CREATE TABLE icdoscript.active_status AS (
@@ -126,13 +213,14 @@ CREATE TABLE icdoscript.active_status AS (
       r.sourceid,
       r.destinationid,
       FIRST_VALUE(r.active) OVER (PARTITION BY r.id ORDER BY r.effectivetime DESC) AS active
-    FROM snomedct.relationship_f AS r
+    FROM snomed.sct2_rela_full_merged AS r
     JOIN icdoscript.active_concept AS a1
-      ON a1.id = r.sourceid AND a1.active = 1::bit
+      ON a1.id = r.sourceid AND a1.active = 1
     JOIN icdoscript.active_concept AS a2
-      ON a2.id = r.destinationid AND a2.active = 1::bit
-    WHERE r.typeid = 116680003 AND r.effectivetime <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
-)
+      ON a2.id = r.destinationid AND a2.active = 1
+    WHERE r.typeid = 116680003 AND to_date(r.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
+--	WHERE r.typeid = 116680003 AND TO_DATE(r.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20230927', 'yyyymmdd')
+);
 -- Step 3: only select the active relationships
 DROP TABLE IF EXISTS icdoscript.concepts;
 CREATE TABLE icdoscript.concepts AS (
@@ -140,9 +228,9 @@ CREATE TABLE icdoscript.concepts AS (
 		destinationid AS ancestor_concept_code,
 		sourceid AS descendant_concept_code
 	FROM icdoscript.active_status
-	WHERE active = 1::bit
-) 
--- Step 4
+	WHERE active = 1
+);
+-- Step 4: takes ~5 minutes -> rewrite possible (doesn't seem so)
 DROP TABLE IF EXISTS icdoscript.hierarchy_concepts;
 CREATE TABLE icdoscript.hierarchy_concepts AS (
 	WITH RECURSIVE hierarchy_concepts(ancestor_concept_code, descendant_concept_code, root_ancestor_concept_code, full_path) AS (
@@ -168,24 +256,34 @@ CREATE TABLE icdoscript.hierarchy_concepts AS (
 		hc.root_ancestor_concept_code AS root_ancestor_concept_code,
 		hc.full_path AS full_path
 	FROM hierarchy_concepts hc
-)
--- Step 5
+);
+-- Step 5: Results in table icdoscript.snomed_ancestor with 10,719,149 rows
 DROP TABLE IF EXISTS icdoscript.snomed_ancestor;
 CREATE TABLE icdoscript.snomed_ancestor AS (
 	SELECT DISTINCT
 		descendant_concept_code AS descendant_concept_code,
 		root_ancestor_concept_code AS ancestor_concept_code 
 	FROM icdoscript.hierarchy_concepts
-)
--- Line 104-110
+);
+-- Clean up
+DROP TABLE IF EXISTS icdoscript.active_status, icdoscript.concepts, icdoscript.hierarchy_concepts;
+-- Line 104-110: Results in table icdoscript.snomed_ancestor with 11,510,673 rows (added 791,524 rows)
 --3.2. Add relation to self for each target
 INSERT INTO icdoscript.snomed_ancestor
 SELECT DISTINCT
   descendant_concept_code AS descendant_concept_code,
   descendant_concept_code AS ancestor_concept_code 
-FROM icdoscript.snomed_ancestor hc
+FROM icdoscript.snomed_ancestor hc;
 -- Line 111-143: Potentially also add /0, /1, /2 but now only /3 done because there the issue is the biggest (most missing relationships).
 --3.3. Add missing relation to Primary Malignant Neoplasm where needed: everything that is not explicitly primary or secondary is assumed primary (otherwise hierarchy is very small).
+-- First: Results in table icdoscript.snomed_ancestor with 10,964,704 rows (added 172 rows)
+-- !!! r_to_c_all contains 204 inactive concepts (and 1762 active ones)!
+SELECT a.active, COUNT(*)
+FROM sources.r_to_c_all r
+JOIN icdoscript.active_concept a
+ON a.id = r.snomed_code
+GROUP BY a.active;
+-- This adds 643 rows to snomed_ancestor (total now 11,511,316)
 INSERT INTO icdoscript.snomed_ancestor (ancestor_concept_code, descendant_concept_code)
 SELECT DISTINCT 86049000, snomed_code
 FROM sources.r_to_c_all r
@@ -197,26 +295,37 @@ WHERE
     SELECT 1
     FROM icdoscript.snomed_ancestor a
     WHERE a.ancestor_concept_code = 86049000 AND a.descendant_concept_code = r.snomed_code --PMN
-   ) 
+   );
+-- !!! 86 now have an inactive descendant
+SELECT a.active, COUNT(*)
+FROM icdoscript.snomed_ancestor s
+JOIN icdoscript.active_concept a
+ON a.id = s.descendant_concept_code
+GROUP BY a.active;
+-- !!! 643 have an inactive ancestor because 86049000 is not active anymore (since 30112022)
+-- Then:
 ALTER TABLE icdoscript.snomed_ancestor ADD CONSTRAINT xpksnomed_ancestor PRIMARY KEY (ancestor_concept_code,descendant_concept_code);
 CREATE INDEX snomed_ancestor_d on icdoscript.snomed_ancestor (descendant_concept_code);
 ANALYZE icdoscript.snomed_ancestor;
 -- Line 144-176: creates the histology mapping between ICDO3 and SNOMED
+-- Results in table icdoscript.snomed_mapping with 1633 rows 
 --4. Prepare updates for histology mapping from SNOMED refset
 DROP TABLE IF EXISTS icdoscript.snomed_mapping;
 CREATE TABLE icdoscript.snomed_mapping AS
 SELECT DISTINCT
   referencedcomponentid as snomed_code,
   maptarget AS icdo_code
-FROM snomedct.simplemaprefset_f AS smr
+FROM snomed.der2_srefset_simplemapfull_int AS smr
 JOIN icdoscript.active_concept AS ac
-  ON ac.id = smr.referencedcomponentid AND ac.active = 1::bit
+  ON ac.id = smr.referencedcomponentid AND ac.active = 1
 -- filter out new sources, as SNOMED update could have been delayed
-WHERE smr.effectivetime <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED') 
-  AND smr.refsetid = 446608001 AND smr.active = 1::bit AND smr.maptarget LIKE '%/%'
+--WHERE to_date(smr.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED') 
+WHERE to_date(smr.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20230927', 'yyyymmdd') 
+  AND smr.refsetid = 446608001 AND smr.active = 1 AND smr.maptarget LIKE '%/%';
 -- Line 177-189: The SNOMED mapping contains mappings of different SNOMED concepts to the same ICDO3 histology: pick the one highest in the hierarchy
 -- (descendants are automatically the same histology, ancestors are not)
 --5. Remove descendants where ancestor is specified as mapping target
+-- Deletes 418 entries. Results in table icdoscript.snomed_mapping with 1236 rows.
 DELETE FROM icdoscript.snomed_mapping m1
 WHERE EXISTS
 (
@@ -225,10 +334,12 @@ WHERE EXISTS
   JOIN icdoscript.snomed_ancestor a 
     ON a.ancestor_concept_code != a.descendant_concept_code AND a.descendant_concept_code = m1.snomed_code
 	AND a.ancestor_concept_code = m2.snomed_code AND m2.icdo_code = m1.icdo_code
-)
+);
 -- Line 190-199: Ambiguous mappings are removed (quite a lot!!!) --> check should not be too many!
 --6. Remove ambiguous mappings
-DELETE FROM icdoscript.snomed_mapping
+-- Ambiguous mappings:
+SELECT icdo_code
+FROM icdoscript.snomed_mapping
 WHERE icdo_code IN
 (
   SELECT icdo_code
@@ -236,9 +347,27 @@ WHERE icdo_code IN
   GROUP BY icdo_code
   HAVING COUNT(1) > 1
 )
+GROUP BY icdo_code
+ORDER BY icdo_code;
+-- Deletes 186 entries (78 ICDO3 codes). Results in table icdoscript.snomed_mapping with 1029 rows.
+DELETE FROM icdoscript.snomed_mapping
+WHERE icdo_code IN
+(
+  SELECT icdo_code
+  FROM icdoscript.snomed_mapping
+  GROUP BY icdo_code
+  HAVING COUNT(1) > 1
+);
 -- Line 200-214: Update the manual mappings in r_to_c_all with mappings from SNOMED refset.
 --7. Update mappings
 --7.1. Histology mappings from SNOMED International refset
+-- r_to_c_all contains 204 inactive concepts!
+SELECT a.active, COUNT(*)
+FROM sources.r_to_c_all r
+JOIN icdoscript.active_concept a
+ON a.id = r.snomed_code
+GROUP BY a.active;
+-- r_to_c_all has 1969 rows: these stay the same but mappings may be updated (983 in total)
 UPDATE sources.r_to_c_all r
 SET
   relationship_id = 'Maps to',
@@ -249,9 +378,16 @@ SET
     FROM icdoscript.snomed_mapping s
     WHERE r.concept_code = s.icdo_code
   )
-WHERE r.concept_code IN (SELECT s.icdo_code FROM icdoscript.snomed_mapping s) AND r.precedence IS NULL -- no automated modification for concepts with alternating mappings
+WHERE r.concept_code IN (SELECT s.icdo_code FROM icdoscript.snomed_mapping s) AND r.precedence IS NULL; -- no automated modification for concepts with alternating mappings
+-- r_to_c_all now has 163 inactive concepts!
+SELECT a.active, COUNT(*)
+FROM sources.r_to_c_all r
+JOIN icdoscript.active_concept a
+ON a.id = r.snomed_code
+GROUP BY a.active;
 -- Line 215-238: Update deprecated SNOMED codes with valid ones.
 --7.2. Deprecated concepts with replacement
+-- !!! We need an updated SNOMED here.
 WITH replacement AS
 (
   SELECT 
@@ -269,7 +405,7 @@ WITH replacement AS
 UPDATE sources.r_to_c_all a
 SET snomed_code = new_code::bigint
 FROM replacement x
-WHERE a.concept_code = x.concept_code AND x.old_code = a.snomed_code AND a.precedence IS NULL -- no automated modification for concepts with alternating mappings
+WHERE a.concept_code = x.concept_code AND x.old_code = a.snomed_code AND a.precedence IS NULL; -- no automated modification for concepts with alternating mappings
 -- Line 239-251: Remove duplicate mappings (none)
 --8. Remove duplications
 DELETE FROM sources.r_to_c_all r1
@@ -279,16 +415,17 @@ WHERE EXISTS
   FROM sources.r_to_c_all r2
   WHERE r1.concept_code = r2.concept_code AND r2.snomed_code = r1.snomed_code AND r2.ctid < r1.ctid
 ) 
-AND r1.precedence IS NULL -- no automated modification for concepts with alternating mappings
+AND r1.precedence IS NULL; -- no automated modification for concepts with alternating mappings
 -- Line 252-253: Delete 9999/9 (one entry)
 --9. Preserve missing morphology mapped to generic neoplasm
-DELETE FROM sources.r_to_c_all WHERE concept_code = '9999/9'
+DELETE FROM sources.r_to_c_all WHERE concept_code = '9999/9';
 -- Line 255-268: 
 --Code 9999/9 must NOT be encountered in final tables and should be removed during post-processing 
 INSERT INTO sources.r_to_c_all
-VALUES ('9999/9','Unknown histology','Maps to','108369006') --Neoplasm
-CREATE INDEX IF NOT EXISTS rtca_target_vc on sources.r_to_c_all (snomed_code)
-ANALYZE sources.r_to_c_all
+VALUES ('9999/9','Unknown histology','Maps to','108369006'); --Neoplasm
+CREATE INDEX IF NOT EXISTS rtca_target_vc on sources.r_to_c_all (snomed_code);
+ANALYZE sources.r_to_c_all;
+
 -- Line 269-290: There are deprecated codes. CHECK!!
 --check for deprecated concepts in r_to_c_all.snomed_code field
 DO $_$
@@ -302,9 +439,11 @@ BEGIN
   LEFT JOIN omopcdm.concept c ON
   r.snomed_code::text = c.concept_code AND c.vocabulary_id = 'SNOMED' AND c.invalid_reason IS NULL
   WHERE c.concept_code IS NULL AND r.snomed_code != '-1';
-  IF codes IS NOT NULL THEN RAISE EXCEPTION 'Following attributes relations target deprecated SNOMED concepts: ''%''', codes ;
+--  IF codes IS NOT NULL THEN RAISE EXCEPTION 'Following attributes relations target deprecated SNOMED concepts: ''%''', codes ;
+  IF codes IS NOT NULL THEN RAISE NOTICE 'Following attributes relations target deprecated SNOMED concepts: ''%''', codes ;
   END IF;
 END $_$;
+
 -- Line 291-306:
 -- Create staging table
 DROP TABLE IF EXISTS icdoscript.concept_stage CASCADE;
@@ -345,7 +484,7 @@ SELECT
   TO_DATE ('19700101', 'yyyymmdd'),
   TO_DATE ('20991231', 'yyyymmdd')
 FROM sources.topo_source_iacr
-WHERE code IS NOT NULL
+WHERE code IS NOT NULL;
 -- Line 291-306:
 --10.2. Morphology
 INSERT INTO icdoscript.concept_stage (
@@ -384,7 +523,7 @@ SELECT
 FROM sources.morph_source_who
 LEFT JOIN omopcdm.concept c 
   ON icdo32 = c.concept_code AND c.vocabulary_id = 'ICDO3'
-WHERE level NOT IN ('Related', 'Synonym') AND icdo32 IS NOT NULL
+WHERE level NOT IN ('Related', 'Synonym') AND icdo32 IS NOT NULL;
 -- Line 337-361:
 --10.3. Get obsolete and unconfirmed morphology concepts
 INSERT INTO icdoscript.concept_stage (
@@ -413,7 +552,7 @@ SELECT DISTINCT
 FROM sources.r_to_c_all m
 LEFT JOIN omopcdm.concept c 
   ON m.concept_code = c.concept_code AND c.vocabulary_id = 'ICDO3'
-WHERE m.concept_code LIKE '%/%' AND m.concept_code NOT IN (SELECT concept_code FROM icdoscript.concept_stage WHERE concept_class_id = 'ICDO Histology')
+WHERE m.concept_code LIKE '%/%' AND m.concept_code NOT IN (SELECT concept_code FROM icdoscript.concept_stage WHERE concept_class_id = 'ICDO Histology');
 -- Line 362-366: for VOCABULARY_PACK see https://github.com/OHDSI/Vocabulary-v5.0/tree/master/working/packages/vocabulary_pack
 --10.4. Get dates from manual table
 --DO $_$
@@ -485,7 +624,7 @@ JOIN omopcdm.vocabulary v ON v.vocabulary_id = cm.vocabulary_id
 --WHERE v.latest_update IS NOT NULL
 --  AND cm.concept_code = cs.concept_code
 WHERE cm.concept_code = cs.concept_code
-  AND cm.vocabulary_id = cs.vocabulary_id;
+  AND cm.vocabulary_id = cs.vocabulary_id; 
 --add new records
 INSERT INTO icdoscript.concept_stage (
   concept_name,
@@ -503,11 +642,11 @@ FROM sources.concept_manual cm
 JOIN omopcdm.vocabulary v ON v.vocabulary_id = cm.vocabulary_id
 -- No latest_update in vocabulary
 -- WHERE v.latest_update IS NOT NULL AND NOT EXISTS (SELECT 1 FROM icdoscript.concept_stage cs_int WHERE cs_int.concept_code = cm.concept_code AND cs_int.vocabulary_id = cm.vocabulary_id)
-WHERE NOT EXISTS (SELECT 1 FROM icdoscript.concept_stage cs_int WHERE cs_int.concept_code = cm.concept_code AND cs_int.vocabulary_id = cm.vocabulary_id)
+WHERE NOT EXISTS (SELECT 1 FROM icdoscript.concept_stage cs_int WHERE cs_int.concept_code = cm.concept_code AND cs_int.vocabulary_id = cm.vocabulary_id);
 -- Nothing happened here!!!
 -- Line 367-369:
 --11. Form table with replacements to handle historic changes for combinations and histologies
-DROP TABLE IF EXISTS icdoscript.code_replace
+DROP TABLE IF EXISTS icdoscript.code_replace;
 -- Line 371-388:
 -- First load changelog_extract
 DROP TABLE IF EXISTS sources.changelog_extract CASCADE;
@@ -534,7 +673,7 @@ SELECT DISTINCT
   LEFT (code,4) || '/' || RIGHT (fate,1) AS code,
   'ICDO Histology' AS concept_class_id
 FROM sources.changelog_extract
-WHERE fate ~ 'Moved to \/\d'
+WHERE fate ~ 'Moved to \/\d';
 -- Line 389-405:
 --11.2. Same names; old code deprecated
 INSERT INTO icdoscript.code_replace
@@ -547,7 +686,7 @@ JOIN icdoscript.concept_stage d2
   ON d1.invalid_reason IS NULL AND d2.invalid_reason IS NOT NULL AND d1.concept_name = d2.concept_name AND d1.concept_class_id = 'ICDO Histology' AND d2.concept_class_id = 'ICDO Histology'
 LEFT JOIN icdoscript.code_replace 
   ON old_code = d2.concept_code
-WHERE old_code IS NULL
+WHERE old_code IS NULL;
 -- Line 406-436:
 -- First load icdo3_valid_combination
 DROP TABLE IF EXISTS sources.icdo3_valid_combination CASCADE;
@@ -584,7 +723,7 @@ SELECT
   'ICDO Condition'
 FROM icdoscript.comb_table c
 JOIN icdoscript.code_replace r 
-  ON r.old_code = c.histology_behavior
+  ON r.old_code = c.histology_behavior;
 -- Line 437-458:
 --11.4. Create mappings for missing topography/morphology
 INSERT INTO icdoscript.comb_table
@@ -672,12 +811,12 @@ CREATE TABLE icdoscript.def_status AS --form list of defined neoplasia concepts 
 (
   SELECT DISTINCT 
     c.concept_code,
-    FIRST_VALUE (f.definitionstatusid) OVER (PARTITION BY f.id ORDER BY f.effectivetime DESC) AS statusid
-  FROM snomedct.concept_f f
+    FIRST_VALUE (f.statusid) OVER (PARTITION BY f.id ORDER BY f.effectivetime DESC) AS statusid
+  FROM snomed.sct2_concept_full_merged f
   JOIN omopcdm.concept c 
     ON c.vocabulary_id = 'SNOMED' AND c.standard_concept = 'S' AND c.concept_code = f.id :: varchar
   -- filter out new sources, as SNOMED update could have been delayed
-  WHERE f.effectivetime <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
+  WHERE TO_DATE(f.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
 );
 -- Step 2:
 DROP TABLE IF EXISTS icdoscript.snomed_concept;
@@ -766,8 +905,61 @@ CREATE TABLE icdoscript.snomed_concept AS
           '255068000'	--Carcinoma of bone, connective tissue, skin and breast
         )
     )
-)
+);
 -- Step 3: Takes a long time to run (~3 hours on laptop)!!! Maybe split it up to make it faster?
+--CREATE TABLE icdoscript.snomed_target_prepared AS
+--SELECT DISTINCT
+--  c.concept_code,
+--  c.concept_name,
+--  COALESCE (x1.concept_code, '-1') AS t_id, --preserve absent topography as meaning
+--  x2.concept_code AS m_id
+--FROM icdoscript.snomed_concept c
+--LEFT JOIN omopcdm.concept_relationship r1 
+--  ON r1.concept_id_1 = c.concept_id AND r1.relationship_id = 'Has finding site'
+--LEFT JOIN omopcdm.concept x1 
+--  ON x1.concept_id = r1.concept_id_2 AND x1.vocabulary_id = 'SNOMED' AND
+--  NOT EXISTS --topography may be duplicated (ancestor/descendant)
+--  (
+--    SELECT
+--    FROM omopcdm.concept_relationship x
+--    JOIN omopcdm.concept n 
+--	  ON n.concept_id = x.concept_id_2
+--    JOIN icdoscript.snomed_ancestor a 
+--	  ON a.descendant_concept_code::text = n.concept_code AND a.ancestor_concept_code::text = x1.concept_code AND x.concept_id_1 = r1.concept_id_1 
+--	  AND  x.relationship_id = 'Has finding site' AND a.ancestor_concept_code != a.descendant_concept_code
+--  )
+--JOIN omopcdm.concept_relationship r2 
+--  ON r2.concept_id_1 = c.concept_id AND r2.relationship_id = 'Has asso morph'
+--JOIN omopcdm.concept x2 
+--  ON x2.concept_id = r2.concept_id_2 AND  x2.vocabulary_id = 'SNOMED' 
+--  AND NOT EXISTS --morphology may be duplicated (ancestor/descendant)
+--  (
+--    SELECT
+--    FROM omopcdm.concept_relationship x
+--    JOIN omopcdm.concept n 
+--      ON n.concept_id = x.concept_id_2
+--    JOIN icdoscript.snomed_ancestor a 
+--      ON a.descendant_concept_code::text = n.concept_code AND a.ancestor_concept_code::text = x2.concept_code AND x.concept_id_1 = r2.concept_id_1 
+--      AND x.relationship_id = 'Has asso morph' AND a.ancestor_concept_code != a.descendant_concept_code
+--  );
+CREATE TABLE icdoscript.tmp1 AS  
+SELECT 
+    a.ancestor_concept_code::text AS ancestor_concept_code,
+	x.concept_id_1 AS concept_id_1
+    FROM omopcdm.concept_relationship x
+    JOIN omopcdm.concept n 
+	  ON n.concept_id = x.concept_id_2
+    JOIN icdoscript.snomed_ancestor a 
+	  ON a.descendant_concept_code::text = n.concept_code AND x.relationship_id = 'Has finding site' AND a.ancestor_concept_code != a.descendant_concept_code; 
+CREATE TABLE icdoscript.tmp2 AS  
+SELECT 
+    a.ancestor_concept_code::text AS ancestor_concept_code,
+	x.concept_id_1 AS concept_id_1
+    FROM omopcdm.concept_relationship x
+    JOIN omopcdm.concept n 
+	  ON n.concept_id = x.concept_id_2
+    JOIN icdoscript.snomed_ancestor a 
+	  ON a.descendant_concept_code::text = n.concept_code AND x.relationship_id = 'Has asso morph' AND a.ancestor_concept_code != a.descendant_concept_code;
 CREATE TABLE icdoscript.snomed_target_prepared AS
 SELECT DISTINCT
   c.concept_code,
@@ -782,12 +974,8 @@ LEFT JOIN omopcdm.concept x1
   NOT EXISTS --topography may be duplicated (ancestor/descendant)
   (
     SELECT
-    FROM omopcdm.concept_relationship x
-    JOIN omopcdm.concept n 
-	  ON n.concept_id = x.concept_id_2
-    JOIN icdoscript.snomed_ancestor a 
-	  ON a.descendant_concept_code::text = n.concept_code AND a.ancestor_concept_code::text = x1.concept_code AND x.concept_id_1 = r1.concept_id_1 
-	  AND  x.relationship_id = 'Has finding site' AND a.ancestor_concept_code != a.descendant_concept_code
+    FROM icdoscript.tmp1 t1
+	WHERE t1.ancestor_concept_code = x1.concept_code AND t1.concept_id_1 = r1.concept_id_1 
   )
 JOIN omopcdm.concept_relationship r2 
   ON r2.concept_id_1 = c.concept_id AND r2.relationship_id = 'Has asso morph'
@@ -795,15 +983,12 @@ JOIN omopcdm.concept x2
   ON x2.concept_id = r2.concept_id_2 AND  x2.vocabulary_id = 'SNOMED' 
   AND NOT EXISTS --morphology may be duplicated (ancestor/descendant)
   (
-    SELECT
-    FROM omopcdm.concept_relationship x
-    JOIN omopcdm.concept n 
-      ON n.concept_id = x.concept_id_2
-    JOIN icdoscript.snomed_ancestor a 
-      ON a.descendant_concept_code::text = n.concept_code AND a.ancestor_concept_code::text = x2.concept_code AND x.concept_id_1 = r2.concept_id_1 
-      AND x.relationship_id = 'Has asso morph' AND a.ancestor_concept_code != a.descendant_concept_code
+	SELECT
+    FROM icdoscript.tmp2 t2
+	WHERE t2.ancestor_concept_code = x2.concept_code AND t2.concept_id_1 = r2.concept_id_1 
   );
-
+DROP TABLE icdoscript.tmp1;
+DROP TABLE icdoscript.tmp2;
 CREATE INDEX idx_snomed_target_prepared ON icdoscript.snomed_target_prepared (concept_code);
 CREATE INDEX idx_snomed_target_attr ON icdoscript.snomed_target_prepared (m_id, t_id);
 CREATE INDEX idx_snomed_target_t ON icdoscript.snomed_target_prepared (t_id);
@@ -816,7 +1001,7 @@ WHERE a.t_id = '-1'
     FROM icdoscript.snomed_target_prepared b
     WHERE a.concept_code = b.concept_code AND b.t_id != '-1'
   );
-ANALYZE icdoscript.snomed_target_prepared
+ANALYZE icdoscript.snomed_target_prepared;
 -- Line 701-745:
 --14. Form mass of all possible matches to filter later
 DROP TABLE IF EXISTS icdoscript.match_blob;
@@ -915,7 +1100,7 @@ WHERE LEFT (o.histology_behavior,3) BETWEEN '9590' AND '9990'  -- all hematologi
     FROM icdoscript.match_blob m
     WHERE m.i_code = cs.concept_code AND m.m_exact AND	m.t_exact
   );
-ANALYZE icdoscript.match_blob
+ANALYZE icdoscript.match_blob;
 -- Line 839-860:
 --14.2. Delete concepts that mention topographies contradicting source condition
 DELETE FROM icdoscript.match_blob m
@@ -979,32 +1164,75 @@ WHERE s_id IN
   ) 
   AND i_code NOT LIKE '%.8'; --code for overlapping lesions
 ANALYZE icdoscript.match_blob;
- -- Line 905-919: 
+ -- Line 905-919: Takes long -> rewrite
  --14.5. malignant WBC disorder special
-DELETE FROM icdoscript.match_blob
-WHERE s_id = '277543005' --Malignant white blood cell disorder
-  AND i_code not in
-  (
-    SELECT c.concept_code
+-- DELETE FROM icdoscript.match_blob
+-- WHERE s_id = '277543005' --Malignant white blood cell disorder
+--   AND i_code not in
+--   (
+--     SELECT c.concept_code
+--     FROM icdoscript.comb_table c
+--     JOIN sources.r_to_c_all t 
+-- 	  ON t.concept_code = c.histology_behavior
+--     JOIN icdoscript.snomed_ancestor ca 
+-- 	  ON ca.ancestor_concept_code = '414388001' AND ca.descendant_concept_code = t.snomed_code --Hematopoietic neoplasm   
+--   );
+CREATE TABLE icdoscript.tmp1 AS
+(
+SELECT c.concept_code
     FROM icdoscript.comb_table c
     JOIN sources.r_to_c_all t 
 	  ON t.concept_code = c.histology_behavior
     JOIN icdoscript.snomed_ancestor ca 
-	  ON ca.ancestor_concept_code = '414388001' AND ca.descendant_concept_code = t.snomed_code --Hematopoietic neoplasm   
+	  ON ca.ancestor_concept_code = '414388001' AND ca.descendant_concept_code = t.snomed_code --Hematopoietic neoplasm  
+);
+DELETE FROM icdoscript.match_blob
+WHERE s_id = '277543005' --Malignant white blood cell disorder
+  AND i_code not in
+  ( 
+    SELECT concept_code
+	FROM icdoscript.tmp1 
   );
+DROP TABLE icdoscript.tmp1;
 -- Line 920-937:
 --15. Core logic
 --15.1. For t_exact and m_exact, remove descendants where ancestors are available as targets
+--DELETE FROM icdoscript.match_blob m
+--WHERE EXISTS
+--	(
+--		SELECT 1
+--		FROM icdoscript.snomed_ancestor a
+--		JOIN icdoscript.match_blob b ON
+--			b.s_id != m.s_id AND
+--			m.s_id = a.descendant_concept_code AND
+--			b.s_id = a.ancestor_concept_code AND
+--			b.i_code = m.i_code	AND
+--			b.t_exact AND
+--			b.m_exact
+--	) AND
+--	m.t_exact AND
+--	m.m_exact
+--;
+CREATE TABLE icdoscript.tmp1 AS
+(
+SELECT 
+    b.s_id AS s_id,
+	a.descendant_concept_code::text AS descendant_concept_code,
+	b.i_code AS i_code
+    FROM icdoscript.snomed_ancestor a
+    JOIN icdoscript.match_blob b 
+	  ON b.s_id = a.ancestor_concept_code::text AND b.t_exact AND b.m_exact
+);
 DELETE FROM icdoscript.match_blob m
 WHERE EXISTS
   (
     SELECT 1
-    FROM icdoscript.snomed_ancestor a
-    JOIN icdoscript.match_blob b 
-	  ON b.s_id != m.s_id AND m.s_id = a.descendant_concept_code::text AND b.s_id = a.ancestor_concept_code::text AND b.i_code = m.i_code AND b.t_exact AND b.m_exact
+    FROM icdoscript.tmp1 t1
+	WHERE t1.s_id != m.s_id AND m.s_id = t1.descendant_concept_code AND t1.i_code = m.i_code
   ) 
   AND m.t_exact 
   AND m.m_exact;
+DROP TABLE icdoscript.tmp1; 
 -- Line 938-958: Takes a long time to run (not finished after >12 hours on laptop so we split it up)!!!
 --15.2. Do the same just for for t_exact with morphology being less precise than best alternative
 -- solves problematic concepts like 255168002 Benign neoplasm of esophagus, stomach and/or duodenum (disorder)
@@ -1021,69 +1249,50 @@ WHERE EXISTS
 --	  ON x.descendant_concept_code::text = b.m_id AND x.ancestor_concept_code::text = m.m_id
 --  ) 
 --  AND m.t_exact;
--- Step 1: Leads to very big table with 762,632,461 rows, takes about 15 minutes
+-- Step 1: takes 3 minutes
 CREATE TABLE icdoscript.tmp1 AS
 (
   SELECT 
-    x.ancestor_concept_code::text AS ancestor_concept_code,
-	a.descendant_concept_code::text AS descendant_concept_code,
-	b.s_id AS s_id,
-	b.i_code AS i_code
-    FROM icdoscript.snomed_ancestor a
-    JOIN icdoscript.match_blob b 
-	  ON b.s_id = a.ancestor_concept_code::text AND b.t_exact
+  a.descendant_concept_code::text AS descendant_concept_code,
+  b.s_id AS s_id,
+  b.m_id AS m_id,
+  b.i_code AS i_code
+  FROM icdoscript.snomed_ancestor a
+  JOIN icdoscript.match_blob b 
+    ON b.s_id = a.ancestor_concept_code::text AND b.t_exact
+  WHERE EXISTS
+    (
+      SELECT 1
+      FROM icdoscript.match_blob m
+      WHERE b.s_id != m.s_id AND m.s_id = a.descendant_concept_code::text AND b.i_code = m.i_code
+    )
+);
+-- Step 2: 
+CREATE TABLE icdoscript.tmp2 AS
+  (
+    SELECT 
+	  t1.descendant_concept_code::text AS descendant_concept_code,
+	  x.ancestor_concept_code::text AS ancestor_concept_code,
+      t1.s_id AS s_id,
+      t1.m_id AS m_id,
+      t1.i_code AS i_code
+    FROM icdoscript.tmp1 t1
     --don't remove if morphology is less precise
     JOIN icdoscript.snomed_ancestor x 
-	  ON x.descendant_concept_code::text = b.m_id 
-)
--- Now the rest could be run:
---DELETE FROM icdoscript.match_blob m
---WHERE EXISTS
---  (
---    SELECT 1
---    FROM icdoscript.tmp1 t
---    WHERE t.ancestor_concept_code = m.m_id AND t.s_id != m.s_id AND m.s_id = t.descendant_concept_code AND t.i_code = m.i_code
---  ) 
---  AND m.t_exact;
--- However, this also seems to take a long time. So we first try to shrink tmp1.
--- Step 2: Try to shrink tmp1, but first create extra indexes:
-CREATE INDEX idx_blob_m ON icdoscript.match_blob (m_id);
-CREATE INDEX snomed_ancestor_a on icdoscript.snomed_ancestor (ancestor_concept_code);
--- Step 2a: Deletes 618,402,625 entries (144,229,836 remain) and takes about 15 minutes.
-DELETE FROM icdoscript.tmp1 t
-WHERE NOT EXISTS
-  (
-    SELECT 1
-    FROM icdoscript.match_blob m
-    WHERE t.ancestor_concept_code = m.m_id
-  ) 
--- Step 2b: Deletes 87,810,888 entries (56,418,948 remain) and takes about 3 minutes.  
-DELETE FROM icdoscript.tmp1 t
-WHERE NOT EXISTS
-  (
-    SELECT 1
-    FROM icdoscript.match_blob m
-    WHERE m.s_id = t.descendant_concept_code
-  )
--- Step 2c: Deletes 0 entries (56,418,948 remain) and takes about 2 minutes.  
-DELETE FROM icdoscript.tmp1 t
-WHERE NOT EXISTS
-  (
-    SELECT 1
-    FROM icdoscript.match_blob m
-    WHERE t.i_code = m.i_code
-  )
--- Step 3: Deletes 16,239 entries and takes about 10 minutes.
+      ON x.descendant_concept_code::text = t1.m_id 
+);
+-- Step 3: 
 DELETE FROM icdoscript.match_blob m
 WHERE EXISTS
   (
     SELECT 1
-    FROM icdoscript.tmp1 t
-    WHERE t.ancestor_concept_code = m.m_id AND t.s_id != m.s_id AND m.s_id = t.descendant_concept_code AND t.i_code = m.i_code
+    FROM icdoscript.tmp2 t2
+    WHERE t2.s_id != m.s_id AND m.s_id = t2.descendant_concept_code AND t2.i_code = m.i_code AND t2.ancestor_concept_code::text = m.m_id
   ) 
-  AND m.t_exact;
--- Step 4:
-DROP TABLE icdoscript.tmp1
+  AND m.t_exact
+;
+DROP TABLE icdoscript.tmp1;
+DROP TABLE icdoscript.tmp2;
 -- Line 959-967: This also takes too long (>40 minutes on laptop) so we split it up.
  --15.3. Remove ancestors where descendants are available as targets
 --DELETE FROM icdoscript.match_blob m
@@ -1104,7 +1313,7 @@ CREATE TABLE icdoscript.tmp1 AS
   FROM icdoscript.snomed_ancestor a
   JOIN icdoscript.match_blob b 
   ON b.s_id = a.descendant_concept_code::text 
-)
+);
 -- Step 2a:
 DELETE FROM icdoscript.tmp1 t
 WHERE NOT EXISTS
@@ -1112,7 +1321,7 @@ WHERE NOT EXISTS
     SELECT 1
     FROM icdoscript.match_blob m
     WHERE t.ancestor_concept_code = m.s_id
-  ) 
+  );
 -- Step 2b:
 DELETE FROM icdoscript.tmp1 t
 WHERE NOT EXISTS
@@ -1120,7 +1329,7 @@ WHERE NOT EXISTS
     SELECT 1
     FROM icdoscript.match_blob m
     WHERE t.i_code = m.i_code
-  )
+  );
 -- Step 3: This just takes 1 minute or so.
 DELETE FROM icdoscript.match_blob m
 WHERE EXISTS
@@ -1130,7 +1339,7 @@ WHERE EXISTS
     WHERE t.s_id != m.s_id AND m.s_id = t.ancestor_concept_code AND t.i_code = m.i_code
   );
 -- Step 4:
-DROP TABLE icdoscript.tmp1
+DROP TABLE icdoscript.tmp1;
 --debug artifact
 TRUNCATE TABLE icdoscript.concept_relationship_stage;
 -- Line 977-1004:
@@ -1145,7 +1354,7 @@ CREATE TABLE icdoscript.monorelation AS
   WHERE t_exact AND m_exact
   GROUP BY i_code
   HAVING COUNT (DISTINCT s_id) = 1
-)
+);
 -- Step 2:
 INSERT INTO icdoscript.concept_relationship_stage (concept_code_1,concept_code_2,vocabulary_id_1,vocabulary_id_2,relationship_id,valid_start_date,valid_end_date)
 SELECT DISTINCT
@@ -1176,7 +1385,7 @@ CREATE TABLE icdoscript.getherd_mts_codes AS
     vocabulary_id
   FROM icdoscript.concept_stage c
   WHERE c.vocabulary_id = 'ICDO3' AND c.concept_class_id = 'ICDO Condition' AND c.concept_code ILIKE '%/6%'
-)
+);
 -- Step 2:
 DROP TABLE IF EXISTS icdoscript.tabb;
 CREATE TABLE icdoscript.tabb AS
@@ -1195,7 +1404,7 @@ CREATE TABLE icdoscript.tabb AS
     ON c.concept_id = cr.concept_id_1 AND cr.invalid_reason IS NULL AND cr.relationship_id = 'Maps to'
   LEFT JOIN omopcdm.concept cc
     ON cr.concept_id_2 = cc.concept_id AND cr.invalid_reason IS NULL AND cc.standard_concept = 'S'
-)
+);
 -- Step 3:
 DROP TABLE IF EXISTS icdoscript.tabbc;
 CREATE TABLE icdoscript.tabbc AS
@@ -1222,8 +1431,9 @@ CREATE TABLE icdoscript.tabbc AS
     ON t.snomed_id=cr.concept_id_1
   JOIN omopcdm.concept c
     ON c.concept_id=cr.concept_id_2 AND c.concept_class_id='Metastasis'
-)
+);
 -- Step 4: devv5.similarity seems to be similarity from pg_trgm
+DROP EXTENSION IF EXISTS pg_trgm;
 CREATE EXTENSION pg_trgm; -- then devv5.similarity -> similarity
 DROP TABLE IF EXISTS icdoscript.similarity_tab;
 CREATE TABLE icdoscript.similarity_tab AS
@@ -1250,7 +1460,7 @@ CREATE TABLE icdoscript.similarity_tab AS
     valid_end_date,
     invalid_reason
   FROM icdoscript.tabbc
-)
+);
 -- Step 5:
 CREATE TABLE icdoscript.icdo3_to_cm_metastasis AS
 (
@@ -1267,7 +1477,7 @@ CREATE TABLE icdoscript.icdo3_to_cm_metastasis AS
   JOIN icdoscript.getherd_mts_codes a
     ON s.tumor_site_code = a.tumor_site_code
   WHERE similarity=1
-)
+);
 -- Line 1108-1133:
 --Assumption MTS
 INSERT INTO icdoscript.icdo3_to_cm_metastasis (icd_name, icd_code, tumor_site_code, icd_vocab, concept_id, concept_code, concept_name, vocabulary_id)
@@ -1619,7 +1829,8 @@ BEGIN
   FROM sources.concept_relationship_manual m
   JOIN icdoscript.concept_relationship_stage s ON s.concept_code_1 = m.concept_code_1 AND s.vocabulary_id_1 = m.vocabulary_id_1 AND m.invalid_reason IS NULL AND m.relationship_id = 'Maps to';
   IF codes IS NOT NULL THEN
-    RAISE EXCEPTION 'Following codes need to be removed from manual table: ''%''', codes ;
+--    RAISE EXCEPTION 'Following codes need to be removed from manual table: ''%''', codes ;
+	RAISE NOTICE 'Following codes need to be removed from manual table: ''%''', codes ;
   END IF;
 END $_$;
 -- Line 1571-1576:
@@ -1837,7 +2048,7 @@ CREATE TABLE icdoscript.hierarchy AS
   JOIN icdoscript.concept_stage 
     ON concept_code = icdo32
   WHERE level IN ('2','3')
-)
+);
 -- Step 2:
 CREATE TABLE icdoscript.relation_hierarchy AS
 --Level 3 should be included in 2
@@ -1849,7 +2060,7 @@ CREATE TABLE icdoscript.relation_hierarchy AS
   FROM icdoscript.hierarchy h2
   JOIN icdoscript.hierarchy h3 
     ON h2.level = '2' AND h3.level = '3' AND h2.start_code <= h3.start_code AND h2.end_code || 'Z' >= h3.end_code -- to guarantee inclusion of upper bound
-)
+);
 -- Step 3:
 CREATE TABLE icdoscript.relation_atom AS
 (
@@ -1865,7 +2076,7 @@ CREATE TABLE icdoscript.relation_atom AS
 	AND h.concept_code NOT IN (SELECT ancestor_code FROM icdoscript.relation_hierarchy)
     --obviously excludde hierarchical concepts
     AND s.concept_code NOT IN (SELECT concept_code FROM icdoscript.hierarchy)
-)
+);
 -- Step 4:
 CREATE TABLE icdoscript.attribute_hierarchy AS
 SELECT *
@@ -1965,7 +2176,7 @@ LEFT JOIN icdoscript.concept_relationship_stage x
   ON s.concept_code = x.concept_code_1 AND x.relationship_id = 'Maps to' -- no mapping for condition
 JOIN sources.r_to_c_all r1 
   ON s.site = r1.concept_code
-WHERE x.concept_code_1 IS NULL AND r1.snomed_code::text != -1 AND NOT EXISTS (SELECT 1 FROM icdoscript.concept_relationship_stage a WHERE a.concept_code_1 = s.concept_code AND a.concept_code_2 = r1.snomed_code::text)
+WHERE x.concept_code_1 IS NULL AND r1.snomed_code != '-1' AND NOT EXISTS (SELECT 1 FROM icdoscript.concept_relationship_stage a WHERE a.concept_code_1 = s.concept_code AND a.concept_code_2 = r1.snomed_code::text)
   UNION ALL
 ---Histology
 SELECT
@@ -1981,7 +2192,7 @@ LEFT JOIN icdoscript.concept_relationship_stage x
   ON s.concept_code = x.concept_code_1 AND x.relationship_id = 'Maps to' -- no mapping for condition
 JOIN sources.r_to_c_all r1 
   ON s.histology_behavior = r1.concept_code AND	COALESCE (r1.precedence,1) = 1
-WHERE x.concept_code_1 IS NULL AND r1.snomed_code != -1 AND NOT EXISTS (SELECT 1 FROM icdoscript.concept_relationship_stage a WHERE a.concept_code_1 = s.concept_code AND a.concept_code_2 = r1.snomed_code::text);
+WHERE x.concept_code_1 IS NULL AND r1.snomed_code != '-1' AND NOT EXISTS (SELECT 1 FROM icdoscript.concept_relationship_stage a WHERE a.concept_code_1 = s.concept_code AND a.concept_code_2 = r1.snomed_code::text);
 -- Line 1846-1867:
 --20.5. remove co-occurrent parents of target attributes (consider our concepts fully defined)
 --DELETE FROM icdoscript.concept_relationship_stage s
@@ -2012,7 +2223,7 @@ CREATE TABLE icdoscript.tmp1 AS
     ON cd.concept_code = a.descendant_concept_code::text AND a.descendant_concept_code != a.ancestor_concept_code
   JOIN omopcdm.concept ca 
     ON ca.concept_code = a.ancestor_concept_code::text  AND ca.vocabulary_id = 'SNOMED'
- ) 
+ );
 -- Step 2:
 DELETE FROM icdoscript.concept_relationship_stage s
 WHERE relationship_id IN ('Has asso morph','Has finding site')
@@ -2282,6 +2493,7 @@ ON r2.relationship_id = 'Maps to' AND r.concept_code_2 = r2.concept_code_1
 WHERE r.relationship_id = 'Concept replaced by' AND NOT EXISTS (SELECT 1 FROM icdoscript.concept_relationship_stage r3 WHERE r.concept_code_1 = r3.concept_code_1 AND r3.relationship_id = 'Maps to');
 -- Line 1951-1956:
 -- First create type concept (not sure where that happens in the original code).
+DROP TYPE IF EXISTS concept CASCADE;
 CREATE TYPE concept AS
 (
   concept_id integer,
@@ -2610,9 +2822,10 @@ WHERE s.concept_code_1 IS NULL AND NOT (c.concept_id = c2.concept_id AND r.relat
 -- 30. Cleanup: drop all temporary tables
 DROP TABLE IF EXISTS icdoscript.snomed_mapping, icdoscript.snomed_target_prepared, icdoscript.attribute_hierarchy, icdoscript.comb_table, icdoscript.match_blob, icdoscript.code_replace, icdoscript.snomed_ancestor, icdoscript.icdo3_to_cm_metastasis;
 -- And our own intermediate tables
-DROP TABLE IF EXISTS icdoscript.active_concept, icdoscript.active_status, icdoscript.concepts, icdoscript.def_status, icdoscript.getherd_mts_codes, icdoscript.hierarchy, icdoscript.hierarchy_concepts, icdoscript.monorelation;
+DROP TABLE IF EXISTS icdoscript.active_concept, icdoscript.def_status, icdoscript.getherd_mts_codes, icdoscript.hierarchy, icdoscript.monorelation;
 DROP TABLE IF EXISTS icdoscript.relation_atom, icdoscript.relation_hierarchy, icdoscript.similarity_tab, icdoscript.snomed_concept, icdoscript.tabb, icdoscript.tabbc;
 
+-----------------------------------------------------------------------------------------------------------------------------
 
 -- Checks:
 DROP TABLE IF EXISTS omopcdm.icdo3_concept;
