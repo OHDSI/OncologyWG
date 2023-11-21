@@ -1,0 +1,117 @@
+concepts (concept_stage):
+
+CHECK ONLY THE ACTIVE ONES!!!
+
+concept_stage: 63461 concepts
+* 59720	concept_code like '%/%-C%.%'
+		missing:
+		- 12	/0 concepts (4276 total)	all valid morphologies
+		- 15	/1 concepts (2160 total)	3 with non-v3.2 morphology but these three can be mapped to a valid one
+		- 1		/2 concepts (3096 total)	all valid morphologies
+		- 63	/3 concepts (52141 total)	all valid morphologies
+		- 125	/6 concepts (428 total)
+		- 6 	/9 concepts (33 total)
++ 0		concept_code like '%/%-C%' and concept_code not like '%/%-C%.%'
+		Unclear why they are in the vocabulary because they don't seem to be created. This is OK.
+- 1476	concept_code like '%/%-NULL'
+- 330	concept_code like 'NULL-C%.%'
++ 0		concept_code like 'NULL-C%' and concept_code not like 'NULL-C%.%'
+		Unclear why they are in the vocabulary because they don't seem to be created. This is OK.
++ 1476	concept_code like '%/%' and concept_code not like '%/%-%' and concept_code not like 'C%-%'  
+		missing: 9342/3 with a space after 9342/3 - OK because there is also one without the space
+- 330	concept_code like 'C__._' 
+- 70	concept_code like 'C__'
+- 24	concept_code like '___' and concept_code not like 'C__'
+- 35	concept_code like '___-___'
++ 0 	concept_code like 'C%-%' (wrong code!)
+		OK, shouldn't be there anyway
+
+concept: 64471
+- 59942	concept_code like '%/%-C%.%'
+- 716	concept_code like '%/%-C%' and concept_code not like '%/%-C%.%'
+- 1476	concept_code like '%/%-NULL'
+- 330	concept_code like 'NULL-C%.%'
+- 70	concept_code like 'NULL-C%' and concept_code not like 'NULL-C%.%'
+- 1477	concept_code like '%/%' and concept_code not like '%/%-%' and concept_code not like 'C%-%' 
+- 330	concept_code like 'C__._' 
+- 70	concept_code like 'C__'
+- 24	concept_code like '___' and concept_code not like 'C__'
+- 35	concept_code like '___-___'
+- 1 	concept_code like 'C%-%' (wrong code!)
+
+valid combination: 59192
+all in concept_stage, concept_stage has 528 more
+all in concept, concept has 750 more (these 750 contain the 528 from concept_stage vs icdo3_valid_combination difference)
+
+changelog_extract has 118 entries, 59 unique morphologies with 52 mappings (7 are deleted morphologies)
+
+A. there are 2114 entries in icdo3_valid_combination that are not in morph_source_who (not a valid morphology)
+   difference between A and B: 95 morphology codes, 513 ICDO3 codes in total (so these are not valid V3.2 codes not can they be mapped to a valid code)
+B. there are 1601 entries in icdo3_valid_combination that are in changelog_extract (i.e. morphology changed or was deleted)
+   difference between B and C: 4 morphology codes (8680/0, 8936/0, 9530/1, 9540/1), 45 ICDO3 codes in total (so these are not valid V3.2 codes not can they be mapped to a valid code)
+C. there are 1556 entries in icdo3_valid_combination that are in code_replace (i.e. morphology changed)
+   527 of these do not have an entry in icdo3_valid_combination after mapping to the new morphology
+D. in the code (11.2) two mappings are added: 9754/3 -> 9751/3 and 9831/1 -> 9831/3  (I found the first one in Changes ICD-O-3.2.pdf, the second on I cannot find)
+   this leads to one additional entry in icdo3_valid_combination being mapped to a code that was not yet in icdo3_valid_combination   
+   This 1+527 is exactly equal to the 528 above.
+
+ICDO3 since March 23 2021 in vocab repository
+
+Hypothesis:
+* vocabulary was created with different (slightly longer) icdo3_valid_combination.csv file
+* C% codes were removed at some point, now only C%.%
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+relationships (concept_relationship_stage):
+
+concept_relationship_stage has 412584 entries
+icdo3_concept_relationship has 1192976 entries
+
+all the reverse relationships are missing
+
+concept_relationship_stage has 412584 entries with vocabulary_id_1 = 'ICDO3'
+icdo3_concept_relationship has 777289 entries with vocabulary_id_1 = 'ICDO3'
+
+the overlap between the two sets is 404701:
+select count(*)
+from omopcdm.icdo3_concept_relationship icr
+where exists
+(
+	select 1
+	from icdoscript.concept_relationship_stage crs
+	where icr.concept_code_1 = crs.concept_code_1
+	and icr.concept_code_2 = crs.concept_code_2
+	and icr.vocabulary_id_1 = crs.vocabulary_id_1
+	and icr.vocabulary_id_2 = crs.vocabulary_id_2
+	and icr.relationship_id = crs.relationship_id
+)
+
+concept_relationship_stage has mappings to Cancer Modifier, ICDO3 and SNOMED
+icdo3_concept_relationship also has mappings to HemOnc, NAACCR, NCIt, OMOP Genomic (created by respective vocabularies)
+
+concept_relationship_stage has relations 'Concept replaced by','Has asso morph','Has finding site','Has Histology ICDO','Has Topography ICDO','Is a','Maps to','Subsumes'
+icdo3_concept_relationship also has relations 'Concept replaces','Has variant','Histology of ICDO','ICDO to Chapter','ICDO to Proc Schema','ICDO to Schema','Mapped from','Topography of ICDO'
+
+concept_relationship_stage has 412584 entries with vocabulary_id_1 = 'ICDO3', relations 'Concept replaced by','Has asso morph','Has finding site','Has Histology ICDO','Has Topography ICDO','Is a','Maps to','Subsumes', and targets Cancer Modifier, ICDO3 and SNOMED 
+icdo3_concept_relationship has 463538 entries with vocabulary_id_1 = 'ICDO3', relations 'Concept replaced by','Has asso morph','Has finding site','Has Histology ICDO','Has Topography ICDO','Is a','Maps to','Subsumes', and targets Cancer Modifier, ICDO3 and SNOMED 
+
+only take concepts in concept_stage:
+
+concept_relationship_stage has 411712 entries with vocabulary_id_1 = 'ICDO3', relations 'Concept replaced by','Has asso morph','Has finding site','Has Histology ICDO','Has Topography ICDO','Is a','Maps to','Subsumes', and targets Cancer Modifier, ICDO3 and SNOMED, with only ICDO3 concepts in concept_stage
+icdo3_concept_relationship has 462545 entries with vocabulary_id_1 = 'ICDO3', relations 'Concept replaced by','Has asso morph','Has finding site','Has Histology ICDO','Has Topography ICDO','Is a','Maps to','Subsumes', and targets Cancer Modifier, ICDO3 and SNOMED, with only ICDO3 concepts in concept_stage 
+
+there are 872 relationships in concept_relationship_stage that are not in concept_stage		--> INVESTIGATE THESE makes sense, can also makes reference to concept table (not only concept_stage)
+
+in stage and in orig: 403833
+in stage and not in orig: 7879																--> INVESTIGATE THESE (CHECK MAPPINGS FILE CHANGES (GET MAPPING FILE ON ~ 20200620))
+
+in orig and not in stage: 58712
+- 56889 of these are Maps to self
+- 330 are mappings 'CXX.X Is a CXX'															--> CHECK IF THESE ARE STANDARD
+- 1460 are mappings 'XXXX/X Is a XXX or XXX-XXX'											--> CHECK IF THESE ARE STANDARD
+- 4 are mappings 'XXX Is a XXX-XXX'															--> CHECK IF THESE ARE STANDARD
+- 6 are mappings 'XXX-XXX Is a XXX-XXX'														--> CHECK IF THESE ARE STANDARD
+- 23 are mappings to Cancer Modifier   														--> INVESTIGATE WHY THESE ARE MISSED OR CHECK WITH DMYTRO
+
+Check with OLEG for sanity checks.
