@@ -203,8 +203,9 @@ CREATE TABLE icdoscript.active_concept AS (
       c.id,
       FIRST_VALUE(c.active) OVER (PARTITION BY c.id ORDER BY c.effectivetime DESC) AS active
     FROM snomed.sct2_concept_full_merged AS c
-    WHERE to_date(c.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
---	WHERE TO_DATE(c.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20230927', 'yyyymmdd')
+-- PICK DATE
+--    WHERE to_date(c.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
+	WHERE TO_DATE(c.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20200620', 'yyyymmdd')
 );
 -- Step 2: get all 'is a' relationships between active concepts determined in previous steps and get status of relationship on date of interest
 DROP TABLE IF EXISTS icdoscript.active_status;
@@ -218,8 +219,9 @@ CREATE TABLE icdoscript.active_status AS (
       ON a1.id = r.sourceid AND a1.active = 1
     JOIN icdoscript.active_concept AS a2
       ON a2.id = r.destinationid AND a2.active = 1
-    WHERE r.typeid = 116680003 AND to_date(r.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
---	WHERE r.typeid = 116680003 AND TO_DATE(r.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20230927', 'yyyymmdd')
+-- PICK DATE	  
+--    WHERE r.typeid = 116680003 AND to_date(r.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
+	WHERE r.typeid = 116680003 AND TO_DATE(r.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20200620', 'yyyymmdd')
 );
 -- Step 3: only select the active relationships
 DROP TABLE IF EXISTS icdoscript.concepts;
@@ -319,8 +321,9 @@ FROM snomed.der2_srefset_simplemapfull_int AS smr
 JOIN icdoscript.active_concept AS ac
   ON ac.id = smr.referencedcomponentid AND ac.active = 1
 -- filter out new sources, as SNOMED update could have been delayed
+-- PICK DATE
 --WHERE to_date(smr.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED') 
-WHERE to_date(smr.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20230927', 'yyyymmdd') 
+WHERE to_date(smr.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20200620', 'yyyymmdd') 
   AND smr.refsetid = 446608001 AND smr.active = 1 AND smr.maptarget LIKE '%/%';
 -- Line 177-189: The SNOMED mapping contains mappings of different SNOMED concepts to the same ICDO3 histology: pick the one highest in the hierarchy
 -- (descendants are automatically the same histology, ancestors are not)
@@ -511,12 +514,11 @@ SELECT
     c.valid_start_date,
     --new concept gets new date
     (
--- WHERE IS VOCABULARY: omopcdm.vocabulary does not have latest_update
---      SELECT latest_update
---      FROM omopcdm.vocabulary
---      WHERE latest_update IS NOT NULL
---      LIMIT 1
-	  TO_DATE ('20231106', 'yyyymmdd')
+      SELECT latest_update
+      FROM omopcdm.vocabulary
+      WHERE latest_update IS NOT NULL
+      LIMIT 1
+--	  TO_DATE ('20231106', 'yyyymmdd')
     )
   ),
   TO_DATE ('20991231', 'yyyymmdd')
@@ -545,9 +547,8 @@ SELECT DISTINCT
   NULL,
   m.concept_code,
   GREATEST (TO_DATE ('19700101', 'yyyymmdd'), c.valid_start_date), -- don't reduce existing start date
--- WHERE IS VOCABULARY: omopcdm.vocabulary does not have latest_update
---  (SELECT latest_update-1 FROM vocabulary WHERE vocabulary_id='ICDO3'),
-  TO_DATE('20220101', 'yyyymmdd'),
+  (SELECT latest_update-1 FROM omopcdm.vocabulary WHERE vocabulary_id='ICDO3'),
+--  TO_DATE('20220101', 'yyyymmdd'),
   'D'
 FROM sources.r_to_c_all m
 LEFT JOIN omopcdm.concept c 
@@ -621,9 +622,9 @@ SET concept_name = COALESCE(cm.concept_name, cs.concept_name),
 FROM sources.concept_manual cm
 JOIN omopcdm.vocabulary v ON v.vocabulary_id = cm.vocabulary_id
 -- No latest_update in vocabulary
---WHERE v.latest_update IS NOT NULL
---  AND cm.concept_code = cs.concept_code
-WHERE cm.concept_code = cs.concept_code
+WHERE v.latest_update IS NOT NULL
+  AND cm.concept_code = cs.concept_code
+--WHERE cm.concept_code = cs.concept_code
   AND cm.vocabulary_id = cs.vocabulary_id; 
 --add new records
 INSERT INTO icdoscript.concept_stage (
@@ -641,8 +642,8 @@ SELECT cm.*
 FROM sources.concept_manual cm
 JOIN omopcdm.vocabulary v ON v.vocabulary_id = cm.vocabulary_id
 -- No latest_update in vocabulary
--- WHERE v.latest_update IS NOT NULL AND NOT EXISTS (SELECT 1 FROM icdoscript.concept_stage cs_int WHERE cs_int.concept_code = cm.concept_code AND cs_int.vocabulary_id = cm.vocabulary_id)
-WHERE NOT EXISTS (SELECT 1 FROM icdoscript.concept_stage cs_int WHERE cs_int.concept_code = cm.concept_code AND cs_int.vocabulary_id = cm.vocabulary_id);
+WHERE v.latest_update IS NOT NULL AND NOT EXISTS (SELECT 1 FROM icdoscript.concept_stage cs_int WHERE cs_int.concept_code = cm.concept_code AND cs_int.vocabulary_id = cm.vocabulary_id);
+--WHERE NOT EXISTS (SELECT 1 FROM icdoscript.concept_stage cs_int WHERE cs_int.concept_code = cm.concept_code AND cs_int.vocabulary_id = cm.vocabulary_id);
 -- Nothing happened here!!!
 -- Line 367-369:
 --11. Form table with replacements to handle historic changes for combinations and histologies
@@ -816,7 +817,9 @@ CREATE TABLE icdoscript.def_status AS --form list of defined neoplasia concepts 
   JOIN omopcdm.concept c 
     ON c.vocabulary_id = 'SNOMED' AND c.standard_concept = 'S' AND c.concept_code = f.id :: varchar
   -- filter out new sources, as SNOMED update could have been delayed
-  WHERE TO_DATE(f.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
+-- PICK DATE
+--  WHERE TO_DATE(f.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
+  WHERE TO_DATE(f.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20200620', 'yyyymmdd')
 );
 -- Step 2:
 DROP TABLE IF EXISTS icdoscript.snomed_concept;
@@ -1964,7 +1967,7 @@ BEGIN
 	FROM sources.concept_relationship_manual crm
 	JOIN omopcdm.vocabulary v1 ON v1.vocabulary_id = crm.vocabulary_id_1
 	JOIN omopcdm.vocabulary v2 ON v2.vocabulary_id = crm.vocabulary_id_2
---	WHERE COALESCE(v1.latest_update, v2.latest_update) IS NOT NULL There is no column latest_update
+	WHERE COALESCE(v1.latest_update, v2.latest_update) IS NOT NULL 
 	ON CONFLICT ON CONSTRAINT idx_pk_crs
 	DO UPDATE
 	SET valid_start_date = excluded.valid_start_date,
@@ -2336,8 +2339,8 @@ BEGIN
 
 	--Deprecate concepts if we have no active replacement record in the concept_relationship_stage
 	UPDATE icdoscript.concept_stage cs
---	SET valid_end_date = LEAST(cs.valid_end_date, v.latest_update - 1),
-	SET valid_end_date = cs.valid_end_date,
+	SET valid_end_date = LEAST(cs.valid_end_date, v.latest_update - 1),
+--	SET valid_end_date = cs.valid_end_date,
 		invalid_reason = 'D',
 		standard_concept = NULL
 	FROM omopcdm.vocabulary v
@@ -2424,15 +2427,15 @@ BEGIN
 		)
 	UPDATE icdoscript.concept_relationship_stage crs
 	SET invalid_reason = 'D',
---		valid_end_date = GREATEST(valid_start_date, (
---				SELECT MAX(latest_update) - 1
---				FROM omopcdm.vocabulary
---				WHERE vocabulary_id IN (
---						crs.vocabulary_id_1,
---						crs.vocabulary_id_2
---						)
---				))
-		valid_end_date = valid_start_date
+		valid_end_date = GREATEST(valid_start_date, (
+				SELECT MAX(latest_update) - 1
+				FROM omopcdm.vocabulary
+				WHERE vocabulary_id IN (
+						crs.vocabulary_id_1,
+						crs.vocabulary_id_2
+						)
+				))
+--		valid_end_date = valid_start_date
 	FROM t
 	WHERE crs.concept_code_1 = t.concept_code_1
 		AND crs.vocabulary_id_1 = t.vocabulary_id_1
@@ -2442,8 +2445,8 @@ BEGIN
 
 	--Deprecate concepts if we have no active replacement record in the concept_relationship_stage (yes, again)
 	UPDATE icdoscript.concept_stage cs
---	SET valid_end_date = LEAST(cs.valid_end_date, v.latest_update - 1),
-	SET valid_end_date = cs.valid_end_date,	
+	SET valid_end_date = LEAST(cs.valid_end_date, v.latest_update - 1),
+--	SET valid_end_date = cs.valid_end_date,	
 		invalid_reason = 'D',
 		standard_concept = NULL
 	FROM omopcdm.vocabulary v
@@ -2551,15 +2554,15 @@ $BODY$
 	*/
 BEGIN
 	UPDATE icdoscript.concept_relationship_stage crs
---	SET valid_end_date = GREATEST(crs.valid_start_date, (
---				SELECT MAX(v.latest_update) - 1
---				FROM omopcdm.vocabulary v
---				WHERE v.vocabulary_id IN (
---						crs.vocabulary_id_1,
---						crs.vocabulary_id_2
---						)
---				)),
-	SET valid_end_date = crs.valid_start_date,
+	SET valid_end_date = GREATEST(crs.valid_start_date, (
+				SELECT MAX(v.latest_update) - 1
+				FROM omopcdm.vocabulary v
+				WHERE v.vocabulary_id IN (
+						crs.vocabulary_id_1,
+						crs.vocabulary_id_2
+						)
+				)),
+--	SET valid_end_date = crs.valid_start_date,
 		invalid_reason = 'D'
 	WHERE crs.relationship_id = 'Maps to'
 		AND crs.invalid_reason IS NULL
@@ -2697,15 +2700,15 @@ BEGIN
 
 	UPDATE icdoscript.concept_relationship_stage crs
 	SET invalid_reason = 'D',
---		valid_end_date = GREATEST(crs.valid_start_date, (
---				SELECT MAX(v.latest_update) - 1
---				FROM vocabulary v
---				WHERE v.vocabulary_id IN (
---						crs.vocabulary_id_1,
---						crs.vocabulary_id_2
---						)
---				))
-		valid_end_date = crs.valid_start_date
+		valid_end_date = GREATEST(crs.valid_start_date, (
+				SELECT MAX(v.latest_update) - 1
+				FROM omopcdm.vocabulary v
+				WHERE v.vocabulary_id IN (
+						crs.vocabulary_id_1,
+						crs.vocabulary_id_2
+						)
+				))
+--		valid_end_date = crs.valid_start_date
 	FROM ambiguous_mappings am
 	WHERE crs.concept_code_1 = am.concept_code_1
 		AND crs.concept_code_2 = am.concept_code_2
@@ -2752,13 +2755,13 @@ SELECT
   r.relationship_id,
   r.valid_start_date,
 -- There is no latest_update column in vocabulary
---  (
---    SELECT latest_update - 1
---    FROM omopcdm.vocabulary
---    WHERE latest_update IS NOT NULL
---    LIMIT 1
---  ),
-  CURRENT_DATE,
+  (
+    SELECT latest_update - 1
+    FROM omopcdm.vocabulary
+    WHERE latest_update IS NOT NULL
+    LIMIT 1
+  ),
+--  CURRENT_DATE,
   'D'
 FROM omopcdm.concept_relationship r
 JOIN omopcdm.concept c 
@@ -2786,26 +2789,26 @@ SELECT
   r.relationship_id,
   --Workaround for fixes between source releases
 -- no latest_update column
---  CASE 
---  	WHEN r.valid_start_date <=
---  	(
---  		SELECT latest_update
---  		FROM omopcdm.vocabulary
---  		WHERE latest_update IS NOT NULL
---  		LIMIT 1
---  	)
---  	THEN TO_DATE ('19700101', 'yyyymmdd')
---  	ELSE r.valid_start_date		
---  END,
-  TO_DATE ('19700101', 'yyyymmdd'),
+  CASE 
+  	WHEN r.valid_start_date <=
+  	(
+  		SELECT latest_update
+  		FROM omopcdm.vocabulary
+  		WHERE latest_update IS NOT NULL
+  		LIMIT 1
+  	)
+  	THEN TO_DATE ('19700101', 'yyyymmdd')
+  	ELSE r.valid_start_date		
+  END,
+--  TO_DATE ('19700101', 'yyyymmdd'),
 -- no latest_update column
---  (
---  	SELECT latest_update - 1
---  	FROM omopcdm.vocabulary
---  	WHERE latest_update IS NOT NULL
---  	LIMIT 1
---  ),
-  CURRENT_DATE,
+  (
+  	SELECT latest_update - 1
+  	FROM omopcdm.vocabulary
+  	WHERE latest_update IS NOT NULL
+  	LIMIT 1
+  ),
+--  CURRENT_DATE,
   'D'
 FROM omopcdm.concept_relationship r
 JOIN rela a 
