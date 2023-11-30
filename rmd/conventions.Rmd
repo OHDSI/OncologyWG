@@ -45,7 +45,7 @@ Cancer diagnoses are recorded within the CONDITION table, ideally with ICDO3 con
 
 What we are calling 'Condition Modifiers' are observations/findings/attributes about a cancer and are stored as Measurements using the Cancer Modifier vocabulary. 
 
-A linkage between the Condition Modifier and the respective condition is made leveraging the two columns in the Measurement table that serve as a foreign key. This same mechanism is used for procedure modifiers as well.  The first (modifier_of_field_concept_id) indicates which table we are referring to, the second (modifier_of_event_id) indicates which row. 
+A linkage between the Condition Modifier and the respective condition is made leveraging the two columns in the Measurement table that serve as a foreign key. This same mechanism is used for procedure modifiers as well.  The first (meas_event_field_concept_id) indicates which table we are referring to, the second (measurement_event_id) indicates which row. 
 
 There are concepts for every potential PK that a measurement can potentially modify. 
 
@@ -60,8 +60,8 @@ An example condition modifier record within the measurement table would contain:
 ```{sql eval=FALSE, echo=TRUE}
   SELECT 
   ...
-  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
-  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
+  1147127 as meas_event_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as measurement_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
 ```
 
 
@@ -102,8 +102,8 @@ Adding this condition modifier would look something like:
   SELECT
   ...
   734306 as measurement_concept_id -- "Initial Diagnosis" ****** 
-  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
-  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
+  1147127 as meas_event_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as measurement_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
 ```
 ---
 
@@ -114,10 +114,10 @@ Finding conditions which have the "initial diagnosis date" flag (modifier) can b
   SELECT * 
   FROM CONDITION_OCCURRENCE co
   WHERE CONDITION_OCCURRENCE_ID IN (
-    SELECT modifier_of_event_id
+    SELECT measurement_event_id
     FROM measurement
     WHERE measurement_concept_id = 734306 -- Initial diagnosis
-    AND modifier_of_field_concept_id = 1147127 -- Condition_Occurrence
+    AND meas_event_field_concept_id = 1147127 -- Condition_Occurrence
 )
 ```
 
@@ -424,8 +424,8 @@ For example, a record of 'Metastasis to Lung' would look like:
   SELECT
   ...
   36770283 as measurement_concept_id -- "Metastasis to Lung" ****** 
-  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
-  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
+  1147127 as meas_event_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as measurement_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
 ```
 
   
