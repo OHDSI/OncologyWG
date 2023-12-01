@@ -1,3 +1,5 @@
+# Analysis below is based on the official v5 Vocabulary release from Odysseus for SNOMED and ICDO3, last update 06/2022
+
 concepts (concept_stage):
 
 CHECK ONLY THE ACTIVE ONES!!!
