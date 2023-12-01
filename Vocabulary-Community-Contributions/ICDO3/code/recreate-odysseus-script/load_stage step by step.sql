@@ -47,7 +47,8 @@ CREATE TABLE sources.r_to_c_all(
   precedence INT
 );
 TRUNCATE TABLE sources.r_to_c_all;
-COPY sources.r_to_c_all FROM 'C:/Archives/ohdsi/ICD-O-3/ICDO3 vocab/r_to_c_all.csv' CSV
+--COPY sources.r_to_c_all FROM 'C:/Archives/ohdsi/ICD-O-3/ICDO3 vocab/r_to_c_all.csv' CSV
+COPY sources.r_to_c_all FROM 'C:/Archives/OncologyWG/Vocabulary-Community-Contributions/ICDO3/code/recreate-odysseus-script/updated input files jan24 release/r_to_c_all.csv' CSV
 DELIMITER E'\t' HEADER QUOTE '"'
 ENCODING 'UTF8';
 -- topo_source_iacr: check if there is a newer file
@@ -91,6 +92,31 @@ TRUNCATE TABLE sources.concept_manual;
 COPY sources.concept_manual FROM 'C:/Archives/ohdsi/ICD-O-3/ICDO3 vocab/concept_manual.csv' CSV
 DELIMITER E'\t' HEADER QUOTE '"'
 ENCODING 'UTF8';
+-- icdo3_valid_combination
+DROP TABLE IF EXISTS sources.icdo3_valid_combination CASCADE;
+CREATE TABLE sources.icdo3_valid_combination(
+  histology_behavior VARCHAR(10),
+  site VARCHAR(10)
+);
+TRUNCATE TABLE sources.icdo3_valid_combination;
+-- COPY sources.icdo3_valid_combination FROM 'C:/Archives/ohdsi/ICD-O-3/ICDO3 vocab/icdo3_valid_combination.csv' CSV
+COPY sources.icdo3_valid_combination FROM 'C:/Archives/OncologyWG/Vocabulary-Community-Contributions/ICDO3/code/recreate-odysseus-script/new valid combinations/icdo3_valid_combination_new.csv' CSV
+DELIMITER ',' HEADER QUOTE ''''
+ENCODING 'UTF8';
+-- new_valid_combination
+DROP TABLE IF EXISTS sources.new_valid_combination CASCADE;
+CREATE TABLE sources.new_valid_combination(
+  histology_behavior VARCHAR(10),
+  site VARCHAR(10)
+);
+TRUNCATE TABLE sources.new_valid_combination;
+COPY sources.new_valid_combination FROM 'C:/Archives/ohdsi/ICD-O-3/ICDO3 vocab/custom_sarcoma_codes.csv' CSV
+DELIMITER ',' HEADER QUOTE ''''
+ENCODING 'UTF8';
+-- add to icdo3_valid_combination
+INSERT INTO sources.icdo3_valid_combination
+SELECT *
+FROM sources.new_valid_combination;
 -- 1. Vocabulary update routine
 -- Date determined by source: check SEER (check also if changed). But there will also be a version of the other ICDO3 codes we add. Probably using freezing date of community contributions.
 -- First define the function (https://github.com/OHDSI/Vocabulary-v5.0/blob/44978ec6fd5cf8ad4d8e5cf1171d869c1767c2b5/working/packages/vocabulary_pack/CheckReplacementMappings.sql)
@@ -138,7 +164,7 @@ BEGIN
   END IF;
   SELECT COUNT(*)
   INTO z
-  FROM omopcdm.vocabulary
+  FROM omopcdm_jan24.vocabulary
   WHERE vocabulary_id = pVocabularyName;
 
   IF z = 0
@@ -157,21 +183,21 @@ BEGIN
 
   IF NOT pAppendVocabulary
     THEN
-    ALTER TABLE omopcdm.vocabulary ADD
+    ALTER TABLE omopcdm_jan24.vocabulary ADD
   if not exists latest_update DATE, add
   if not exists dev_schema_name VARCHAR(
         100);
-    update omopcdm.vocabulary
+    update omopcdm_jan24.vocabulary
     set latest_update = null,
         dev_schema_name = null;
   END IF;
-  UPDATE omopcdm.vocabulary
+  UPDATE omopcdm_jan24.vocabulary
   SET latest_update = pVocabularyDate,
       vocabulary_version = pVocabularyVersion,
       dev_schema_name = pVocabularyDevSchema
   WHERE vocabulary_id = pVocabularyName;
   
-  ANALYZE omopcdm.vocabulary;--other queries will be able to use the index if it is linked to the vocabulary_id field from this table, e.g. select * from concept c join vocabulary v using (vocabulary_id) where v.latest_update is not null;
+  ANALYZE omopcdm_jan24.vocabulary;--other queries will be able to use the index if it is linked to the vocabulary_id field from this table, e.g. select * from concept c join vocabulary v using (vocabulary_id) where v.latest_update is not null;
 END;
 $body$
 LANGUAGE 'plpgsql'
@@ -204,8 +230,8 @@ CREATE TABLE icdoscript.active_concept AS (
       FIRST_VALUE(c.active) OVER (PARTITION BY c.id ORDER BY c.effectivetime DESC) AS active
     FROM snomed.sct2_concept_full_merged AS c
 -- PICK DATE
---    WHERE to_date(c.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
-	WHERE TO_DATE(c.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20200620', 'yyyymmdd')
+    WHERE TO_DATE(c.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm_jan24.vocabulary WHERE vocabulary_id = 'SNOMED')
+--	WHERE TO_DATE(c.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20200620', 'yyyymmdd')
 );
 -- Step 2: get all 'is a' relationships between active concepts determined in previous steps and get status of relationship on date of interest
 DROP TABLE IF EXISTS icdoscript.active_status;
@@ -220,8 +246,8 @@ CREATE TABLE icdoscript.active_status AS (
     JOIN icdoscript.active_concept AS a2
       ON a2.id = r.destinationid AND a2.active = 1
 -- PICK DATE	  
---    WHERE r.typeid = 116680003 AND to_date(r.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
-	WHERE r.typeid = 116680003 AND TO_DATE(r.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20200620', 'yyyymmdd')
+    WHERE r.typeid = 116680003 AND TO_DATE(r.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm_jan24.vocabulary WHERE vocabulary_id = 'SNOMED')
+--	WHERE r.typeid = 116680003 AND TO_DATE(r.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20200620', 'yyyymmdd')
 );
 -- Step 3: only select the active relationships
 DROP TABLE IF EXISTS icdoscript.concepts;
@@ -287,7 +313,7 @@ ON a.id = r.snomed_code
 GROUP BY a.active;
 -- This adds 643 rows to snomed_ancestor (total now 11,511,316)
 INSERT INTO icdoscript.snomed_ancestor (ancestor_concept_code, descendant_concept_code)
-SELECT DISTINCT 86049000, snomed_code
+SELECT DISTINCT 1240414004, snomed_code
 FROM sources.r_to_c_all r
 WHERE
   r.concept_code ~ '\d{4}\/3' AND
@@ -296,7 +322,7 @@ WHERE
   (
     SELECT 1
     FROM icdoscript.snomed_ancestor a
-    WHERE a.ancestor_concept_code = 86049000 AND a.descendant_concept_code = r.snomed_code --PMN
+    WHERE a.ancestor_concept_code = 1240414004 AND a.descendant_concept_code = r.snomed_code --PMN
    );
 -- !!! 86 now have an inactive descendant
 SELECT a.active, COUNT(*)
@@ -304,7 +330,7 @@ FROM icdoscript.snomed_ancestor s
 JOIN icdoscript.active_concept a
 ON a.id = s.descendant_concept_code
 GROUP BY a.active;
--- !!! 643 have an inactive ancestor because 86049000 is not active anymore (since 30112022)
+-- !!! 643 have an inactive ancestor because 1240414004 is not active anymore (since 30112022)
 -- Then:
 ALTER TABLE icdoscript.snomed_ancestor ADD CONSTRAINT xpksnomed_ancestor PRIMARY KEY (ancestor_concept_code,descendant_concept_code);
 CREATE INDEX snomed_ancestor_d on icdoscript.snomed_ancestor (descendant_concept_code);
@@ -322,8 +348,8 @@ JOIN icdoscript.active_concept AS ac
   ON ac.id = smr.referencedcomponentid AND ac.active = 1
 -- filter out new sources, as SNOMED update could have been delayed
 -- PICK DATE
---WHERE to_date(smr.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED') 
-WHERE to_date(smr.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20200620', 'yyyymmdd') 
+WHERE TO_DATE(smr.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm_jan24.vocabulary WHERE vocabulary_id = 'SNOMED') 
+--WHERE TO_DATE(smr.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20200620', 'yyyymmdd') 
   AND smr.refsetid = 446608001 AND smr.active = 1 AND smr.maptarget LIKE '%/%';
 -- Line 177-189: The SNOMED mapping contains mappings of different SNOMED concepts to the same ICDO3 histology: pick the one highest in the hierarchy
 -- (descendants are automatically the same histology, ancestors are not)
@@ -398,11 +424,11 @@ WITH replacement AS
 	r.snomed_code AS old_code, 
 	c2.concept_code AS new_code
   FROM sources.r_to_c_all r
-  JOIN omopcdm.concept c 
+  JOIN omopcdm_jan24.concept c 
     ON c.concept_code = snomed_code::text AND c.vocabulary_id = 'SNOMED' AND c.invalid_reason = 'U'
-  JOIN omopcdm.concept_relationship x 
+  JOIN omopcdm_jan24.concept_relationship x 
     ON x.concept_id_1 = c.concept_id AND x.relationship_id = 'Maps to' AND x.invalid_reason IS NULL 
-  JOIN omopcdm.concept c2 
+  JOIN omopcdm_jan24.concept c2 
     ON c2.concept_id = x.concept_id_2
 )
 UPDATE sources.r_to_c_all a
@@ -439,7 +465,7 @@ BEGIN
     string_agg (r.concept_code, ''',''')
   INTO codes
   FROM sources.r_to_c_all r
-  LEFT JOIN omopcdm.concept c ON
+  LEFT JOIN omopcdm_jan24.concept c ON
   r.snomed_code::text = c.concept_code AND c.vocabulary_id = 'SNOMED' AND c.invalid_reason IS NULL
   WHERE c.concept_code IS NULL AND r.snomed_code != '-1';
 --  IF codes IS NOT NULL THEN RAISE EXCEPTION 'Following attributes relations target deprecated SNOMED concepts: ''%''', codes ;
@@ -515,7 +541,7 @@ SELECT
     --new concept gets new date
     (
       SELECT latest_update
-      FROM omopcdm.vocabulary
+      FROM omopcdm_jan24.vocabulary
       WHERE latest_update IS NOT NULL
       LIMIT 1
 --	  TO_DATE ('20231106', 'yyyymmdd')
@@ -523,7 +549,7 @@ SELECT
   ),
   TO_DATE ('20991231', 'yyyymmdd')
 FROM sources.morph_source_who
-LEFT JOIN omopcdm.concept c 
+LEFT JOIN omopcdm_jan24.concept c 
   ON icdo32 = c.concept_code AND c.vocabulary_id = 'ICDO3'
 WHERE level NOT IN ('Related', 'Synonym') AND icdo32 IS NOT NULL;
 -- Line 337-361:
@@ -547,11 +573,11 @@ SELECT DISTINCT
   NULL,
   m.concept_code,
   GREATEST (TO_DATE ('19700101', 'yyyymmdd'), c.valid_start_date), -- don't reduce existing start date
-  (SELECT latest_update-1 FROM omopcdm.vocabulary WHERE vocabulary_id='ICDO3'),
+  (SELECT latest_update-1 FROM omopcdm_jan24.vocabulary WHERE vocabulary_id='ICDO3'),
 --  TO_DATE('20220101', 'yyyymmdd'),
   'D'
 FROM sources.r_to_c_all m
-LEFT JOIN omopcdm.concept c 
+LEFT JOIN omopcdm_jan24.concept c 
   ON m.concept_code = c.concept_code AND c.vocabulary_id = 'ICDO3'
 WHERE m.concept_code LIKE '%/%' AND m.concept_code NOT IN (SELECT concept_code FROM icdoscript.concept_stage WHERE concept_class_id = 'ICDO Histology');
 -- Line 362-366: for VOCABULARY_PACK see https://github.com/OHDSI/Vocabulary-v5.0/tree/master/working/packages/vocabulary_pack
@@ -584,9 +610,9 @@ BEGIN
         WHEN COALESCE(cm.invalid_reason, 'D') NOT IN ('D','U','X') THEN 'wrong value for invalid_reason: "'||cm.invalid_reason||'"'
       END AS reason
     FROM sources.concept_manual cm
-      LEFT JOIN omopcdm.vocabulary v ON v.vocabulary_id = cm.vocabulary_id
-      LEFT JOIN omopcdm.domain d ON d.domain_id = cm.domain_id
-      LEFT JOIN omopcdm.concept_class cc ON cc.concept_class_id = cm.concept_class_id
+      LEFT JOIN omopcdm_jan24.vocabulary v ON v.vocabulary_id = cm.vocabulary_id
+      LEFT JOIN omopcdm_jan24.domain d ON d.domain_id = cm.domain_id
+      LEFT JOIN omopcdm_jan24.concept_class cc ON cc.concept_class_id = cm.concept_class_id
   ) AS s0
   WHERE s0.reason IS NOT NULL
   LIMIT 1;
@@ -620,7 +646,7 @@ SET concept_name = COALESCE(cm.concept_name, cs.concept_name),
     ELSE cm.invalid_reason
     END
 FROM sources.concept_manual cm
-JOIN omopcdm.vocabulary v ON v.vocabulary_id = cm.vocabulary_id
+JOIN omopcdm_jan24.vocabulary v ON v.vocabulary_id = cm.vocabulary_id
 -- No latest_update in vocabulary
 WHERE v.latest_update IS NOT NULL
   AND cm.concept_code = cs.concept_code
@@ -640,7 +666,7 @@ INSERT INTO icdoscript.concept_stage (
 )
 SELECT cm.*
 FROM sources.concept_manual cm
-JOIN omopcdm.vocabulary v ON v.vocabulary_id = cm.vocabulary_id
+JOIN omopcdm_jan24.vocabulary v ON v.vocabulary_id = cm.vocabulary_id
 -- No latest_update in vocabulary
 WHERE v.latest_update IS NOT NULL AND NOT EXISTS (SELECT 1 FROM icdoscript.concept_stage cs_int WHERE cs_int.concept_code = cm.concept_code AND cs_int.vocabulary_id = cm.vocabulary_id);
 --WHERE NOT EXISTS (SELECT 1 FROM icdoscript.concept_stage cs_int WHERE cs_int.concept_code = cm.concept_code AND cs_int.vocabulary_id = cm.vocabulary_id);
@@ -689,16 +715,6 @@ LEFT JOIN icdoscript.code_replace
   ON old_code = d2.concept_code
 WHERE old_code IS NULL;
 -- Line 406-436:
--- First load icdo3_valid_combination
-DROP TABLE IF EXISTS sources.icdo3_valid_combination CASCADE;
-CREATE TABLE sources.icdo3_valid_combination(
-  histology_behavior VARCHAR(10),
-  site VARCHAR(10)
-);
-TRUNCATE TABLE sources.icdo3_valid_combination;
-COPY sources.icdo3_valid_combination FROM 'C:/Archives/ohdsi/ICD-O-3/ICDO3 vocab/icdo3_valid_combination.csv' CSV
-DELIMITER ',' HEADER QUOTE ''''
-ENCODING 'UTF8';
 --11.3. Form table with existing and old combinations
 DROP TABLE IF EXISTS icdoscript.comb_table;
 --Existing
@@ -814,12 +830,12 @@ CREATE TABLE icdoscript.def_status AS --form list of defined neoplasia concepts 
     c.concept_code,
     FIRST_VALUE (f.statusid) OVER (PARTITION BY f.id ORDER BY f.effectivetime DESC) AS statusid
   FROM snomed.sct2_concept_full_merged f
-  JOIN omopcdm.concept c 
+  JOIN omopcdm_jan24.concept c 
     ON c.vocabulary_id = 'SNOMED' AND c.standard_concept = 'S' AND c.concept_code = f.id :: varchar
   -- filter out new sources, as SNOMED update could have been delayed
 -- PICK DATE
---  WHERE TO_DATE(f.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm.vocabulary WHERE vocabulary_id = 'SNOMED')
-  WHERE TO_DATE(f.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20200620', 'yyyymmdd')
+  WHERE TO_DATE(f.effectivetime :: varchar, 'yyyymmdd') <= (SELECT TO_DATE(SUBSTRING(vocabulary_version FROM 78 FOR 10),'yyyy-mm-dd') FROM omopcdm_jan24.vocabulary WHERE vocabulary_id = 'SNOMED')
+--  WHERE TO_DATE(f.effectivetime :: varchar, 'yyyymmdd') <= TO_DATE('20200620', 'yyyymmdd')
 );
 -- Step 2:
 DROP TABLE IF EXISTS icdoscript.snomed_concept;
@@ -829,7 +845,7 @@ CREATE TABLE icdoscript.snomed_concept AS
     c.concept_id,
     c.concept_code,
     c.concept_name
-  FROM omopcdm.concept c
+  FROM omopcdm_jan24.concept c
   JOIN icdoscript.snomed_ancestor a 
     ON a.ancestor_concept_code IN
     (
@@ -841,7 +857,7 @@ CREATE TABLE icdoscript.snomed_concept AS
   JOIN icdoscript.def_status d 
     ON d.statusid = 900000000000073002  -- Fully defined
     AND d.concept_code = c.concept_code
-  LEFT JOIN omopcdm.concept_relationship r  --concepts defined outside of ICDO3 model
+  LEFT JOIN omopcdm_jan24.concept_relationship r  --concepts defined outside of ICDO3 model
     ON r.concept_id_1 = c.concept_id 
     AND r.relationship_id IN
     (
@@ -856,25 +872,25 @@ CREATE TABLE icdoscript.snomed_concept AS
       'Occurs after',
       'Has due to'
     )
-  LEFT JOIN omopcdm.concept_relationship r1  --refers to morphologies that are not neoplasms
+  LEFT JOIN omopcdm_jan24.concept_relationship r1  --refers to morphologies that are not neoplasms
     ON r1.relationship_id = 'Has asso morph' 
     AND r1.concept_id_1 = c.concept_id 
     AND NOT EXISTS
     (
       SELECT
       FROM icdoscript.snomed_ancestor AS sa
-      JOIN omopcdm.concept AS a 
+      JOIN omopcdm_jan24.concept AS a 
         ON a.concept_id = r1.concept_id_2
       WHERE sa.ancestor_concept_code IN 
         (
           '400177003',	--Neoplasm
-          '4216275',	--Proliferation of hematopoietic cell type
+          '415181008',	--Proliferation of hematopoietic cell type
           '25723000',	--Dysplasia
           '76197007'	--Hyperplasia
         ) 
       AND sa.descendant_concept_code::text = a.concept_code
     )
-  LEFT JOIN omopcdm.concept_relationship r2 --has occurence that has outlying targets
+  LEFT JOIN omopcdm_jan24.concept_relationship r2 --has occurence that has outlying targets
     ON r1.relationship_id = 'Has occurrence'
     AND r2.concept_id_1 = c.concept_id
     AND r2.concept_id_2 IN
@@ -917,29 +933,29 @@ CREATE TABLE icdoscript.snomed_concept AS
 --  COALESCE (x1.concept_code, '-1') AS t_id, --preserve absent topography as meaning
 --  x2.concept_code AS m_id
 --FROM icdoscript.snomed_concept c
---LEFT JOIN omopcdm.concept_relationship r1 
+--LEFT JOIN omopcdm_jan24.concept_relationship r1 
 --  ON r1.concept_id_1 = c.concept_id AND r1.relationship_id = 'Has finding site'
---LEFT JOIN omopcdm.concept x1 
+--LEFT JOIN omopcdm_jan24.concept x1 
 --  ON x1.concept_id = r1.concept_id_2 AND x1.vocabulary_id = 'SNOMED' AND
 --  NOT EXISTS --topography may be duplicated (ancestor/descendant)
 --  (
 --    SELECT
---    FROM omopcdm.concept_relationship x
---    JOIN omopcdm.concept n 
+--    FROM omopcdm_jan24.concept_relationship x
+--    JOIN omopcdm_jan24.concept n 
 --	  ON n.concept_id = x.concept_id_2
 --    JOIN icdoscript.snomed_ancestor a 
 --	  ON a.descendant_concept_code::text = n.concept_code AND a.ancestor_concept_code::text = x1.concept_code AND x.concept_id_1 = r1.concept_id_1 
 --	  AND  x.relationship_id = 'Has finding site' AND a.ancestor_concept_code != a.descendant_concept_code
 --  )
---JOIN omopcdm.concept_relationship r2 
+--JOIN omopcdm_jan24.concept_relationship r2 
 --  ON r2.concept_id_1 = c.concept_id AND r2.relationship_id = 'Has asso morph'
---JOIN omopcdm.concept x2 
+--JOIN omopcdm_jan24.concept x2 
 --  ON x2.concept_id = r2.concept_id_2 AND  x2.vocabulary_id = 'SNOMED' 
 --  AND NOT EXISTS --morphology may be duplicated (ancestor/descendant)
 --  (
 --    SELECT
---    FROM omopcdm.concept_relationship x
---    JOIN omopcdm.concept n 
+--    FROM omopcdm_jan24.concept_relationship x
+--    JOIN omopcdm_jan24.concept n 
 --      ON n.concept_id = x.concept_id_2
 --    JOIN icdoscript.snomed_ancestor a 
 --      ON a.descendant_concept_code::text = n.concept_code AND a.ancestor_concept_code::text = x2.concept_code AND x.concept_id_1 = r2.concept_id_1 
@@ -949,8 +965,8 @@ CREATE TABLE icdoscript.tmp1 AS
 SELECT 
     a.ancestor_concept_code::text AS ancestor_concept_code,
 	x.concept_id_1 AS concept_id_1
-    FROM omopcdm.concept_relationship x
-    JOIN omopcdm.concept n 
+    FROM omopcdm_jan24.concept_relationship x
+    JOIN omopcdm_jan24.concept n 
 	  ON n.concept_id = x.concept_id_2
     JOIN icdoscript.snomed_ancestor a 
 	  ON a.descendant_concept_code::text = n.concept_code AND x.relationship_id = 'Has finding site' AND a.ancestor_concept_code != a.descendant_concept_code; 
@@ -958,8 +974,8 @@ CREATE TABLE icdoscript.tmp2 AS
 SELECT 
     a.ancestor_concept_code::text AS ancestor_concept_code,
 	x.concept_id_1 AS concept_id_1
-    FROM omopcdm.concept_relationship x
-    JOIN omopcdm.concept n 
+    FROM omopcdm_jan24.concept_relationship x
+    JOIN omopcdm_jan24.concept n 
 	  ON n.concept_id = x.concept_id_2
     JOIN icdoscript.snomed_ancestor a 
 	  ON a.descendant_concept_code::text = n.concept_code AND x.relationship_id = 'Has asso morph' AND a.ancestor_concept_code != a.descendant_concept_code;
@@ -970,9 +986,9 @@ SELECT DISTINCT
   COALESCE (x1.concept_code, '-1') AS t_id, --preserve absent topography as meaning
   x2.concept_code AS m_id
 FROM icdoscript.snomed_concept c
-LEFT JOIN omopcdm.concept_relationship r1 
+LEFT JOIN omopcdm_jan24.concept_relationship r1 
   ON r1.concept_id_1 = c.concept_id AND r1.relationship_id = 'Has finding site'
-LEFT JOIN omopcdm.concept x1 
+LEFT JOIN omopcdm_jan24.concept x1 
   ON x1.concept_id = r1.concept_id_2 AND x1.vocabulary_id = 'SNOMED' AND
   NOT EXISTS --topography may be duplicated (ancestor/descendant)
   (
@@ -980,9 +996,9 @@ LEFT JOIN omopcdm.concept x1
     FROM icdoscript.tmp1 t1
 	WHERE t1.ancestor_concept_code = x1.concept_code AND t1.concept_id_1 = r1.concept_id_1 
   )
-JOIN omopcdm.concept_relationship r2 
+JOIN omopcdm_jan24.concept_relationship r2 
   ON r2.concept_id_1 = c.concept_id AND r2.relationship_id = 'Has asso morph'
-JOIN omopcdm.concept x2 
+JOIN omopcdm_jan24.concept x2 
   ON x2.concept_id = r2.concept_id_2 AND  x2.vocabulary_id = 'SNOMED' 
   AND NOT EXISTS --morphology may be duplicated (ancestor/descendant)
   (
@@ -1401,11 +1417,11 @@ CREATE TABLE icdoscript.tabb AS
     cc.vocabulary_id AS snomed_voc,
     cc.concept_code AS snomed_code
   FROM icdoscript.getherd_mts_codes s
-  LEFT JOIN omopcdm.concept c
+  LEFT JOIN omopcdm_jan24.concept c
     ON s.tumor_site_code = c.concept_code AND c.concept_class_id = 'ICDO Topography'
-  LEFT JOIN omopcdm.concept_relationship cr
+  LEFT JOIN omopcdm_jan24.concept_relationship cr
     ON c.concept_id = cr.concept_id_1 AND cr.invalid_reason IS NULL AND cr.relationship_id = 'Maps to'
-  LEFT JOIN omopcdm.concept cc
+  LEFT JOIN omopcdm_jan24.concept cc
     ON cr.concept_id_2 = cc.concept_id AND cr.invalid_reason IS NULL AND cc.standard_concept = 'S'
 );
 -- Step 3:
@@ -1430,9 +1446,9 @@ CREATE TABLE icdoscript.tabbc AS
     c.valid_end_date,
     c.invalid_reason
   FROM icdoscript.tabb t -- table with SITEtoSNOMED mappngs
-  JOIN omopcdm.concept_relationship cr
+  JOIN omopcdm_jan24.concept_relationship cr
     ON t.snomed_id=cr.concept_id_1
-  JOIN omopcdm.concept c
+  JOIN omopcdm_jan24.concept c
     ON c.concept_id=cr.concept_id_2 AND c.concept_class_id='Metastasis'
 );
 -- Step 4: devv5.similarity seems to be similarity from pg_trgm
@@ -1509,7 +1525,7 @@ SELECT DISTINCT
   c.concept_code,
   c.concept_name,
   c.vocabulary_id
-FROM icdoscript.concept_stage s, omopcdm.concept  c
+FROM icdoscript.concept_stage s, omopcdm_jan24.concept  c
 WHERE c.concept_code = 'OMOP4998770' AND c.vocabulary_id ='Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis) 
 AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('NULL','C80.9','C76.7');
 -- Line 1160-1185:
@@ -1524,7 +1540,7 @@ SELECT DISTINCT
   c.concept_code,
   c.concept_name,
   c.vocabulary_id
-FROM icdoscript.concept_stage s, omopcdm.concept  c
+FROM icdoscript.concept_stage s, omopcdm_jan24.concept  c
 WHERE c.concept_code = 'OMOP4999341' AND c.vocabulary_id ='Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis)
 AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) = 'C42.0';
 -- Line 1186-1530:
@@ -1550,7 +1566,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP5031980' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis) 
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C40.0', 'C47.1')
   UNION ALL
@@ -1563,7 +1579,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP5031483' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis) --	Metastasis to the Anal Canal
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C21')
   UNION ALL
@@ -1576,7 +1592,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP5031707' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis)
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) = 'C40.2'
   UNION ALL
@@ -1589,7 +1605,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP5031839' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis)--	Metastasis to the Retroperitoneum And Peritoneum'
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) = 'C48.8'
   UNION ALL
@@ -1602,7 +1618,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP5031916' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis) --	Metastasis to the Soft Tissues
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) = 'C49.9'
   UNION ALL
@@ -1615,7 +1631,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP5031618' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis)--	Metastasis to the Female Genital Organ
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C57', 'C57.7')
   UNION ALL
@@ -1628,7 +1644,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP5031819' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis) --	Metastasis to the Prostate
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C61.9')
   UNION ALL
@@ -1641,7 +1657,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP5031716' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis) --	Metastasis to the Male Genital Organ
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) in ('C63')
   UNION ALL 
@@ -1654,7 +1670,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP5117515' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis) --	Metastasis to meninges NEW CONCEPT
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C70', 'C70.9')  
   UNION ALL
@@ -1667,7 +1683,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP5117516' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis)  --	Metastasis to abdomen --new concept
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C76.2')
   UNION ALL 
@@ -1680,7 +1696,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP4998263' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis) --Lymph Nodes
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C77')
   UNION ALL
@@ -1693,7 +1709,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP4998263' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis) --Lymph Nodes -- TODO NEW CODE NEEDED (not sure that /6 resembles always distant)
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C77.0')
   UNION ALL
@@ -1706,7 +1722,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP4998263' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis)  --Lymph Nodes -- TODO NEW CODE NEEDED (not sure that /6 resembles always distant)
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C77.1')
   UNION ALL
@@ -1719,7 +1735,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP4998263' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis)  --Lymph Nodes -- TODO NEW CODE NEEDED (not sure that /6 resembles always distant)
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) in ('C77.2')  
   UNION ALL
@@ -1732,7 +1748,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP4998263' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis) --Lymph Nodes -- TODO NEW CODE NEEDED (not sure that /6 resembles always distant)
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C77.2')
   UNION ALL
@@ -1745,7 +1761,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP4998263' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis)  --Lymph Nodes -- TODO NEW CODE NEEDED (not sure that /6 resembles always distant)
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C77.3')
   UNION ALL
@@ -1758,7 +1774,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP5000384' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis)  --	Inguinal Lymph Nodes
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C77.4')
   UNION ALL
@@ -1771,7 +1787,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP4999638' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis) --	Pelvic Lymph Nodes
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C77.5') 
   UNION ALL
@@ -1784,7 +1800,7 @@ FROM
     c.concept_code,
     c.concept_name,
     c.vocabulary_id
-  FROM icdoscript.concept_stage s, omopcdm.concept c
+  FROM icdoscript.concept_stage s, omopcdm_jan24.concept c
   WHERE c.concept_code = 'OMOP4998263' AND c.vocabulary_id = 'Cancer Modifier' AND s.concept_code NOT IN (SELECT icd_code FROM icdoscript.icdo3_to_cm_metastasis)  --Lymph Nodes
   AND s.concept_code LIKE '%/6-%' AND SPLIT_PART(s.concept_code,'-',2) IN ('C77.9')
 ) AS map
@@ -1864,8 +1880,8 @@ $BODY$
 			) AS r(incorrect_direction, correct_direction)
 		)
 	SELECT COALESCE(r.correct_direction, r1.relationship_id)
-	FROM omopcdm.relationship r1
-	JOIN omopcdm.relationship r2 ON r2.relationship_id = r1.reverse_relationship_id
+	FROM omopcdm_jan24.relationship r1
+	JOIN omopcdm_jan24.relationship r2 ON r2.relationship_id = r1.reverse_relationship_id
 		AND r2.relationship_concept_id > r1.relationship_concept_id
 	LEFT JOIN replacements r ON r.incorrect_direction = r1.relationship_id
 	WHERE pRelationship_id IN (
@@ -1899,13 +1915,13 @@ BEGIN
 				WHEN crm.relationship_id <> GetPrimaryRelationshipID(crm.relationship_id) THEN 'please use "'||GetPrimaryRelationshipID(crm.relationship_id)||'" instead of "'||crm.relationship_id||'"'
 			END AS reason
 		FROM sources.concept_relationship_manual crm
-			LEFT JOIN omopcdm.concept c1 ON c1.concept_code = crm.concept_code_1 AND c1.vocabulary_id = crm.vocabulary_id_1
+			LEFT JOIN omopcdm_jan24.concept c1 ON c1.concept_code = crm.concept_code_1 AND c1.vocabulary_id = crm.vocabulary_id_1
 			LEFT JOIN icdoscript.concept_stage cs1 ON cs1.concept_code = crm.concept_code_1 AND cs1.vocabulary_id = crm.vocabulary_id_1
-			LEFT JOIN omopcdm.concept c2 ON c2.concept_code = crm.concept_code_2 AND c2.vocabulary_id = crm.vocabulary_id_2
+			LEFT JOIN omopcdm_jan24.concept c2 ON c2.concept_code = crm.concept_code_2 AND c2.vocabulary_id = crm.vocabulary_id_2
 			LEFT JOIN icdoscript.concept_stage cs2 ON cs2.concept_code = crm.concept_code_2 AND cs2.vocabulary_id = crm.vocabulary_id_2
-			LEFT JOIN omopcdm.vocabulary v1 ON v1.vocabulary_id = crm.vocabulary_id_1
-			LEFT JOIN omopcdm.vocabulary v2 ON v2.vocabulary_id = crm.vocabulary_id_2
-			LEFT JOIN omopcdm.relationship rl ON rl.relationship_id = crm.relationship_id
+			LEFT JOIN omopcdm_jan24.vocabulary v1 ON v1.vocabulary_id = crm.vocabulary_id_1
+			LEFT JOIN omopcdm_jan24.vocabulary v2 ON v2.vocabulary_id = crm.vocabulary_id_2
+			LEFT JOIN omopcdm_jan24.relationship rl ON rl.relationship_id = crm.relationship_id
 	) AS s0
 	WHERE s0.reason IS NOT NULL
 	LIMIT 1;
@@ -1930,7 +1946,7 @@ $BODY$
 BEGIN
 --	SELECT LOWER(MAX(v.dev_schema_name)), COUNT(DISTINCT v.dev_schema_name)
 --	INTO iSchemaName, z
---	FROM omopcdm.vocabulary v;
+--	FROM omopcdm_jan24.vocabulary v;
 ----	WHERE v.latest_update IS NOT NULL; There is no column latest_update
 --
 --	IF z>1 THEN
@@ -1965,8 +1981,8 @@ BEGIN
 		)
 	SELECT crm.*
 	FROM sources.concept_relationship_manual crm
-	JOIN omopcdm.vocabulary v1 ON v1.vocabulary_id = crm.vocabulary_id_1
-	JOIN omopcdm.vocabulary v2 ON v2.vocabulary_id = crm.vocabulary_id_2
+	JOIN omopcdm_jan24.vocabulary v1 ON v1.vocabulary_id = crm.vocabulary_id_1
+	JOIN omopcdm_jan24.vocabulary v2 ON v2.vocabulary_id = crm.vocabulary_id_2
 	WHERE COALESCE(v1.latest_update, v2.latest_update) IS NOT NULL 
 	ON CONFLICT ON CONSTRAINT idx_pk_crs
 	DO UPDATE
@@ -2156,11 +2172,11 @@ SELECT DISTINCT
 FROM icdoscript.concept_stage s
 JOIN icdoscript.concept_relationship_stage r 
   ON s.concept_class_id = 'ICDO Condition' AND r.concept_code_1 = s.concept_code AND r.relationship_id = 'Is a'
-JOIN omopcdm.concept t 
+JOIN omopcdm_jan24.concept t 
   ON t.concept_code = r.concept_code_2 AND t.vocabulary_id = 'SNOMED'
-JOIN omopcdm.concept_relationship a 
+JOIN omopcdm_jan24.concept_relationship a 
   ON a.invalid_reason IS NULL AND a.concept_id_1 = t.concept_id AND a.relationship_id IN ('Has asso morph',	'Has finding site')
-JOIN omopcdm.concept o 
+JOIN omopcdm_jan24.concept o 
   ON o.concept_id = a.concept_id_2;
 -- Line 1788-1845:
 --20.4. Add own attributes to standard conditions
@@ -2204,11 +2220,11 @@ WHERE x.concept_code_1 IS NULL AND r1.snomed_code != '-1' AND NOT EXISTS (SELECT
 --(
 --  SELECT
 --  FROM icdoscript.concept_relationship_stage s2
---  JOIN omopcdm.concept cd 
+--  JOIN omopcdm_jan24.concept cd 
 --    ON s2.concept_code_2 = cd.concept_code AND cd.vocabulary_id = 'SNOMED' AND s2.concept_code_1 = s.concept_code_1 AND s.relationship_id = s2.relationship_id
 --  JOIN icdoscript.snomed_ancestor a 
 --    ON cd.concept_code = a.descendant_concept_code::text AND a.descendant_concept_code != a.ancestor_concept_code
---  JOIN omopcdm.concept ca 
+--  JOIN omopcdm_jan24.concept ca 
 --    ON ca.concept_code = a.ancestor_concept_code::text AND ca.concept_code = s.concept_code_2 AND ca.vocabulary_id = 'SNOMED'
 --);
 -- Script takes too long so we split it up:
@@ -2220,11 +2236,11 @@ CREATE TABLE icdoscript.tmp1 AS
     s2.relationship_id AS s2_relationship_id,
     ca.concept_code AS ca_concept_code
   FROM icdoscript.concept_relationship_stage s2
-  JOIN omopcdm.concept cd 
+  JOIN omopcdm_jan24.concept cd 
     ON s2.concept_code_2 = cd.concept_code AND cd.vocabulary_id = 'SNOMED' 
   JOIN icdoscript.snomed_ancestor a 
     ON cd.concept_code = a.descendant_concept_code::text AND a.descendant_concept_code != a.ancestor_concept_code
-  JOIN omopcdm.concept ca 
+  JOIN omopcdm_jan24.concept ca 
     ON ca.concept_code = a.ancestor_concept_code::text  AND ca.vocabulary_id = 'SNOMED'
  );
 -- Step 2:
@@ -2343,7 +2359,7 @@ BEGIN
 --	SET valid_end_date = cs.valid_end_date,
 		invalid_reason = 'D',
 		standard_concept = NULL
-	FROM omopcdm.vocabulary v
+	FROM omopcdm_jan24.vocabulary v
 	WHERE v.vocabulary_id = cs.vocabulary_id
 		AND NOT EXISTS (
 			SELECT 1
@@ -2407,7 +2423,7 @@ BEGIN
 				FROM icdoscript.concept_relationship_stage crs
 				LEFT JOIN icdoscript.concept_stage cs ON crs.concept_code_2 = cs.concept_code
 					AND crs.vocabulary_id_2 = cs.vocabulary_id
-				LEFT JOIN omopcdm.concept c ON crs.concept_code_2 = c.concept_code
+				LEFT JOIN omopcdm_jan24.concept c ON crs.concept_code_2 = c.concept_code
 					AND crs.vocabulary_id_2 = c.vocabulary_id
 				WHERE crs.relationship_id IN (
 						'Concept replaced by',
@@ -2429,7 +2445,7 @@ BEGIN
 	SET invalid_reason = 'D',
 		valid_end_date = GREATEST(valid_start_date, (
 				SELECT MAX(latest_update) - 1
-				FROM omopcdm.vocabulary
+				FROM omopcdm_jan24.vocabulary
 				WHERE vocabulary_id IN (
 						crs.vocabulary_id_1,
 						crs.vocabulary_id_2
@@ -2449,7 +2465,7 @@ BEGIN
 --	SET valid_end_date = cs.valid_end_date,	
 		invalid_reason = 'D',
 		standard_concept = NULL
-	FROM omopcdm.vocabulary v
+	FROM omopcdm_jan24.vocabulary v
 	WHERE v.vocabulary_id = cs.vocabulary_id
 		AND NOT EXISTS (
 			SELECT 1
@@ -2537,7 +2553,7 @@ $BODY$
 		UNION ALL
 		
 		SELECT c.*
-		FROM omopcdm.concept c
+		FROM omopcdm_jan24.concept c
 		WHERE c.concept_code = pConceptCode
 			AND c.vocabulary_id = pVocabularyID
 		) AS s0
@@ -2556,7 +2572,7 @@ BEGIN
 	UPDATE icdoscript.concept_relationship_stage crs
 	SET valid_end_date = GREATEST(crs.valid_start_date, (
 				SELECT MAX(v.latest_update) - 1
-				FROM omopcdm.vocabulary v
+				FROM omopcdm_jan24.vocabulary v
 				WHERE v.vocabulary_id IN (
 						crs.vocabulary_id_1,
 						crs.vocabulary_id_2
@@ -2702,7 +2718,7 @@ BEGIN
 	SET invalid_reason = 'D',
 		valid_end_date = GREATEST(crs.valid_start_date, (
 				SELECT MAX(v.latest_update) - 1
-				FROM omopcdm.vocabulary v
+				FROM omopcdm_jan24.vocabulary v
 				WHERE v.vocabulary_id IN (
 						crs.vocabulary_id_1,
 						crs.vocabulary_id_2
@@ -2757,16 +2773,16 @@ SELECT
 -- There is no latest_update column in vocabulary
   (
     SELECT latest_update - 1
-    FROM omopcdm.vocabulary
+    FROM omopcdm_jan24.vocabulary
     WHERE latest_update IS NOT NULL
     LIMIT 1
   ),
 --  CURRENT_DATE,
   'D'
-FROM omopcdm.concept_relationship r
-JOIN omopcdm.concept c 
+FROM omopcdm_jan24.concept_relationship r
+JOIN omopcdm_jan24.concept c 
   ON c.concept_id = r.concept_id_1 AND c.vocabulary_id = 'ICDO3' AND r.invalid_reason IS NULL
-JOIN omopcdm.concept c2 
+JOIN omopcdm_jan24.concept c2 
   ON c2.concept_id = r.concept_id_2 AND	c2.vocabulary_id = 'SNOMED'
 LEFT JOIN icdoscript.concept_relationship_stage s 
   ON s.concept_code_1 = c.concept_code AND s.concept_code_2 = c2.concept_code AND s.relationship_id = r.relationship_id
@@ -2793,7 +2809,7 @@ SELECT
   	WHEN r.valid_start_date <=
   	(
   		SELECT latest_update
-  		FROM omopcdm.vocabulary
+  		FROM omopcdm_jan24.vocabulary
   		WHERE latest_update IS NOT NULL
   		LIMIT 1
   	)
@@ -2804,18 +2820,18 @@ SELECT
 -- no latest_update column
   (
   	SELECT latest_update - 1
-  	FROM omopcdm.vocabulary
+  	FROM omopcdm_jan24.vocabulary
   	WHERE latest_update IS NOT NULL
   	LIMIT 1
   ),
 --  CURRENT_DATE,
   'D'
-FROM omopcdm.concept_relationship r
+FROM omopcdm_jan24.concept_relationship r
 JOIN rela a 
   USING (relationship_id)
-JOIN omopcdm.concept c 
+JOIN omopcdm_jan24.concept c 
   ON c.concept_id = r.concept_id_1 AND c.vocabulary_id = 'ICDO3' AND r.invalid_reason IS NULL
-JOIN omopcdm.concept c2 
+JOIN omopcdm_jan24.concept c2 
   ON c2.concept_id = r.concept_id_2 AND	c2.vocabulary_id = 'ICDO3'
 LEFT JOIN icdoscript.concept_relationship_stage s 
   ON s.concept_code_1 = c.concept_code AND s.concept_code_2 = c2.concept_code AND s.relationship_id = r.relationship_id
@@ -2831,15 +2847,15 @@ DROP TABLE IF EXISTS icdoscript.relation_atom, icdoscript.relation_hierarchy, ic
 -----------------------------------------------------------------------------------------------------------------------------
 
 -- Checks:
-DROP TABLE IF EXISTS omopcdm.icdo3_concept;
-CREATE TABLE omopcdm.icdo3_concept AS 
+DROP TABLE IF EXISTS omopcdm_jan24.icdo3_concept;
+CREATE TABLE omopcdm_jan24.icdo3_concept AS 
 (
   SELECT *
-  FROM omopcdm.concept
+  FROM omopcdm_jan24.concept
   WHERE vocabulary_id = 'ICDO3'
 )
-DROP TABLE IF EXISTS omopcdm.icdo3_concept_relationship;
-CREATE TABLE omopcdm.icdo3_concept_relationship AS 
+DROP TABLE IF EXISTS omopcdm_jan24.icdo3_concept_relationship;
+CREATE TABLE omopcdm_jan24.icdo3_concept_relationship AS 
 (
   SELECT 
     c1.concept_code AS concept_code_1,
@@ -2850,33 +2866,34 @@ CREATE TABLE omopcdm.icdo3_concept_relationship AS
 	cr.valid_start_date AS valid_start_date,
 	cr.valid_end_date AS valid_end_date,
 	cr.invalid_reason AS invalid_reason
-  FROM omopcdm.concept_relationship cr
-  JOIN omopcdm.concept c1
+  FROM omopcdm_jan24.concept_relationship cr
+  JOIN omopcdm_jan24.concept c1
   ON c1.concept_id = cr.concept_id_1
-  JOIN omopcdm.concept c2
+  JOIN omopcdm_jan24.concept c2
   ON c2.concept_id = cr.concept_id_2
   WHERE c1.vocabulary_id = 'ICDO3' OR c2.vocabulary_id = 'ICDO3'
 )
 -- Check 1:
 SELECT COUNT(*)
 FROM icdoscript.concept_stage cs
--- 63461 concepts
+-- 63461 concepts -> 87932 (85751 valid)
 SELECT COUNT(*)
-FROM omopcdm.icdo3_concept ic
--- 64471 concepts
--- Difference of 1010
--- Check 2: Everything in concept_stage is in concept
+FROM omopcdm_aug23.icdo3_concept ic
+-- 64471 concepts (61479 valid)
+-- Difference of 1010 (24272)
+-- Check 2: Everything in concept_stage is in concept -> 24460 new valid concepts
 SELECT *
 FROM icdoscript.concept_stage cs
 WHERE NOT EXISTS
 (
   SELECT
-  FROM omopcdm.icdo3_concept ic
-  WHERE ic.concept_code = cs.concept_code
+  FROM omopcdm_aug23.icdo3_concept ic
+  WHERE ic.concept_code = cs.concept_code AND ic.invalid_reason IS NULL
 )
--- Check 3: 1010 concepts are missing from concept_stage
+AND cs.invalid_reason IS NULL
+-- Check 3: 1010 concepts are missing from concept_stage -> 188 valid concepts are missing (125 /6, 63 others (none are in input file, except 8950/1-C56.9)
 SELECT *
-FROM omopcdm.icdo3_concept ic
+FROM omopcdm_jan24.icdo3_concept ic
 WHERE NOT EXISTS
 (
   SELECT
@@ -2886,10 +2903,10 @@ WHERE NOT EXISTS
 -- Check 4:
 SELECT COUNT(*)
 FROM icdoscript.concept_relationship_stage
--- 434134 relationships
+-- 434134 relationships -> 626836 (478704 valid ones)
 SELECT COUNT(*)
-FROM omopcdm.icdo3_concept_relationship
--- 1192976 relationships
+FROM omopcdm_jan24.icdo3_concept_relationship
+-- 1192976 relationships (all valid)
 -- Difference of 758842
 -- Check 5: 29433 relationships in concept_relationship_stage are not in concept concept_relationship
 SELECT *
@@ -2897,12 +2914,12 @@ FROM icdoscript.concept_relationship_stage crs
 WHERE NOT EXISTS
 (
   SELECT
-  FROM omopcdm.icdo3_concept_relationship icr
+  FROM omopcdm_jan24.icdo3_concept_relationship icr
   WHERE icr.concept_code_1 = crs.concept_code_1 AND icr.concept_code_2 = crs.concept_code_2 AND icr.vocabulary_id_1 = crs.vocabulary_id_1 AND icr.vocabulary_id_2 = crs.vocabulary_id_2 AND icr.relationship_id = crs.relationship_id
 )
 -- Check 6: 788275 relationships in concept_relationship are not in concept concept_relationship_stage
 SELECT *
-FROM omopcdm.icdo3_concept_relationship icr
+FROM omopcdm_jan24.icdo3_concept_relationship icr
 WHERE NOT EXISTS
 (
   SELECT
