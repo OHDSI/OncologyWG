@@ -100,8 +100,25 @@ CREATE TABLE sources.icdo3_valid_combination(
 );
 TRUNCATE TABLE sources.icdo3_valid_combination;
 -- COPY sources.icdo3_valid_combination FROM 'C:/Archives/ohdsi/ICD-O-3/ICDO3 vocab/icdo3_valid_combination.csv' CSV
-COPY sources.icdo3_valid_combination FROM 'C:/Archives/OncologyWG/Vocabulary-Community-Contributions/ICDO3/code/recreate-odysseus-script/new valid combinations/icdo3_valid_combination_new.csv' CSV
+COPY sources.icdo3_valid_combination FROM 'C:/Archives/OncologyWG/Vocabulary-Community-Contributions/ICDO3/code/recreate-odysseus-script/updated input files jan24 release/icdo3_valid_combination.csv' CSV
 DELIMITER ',' HEADER QUOTE ''''
+ENCODING 'UTF8';
+-- concept_relationship_manual
+DROP TABLE IF EXISTS  sources.concept_relationship_manual;
+CREATE TABLE  sources.concept_relationship_manual (
+  concept_code_1 varchar(50) NOT NULL,
+  concept_code_2 varchar(50) NOT NULL,
+  vocabulary_id_1 varchar(20) NOT NULL,
+  vocabulary_id_2 varchar(20) NOT NULL,
+  relationship_id varchar(20) NOT NULL,
+  valid_start_date date NOT NULL,
+  valid_end_date date NOT NULL,
+  invalid_reason varchar(1) NULL 
+);
+TRUNCATE TABLE sources.concept_relationship_manual;
+--COPY sources.concept_relationship_manual FROM 'C:/Archives/ohdsi/ICD-O-3/ICDO3 vocab/concept_relationship_manual.csv' CSV
+COPY sources.concept_relationship_manual FROM 'C:/Archives/OncologyWG/Vocabulary-Community-Contributions/ICDO3/code/recreate-odysseus-script/updated input files jan24 release/concept_relationship_manual.csv' CSV
+DELIMITER E'\t' HEADER QUOTE '"'
 ENCODING 'UTF8';
 -- new_valid_combination
 DROP TABLE IF EXISTS sources.new_valid_combination CASCADE;
@@ -1821,22 +1838,6 @@ FROM icdoscript.icdo3_to_cm_metastasis;
 -- Line 1552-1570:
 -- Add this for later
 ALTER TABLE icdoscript.concept_relationship_stage ADD CONSTRAINT idx_pk_crs PRIMARY KEY (concept_code_1,concept_code_2,vocabulary_id_1,vocabulary_id_2,relationship_id);
--- First load concept_relationship_manual
-DROP TABLE IF EXISTS  sources.concept_relationship_manual;
-CREATE TABLE  sources.concept_relationship_manual (
-  concept_code_1 varchar(50) NOT NULL,
-  concept_code_2 varchar(50) NOT NULL,
-  vocabulary_id_1 varchar(20) NOT NULL,
-  vocabulary_id_2 varchar(20) NOT NULL,
-  relationship_id varchar(20) NOT NULL,
-  valid_start_date date NOT NULL,
-  valid_end_date date NOT NULL,
-  invalid_reason varchar(1) NULL 
-);
-TRUNCATE TABLE sources.concept_relationship_manual;
-COPY sources.concept_relationship_manual FROM 'C:/Archives/ohdsi/ICD-O-3/ICDO3 vocab/concept_relationship_manual.csv' CSV
-DELIMITER E'\t' HEADER QUOTE '"'
-ENCODING 'UTF8';
 --16.2. Check if there are manual 'Maps to' for perfectly processed concepts in manual table; we should get error if there are intersections
 DO $_$
 DECLARE
@@ -2876,22 +2877,24 @@ CREATE TABLE omopcdm_jan24.icdo3_concept_relationship AS
 -- Check 1:
 SELECT COUNT(*)
 FROM icdoscript.concept_stage cs
--- 63461 concepts -> 87932 (85751 valid)
+WHERE invalid_reason IS NULL
+-- 63461 concepts -> 87932 (85746 valid)
 SELECT COUNT(*)
 FROM omopcdm_aug23.icdo3_concept ic
+WHERE invalid_reason IS NULL
 -- 64471 concepts (61479 valid)
--- Difference of 1010 (24272)
--- Check 2: Everything in concept_stage is in concept -> 24460 new valid concepts
+-- Difference of 1010 (24267)
+-- Check 2: Everything in concept_stage is in concept -> 24458 new valid concepts
 SELECT *
-FROM icdoscript.concept_stage cs
+FROM omopcdm_aug23.icdo3_concept ic
 WHERE NOT EXISTS
 (
   SELECT
-  FROM omopcdm_aug23.icdo3_concept ic
-  WHERE ic.concept_code = cs.concept_code AND ic.invalid_reason IS NULL
+  FROM icdoscript.concept_stage cs
+  WHERE ic.concept_code = cs.concept_code AND cs.invalid_reason IS NULL
 )
-AND cs.invalid_reason IS NULL
--- Check 3: 1010 concepts are missing from concept_stage -> 188 valid concepts are missing (125 /6, 63 others (none are in input file, except 8950/1-C56.9)
+AND ic.invalid_reason IS NULL
+-- Check 3: 1010 concepts are missing from concept_stage -> 191 valid concepts are missing (125 /6, 66 others (none are in input file, except ???)
 SELECT *
 FROM omopcdm_jan24.icdo3_concept ic
 WHERE NOT EXISTS
