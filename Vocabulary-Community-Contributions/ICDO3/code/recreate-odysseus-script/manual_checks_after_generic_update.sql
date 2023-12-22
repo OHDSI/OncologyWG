@@ -266,7 +266,7 @@ CREATE TABLE icdoscript.QA_2_3_is_a_absent (
 	concept_class_id_target varchar(20),
 	vocabulary_id_target varchar(20)
 );
-INSERT INTO icdoscript.QA_is_a_absent
+INSERT INTO icdoscript.QA_2_3_is_a_absent
 select a.concept_code as concept_code_source,
        a.concept_name as concept_name_source,
        a.vocabulary_id as vocabulary_id_source,
