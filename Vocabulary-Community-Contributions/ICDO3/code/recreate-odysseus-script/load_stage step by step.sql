@@ -253,20 +253,9 @@ DO $_$
 BEGIN
 	PERFORM SetLatestUpdate(
 	pVocabularyName			=> 'ICDO3',
-	pVocabularyDate			=> TO_DATE ('20200630', 'yyyymmdd'), -- https://seer.cancer.gov/ICDO3/
-	pVocabularyVersion		=> 'ICDO3 SEER Site/Histology Released 06/2020',
+	pVocabularyDate			=> TO_DATE ('20231129', 'yyyymmdd'), 
+	pVocabularyVersion		=> 'ICDO3 SEER Site/Histology Released 06/2020 + IARC likely and PathCHART valid conditions',
 	pVocabularyDevSchema	=> 'DEV_icdo3'
-);
-END $_$
-;
-DO $_$
-BEGIN
-	PERFORM SetLatestUpdate(
-	pVocabularyName			=> 'SNOMED',
-	pVocabularyDate			=> TO_DATE ('20230901', 'yyyymmdd'),
-	pVocabularyVersion		=> '',
-	pVocabularyDevSchema	=> '',
-	pAppendVocabulary		=> true
 );
 END $_$
 ;
