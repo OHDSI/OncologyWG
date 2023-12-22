@@ -36,6 +36,31 @@ CREATE TABLE icdoscript.concept_synonym_stage (
 	synonym_vocabulary_id VARCHAR (20) NOT NULL,
 	language_concept_id int4 NOT NULL
 );
+DROP TABLE IF EXISTS icdoscript.pack_content_stage;
+CREATE TABLE icdoscript.pack_content_stage (
+	pack_concept_code VARCHAR (20) NOT NULL,
+	pack_vocabulary_id VARCHAR (20) NOT NULL,
+	drug_concept_code VARCHAR (20) NOT NULL,
+	drug_vocabulary_id VARCHAR (20) NOT NULL,
+	amount int2,
+	box_size int2
+);
+DROP TABLE IF EXISTS icdoscript.drug_strength_stage;
+CREATE TABLE icdoscript.drug_strength_stage (
+	drug_concept_code VARCHAR (20) NOT NULL,
+	vocabulary_id_1 VARCHAR (20) NOT NULL,
+	ingredient_concept_code VARCHAR (20) NOT NULL,
+	vocabulary_id_2 VARCHAR (20) NOT NULL,
+	amount_value NUMERIC,
+	amount_unit_concept_id int4,
+	numerator_value NUMERIC,
+	numerator_unit_concept_id int4,
+	denominator_value NUMERIC,
+	denominator_unit_concept_id int4,
+	valid_start_date DATE NOT NULL,
+	valid_end_date DATE NOT NULL,
+	invalid_reason VARCHAR (1)
+);
 -- Load input files:
 -- r_to_c_all
 DROP TABLE IF EXISTS sources.r_to_c_all CASCADE;
@@ -120,20 +145,20 @@ TRUNCATE TABLE sources.concept_relationship_manual;
 COPY sources.concept_relationship_manual FROM 'C:/Archives/OncologyWG/Vocabulary-Community-Contributions/ICDO3/code/recreate-odysseus-script/updated input files jan24 release/concept_relationship_manual.csv' CSV
 DELIMITER E'\t' HEADER QUOTE '"'
 ENCODING 'UTF8';
--- new_valid_combination
-DROP TABLE IF EXISTS sources.new_valid_combination CASCADE;
-CREATE TABLE sources.new_valid_combination(
-  histology_behavior VARCHAR(10),
-  site VARCHAR(10)
-);
-TRUNCATE TABLE sources.new_valid_combination;
-COPY sources.new_valid_combination FROM 'C:/Archives/ohdsi/ICD-O-3/ICDO3 vocab/custom_sarcoma_codes.csv' CSV
-DELIMITER ',' HEADER QUOTE ''''
-ENCODING 'UTF8';
--- add to icdo3_valid_combination
-INSERT INTO sources.icdo3_valid_combination
-SELECT *
-FROM sources.new_valid_combination;
+---- new_valid_combination
+--DROP TABLE IF EXISTS sources.new_valid_combination CASCADE;
+--CREATE TABLE sources.new_valid_combination(
+--  histology_behavior VARCHAR(10),
+--  site VARCHAR(10)
+--);
+--TRUNCATE TABLE sources.new_valid_combination;
+--COPY sources.new_valid_combination FROM 'C:/Archives/ohdsi/ICD-O-3/ICDO3 vocab/custom_sarcoma_codes.csv' CSV
+--DELIMITER ',' HEADER QUOTE ''''
+--ENCODING 'UTF8';
+---- add to icdo3_valid_combination
+--INSERT INTO sources.icdo3_valid_combination
+--SELECT *
+--FROM sources.new_valid_combination;
 -- 1. Vocabulary update routine
 -- Date determined by source: check SEER (check also if changed). But there will also be a version of the other ICDO3 codes we add. Probably using freezing date of community contributions.
 -- First define the function (https://github.com/OHDSI/Vocabulary-v5.0/blob/44978ec6fd5cf8ad4d8e5cf1171d869c1767c2b5/working/packages/vocabulary_pack/CheckReplacementMappings.sql)
@@ -231,6 +256,17 @@ BEGIN
 	pVocabularyDate			=> TO_DATE ('20200630', 'yyyymmdd'), -- https://seer.cancer.gov/ICDO3/
 	pVocabularyVersion		=> 'ICDO3 SEER Site/Histology Released 06/2020',
 	pVocabularyDevSchema	=> 'DEV_icdo3'
+);
+END $_$
+;
+DO $_$
+BEGIN
+	PERFORM SetLatestUpdate(
+	pVocabularyName			=> 'SNOMED',
+	pVocabularyDate			=> TO_DATE ('20230901', 'yyyymmdd'),
+	pVocabularyVersion		=> '',
+	pVocabularyDevSchema	=> '',
+	pAppendVocabulary		=> true
 );
 END $_$
 ;
@@ -2844,88 +2880,3 @@ DROP TABLE IF EXISTS icdoscript.snomed_mapping, icdoscript.snomed_target_prepare
 -- And our own intermediate tables
 DROP TABLE IF EXISTS icdoscript.active_concept, icdoscript.def_status, icdoscript.getherd_mts_codes, icdoscript.hierarchy, icdoscript.monorelation;
 DROP TABLE IF EXISTS icdoscript.relation_atom, icdoscript.relation_hierarchy, icdoscript.similarity_tab, icdoscript.snomed_concept, icdoscript.tabb, icdoscript.tabbc;
-
------------------------------------------------------------------------------------------------------------------------------
-
--- Checks:
-DROP TABLE IF EXISTS omopcdm_jan24.icdo3_concept;
-CREATE TABLE omopcdm_jan24.icdo3_concept AS 
-(
-  SELECT *
-  FROM omopcdm_jan24.concept
-  WHERE vocabulary_id = 'ICDO3'
-)
-DROP TABLE IF EXISTS omopcdm_jan24.icdo3_concept_relationship;
-CREATE TABLE omopcdm_jan24.icdo3_concept_relationship AS 
-(
-  SELECT 
-    c1.concept_code AS concept_code_1,
-	c2.concept_code AS concept_code_2,
-	c1.vocabulary_id AS vocabulary_id_1,
-	c2.vocabulary_id AS vocabulary_id_2,
-	cr.relationship_id AS relationship_id,
-	cr.valid_start_date AS valid_start_date,
-	cr.valid_end_date AS valid_end_date,
-	cr.invalid_reason AS invalid_reason
-  FROM omopcdm_jan24.concept_relationship cr
-  JOIN omopcdm_jan24.concept c1
-  ON c1.concept_id = cr.concept_id_1
-  JOIN omopcdm_jan24.concept c2
-  ON c2.concept_id = cr.concept_id_2
-  WHERE c1.vocabulary_id = 'ICDO3' OR c2.vocabulary_id = 'ICDO3'
-)
--- Check 1:
-SELECT COUNT(*)
-FROM icdoscript.concept_stage cs
-WHERE invalid_reason IS NULL
--- 63461 concepts -> 87932 (85746 valid)
-SELECT COUNT(*)
-FROM omopcdm_aug23.icdo3_concept ic
-WHERE invalid_reason IS NULL
--- 64471 concepts (61479 valid)
--- Difference of 1010 (24267)
--- Check 2: Everything in concept_stage is in concept -> 24458 new valid concepts
-SELECT *
-FROM omopcdm_aug23.icdo3_concept ic
-WHERE NOT EXISTS
-(
-  SELECT
-  FROM icdoscript.concept_stage cs
-  WHERE ic.concept_code = cs.concept_code AND cs.invalid_reason IS NULL
-)
-AND ic.invalid_reason IS NULL
--- Check 3: 1010 concepts are missing from concept_stage -> 191 valid concepts are missing (125 /6, 66 others (none are in input file, except ???)
-SELECT *
-FROM omopcdm_jan24.icdo3_concept ic
-WHERE NOT EXISTS
-(
-  SELECT
-  FROM icdoscript.concept_stage cs
-  WHERE ic.concept_code = cs.concept_code
-)
--- Check 4:
-SELECT COUNT(*)
-FROM icdoscript.concept_relationship_stage
--- 434134 relationships -> 626836 (478704 valid ones)
-SELECT COUNT(*)
-FROM omopcdm_jan24.icdo3_concept_relationship
--- 1192976 relationships (all valid)
--- Difference of 758842
--- Check 5: 29433 relationships in concept_relationship_stage are not in concept concept_relationship
-SELECT *
-FROM icdoscript.concept_relationship_stage crs
-WHERE NOT EXISTS
-(
-  SELECT
-  FROM omopcdm_jan24.icdo3_concept_relationship icr
-  WHERE icr.concept_code_1 = crs.concept_code_1 AND icr.concept_code_2 = crs.concept_code_2 AND icr.vocabulary_id_1 = crs.vocabulary_id_1 AND icr.vocabulary_id_2 = crs.vocabulary_id_2 AND icr.relationship_id = crs.relationship_id
-)
--- Check 6: 788275 relationships in concept_relationship are not in concept concept_relationship_stage
-SELECT *
-FROM omopcdm_jan24.icdo3_concept_relationship icr
-WHERE NOT EXISTS
-(
-  SELECT
-  FROM icdoscript.concept_relationship_stage crs
-  WHERE icr.concept_code_1 = crs.concept_code_1 AND icr.concept_code_2 = crs.concept_code_2 AND icr.vocabulary_id_1 = crs.vocabulary_id_1 AND icr.vocabulary_id_2 = crs.vocabulary_id_2 AND icr.relationship_id = crs.relationship_id
-)
