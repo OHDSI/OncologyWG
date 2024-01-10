@@ -1,0 +1,74 @@
+{
+    "composite_analyses": [
+        {
+            "analysis_id": "1",
+            "analysis_name": "Number of persons with cancer diagnosis", 
+            "analysis_type": "count", 
+            "queries": [1],
+            "composite_analyses": []
+        },
+        {
+            "analysis_id": "2",
+            "analysis_name": "Number of cancer diagnoses", 
+            "analysis_type": "count", 
+            "queries": [2],
+            "composite_analyses": []
+        },
+        {
+            "analysis_id": "10",
+            "analysis_name": "Number of date of initial diagnosis modifier records", 
+            "analysis_type": "count", 
+            "queries": [10],
+            "composite_analyses": []
+        },
+        {
+            "analysis_id": "11",
+            "analysis_name": "Number of persons with a date of initial diagnosis modifier record", 
+            "analysis_type": "count", 
+            "queries": [11],
+            "composite_analyses": []
+        },
+        {
+            "analysis_id": "12",
+            "analysis_name": "Number of date of initial diagnosis modifier records that do not reference the condition_occurrence table", 
+            "analysis_type": "count", 
+            "queries": [12],
+            "composite_analyses": []
+        },
+        {
+            "analysis_id": "13",
+            "analysis_name": "Number of date of initial diagnosis modifier records that reference the same condition_occurrence record", 
+            "analysis_type": "count", 
+            "queries": [13],
+            "composite_analyses": []
+        },
+        {
+            "analysis_id": "14",
+            "analysis_name": "Number of date of initial diagnosis modifier records that have implausible dates", 
+            "analysis_type": "count", 
+            "queries": [14],
+            "composite_analyses": []
+        },
+        {
+            "analysis_id": "15",
+            "analysis_name": "Number of date of initial diagnosis modifier records that come from tumor registry data source", 
+            "analysis_type": "count", 
+            "queries": [15],
+            "composite_analyses": []
+        },
+        {
+            "analysis_id": "1001",
+            "analysis_name": "Number of poorly-formed date of initial diagnosis modifier records", 
+            "analysis_type": "derived", 
+            "queries": [2, 12, 13, 14],
+            "composite_analyses": []
+        },
+        {
+            "analysis_id": "1002",
+            "analysis_name": "Proportion of poorly-formed date of initial diagnosis modifier records", 
+            "analysis_type": "proportion", 
+            "queries": [],
+            "composite_analyses": [2, 1001]
+        }
+    ]
+}
