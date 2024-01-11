@@ -11,7 +11,7 @@
 
 
 
-<title> Background</title>
+<title> Installation</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -332,14 +332,7 @@ div.tocify {
   <a href="index.html">
     <span class="fa fa-home"></span>
      
-     Home
-  </a>
-</li>
-<li>
-  <a href="background.html">
-    <span class="fa fa-circle-info"></span>
-     
-     Background
+     WG Overview
   </a>
 </li>
 <li class="dropdown">
@@ -390,7 +383,7 @@ div.tocify {
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <span class="fa fa-people-group"></span>
+    <span class="fa fa-circle-info"></span>
      
      Implementation
      
@@ -406,7 +399,7 @@ div.tocify {
     </li>
     <li>
       <a href="installation.html">
-        <span class="fa fa-sitemap"></span>
+        <span class="fa fa-terminal"></span>
          
          Installation
       </a>
@@ -415,22 +408,18 @@ div.tocify {
       <a href="tooling.html">
         <span class="fa fa-wrench"></span>
          
-         Tools
+         Tooling
       </a>
     </li>
     <li class="dropdown-submenu">
       <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-        <span class="fa fa-people-group"></span>
+        <span class="fa fa-code"></span>
          
          ETLs
       </a>
       <ul class="dropdown-menu" role="menu">
         <li>
-          <a href="naaccr.html">
-            <span class="fa fa-sitemap"></span>
-             
-             NAACCR
-          </a>
+          <a href="naaccr.html"> NAACCR</a>
         </li>
       </ul>
     </li>
@@ -454,12 +443,158 @@ div.tocify {
 
 
 <h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
-Background</h1>
+Installation</h1>
 
 </div>
 
 
-
+<div id="module-installation" class="section level1">
+<h1><strong>Module Installation</strong></h1>
+<p>This page covers how to install the Oncology CDM Extension. The
+Oncology CDM Extension has <strong>not</strong> yet been incorporated
+into an official OMOP CDM release. Consequently, the installation of the
+Oncology CDM Extension requires additional steps beyond installing the
+OMOP CDM. The Oncology CDM Extension currently supports OMOP CDM v5.31
+and the following database platforms: PostgreSQL, SQL Redshift.Server,
+Oracle and</p>
+<p><br></p>
+<div id="step-1-compile-the-omop-cdm-v5.31-tables"
+class="section level3">
+<h3>Step 1: Compile the OMOP CDM v5.31 Tables</h3>
+<p>Compile the OMOP CDM v5.31 data model tables from the <a
+href="https://github.com/OHDSI/CommonDataModel">OHDSI/CommonDataModel</a>
+Github repository. Find the DDL relevant to your database platform
+(PostgreSQL, SQL Server, Oracle and Redshift). <a
+href="https://github.com/OHDSI/CommonDataModel/releases/tag/v5.3.1">See
+the OMOP CDM v5.31 release here.</a> Do not yet compile indexes and
+constraints. Do not yet load the vocabulary tables. We will do these in
+subsequent steps.</p>
+</div>
+<div id="step-2-compile-the-oncology-cdm-extension-tables"
+class="section level3">
+<h3>Step 2: Compile the Oncology CDM Extension Tables</h3>
+<ul>
+<li>Compile the Oncology CDM Extension data model tables from the <a
+href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
+repository. This is a temporary additional step that will be removed
+once the Oncology CDM Extension has been incorporated into an official
+OMOP CDM release. Find the DDL relevant to your database platform
+(PostgreSQL, Sql Server, Oracle and Redshift). <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/ddl">See DDL
+folder here.</a></li>
+<li>For example, for the PostgreSQL database platform, execute the DDL
+script. <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/OMOP%20CDM%20postgresql%20ddl%20Oncology%20Module.txt">See
+PostgreSQL DDL script here.</a></li>
+</ul>
+</div>
+<div id="step-3-load-the-omop-standardized-vocabulary-tables."
+class="section level3">
+<h3>Step 3: Load the OMOP Standardized Vocabulary Tables.</h3>
+<ul>
+<li>Populate the OMOP CDM vocabulary tables with, at minimum, the most
+recent version of the following vocabularies: SNOMED, ICDO3, HemOnc,
+RxNorm, NAACCR, and Episode Type.</li>
+<li>ATHENA is the recommended approach for navigating and downloading
+OHDSI vocabularies. <a href="http://athena.ohdsi.org/">See ATHENA
+here.</a></li>
+<li>Vocabulary ingestion scripts are organized by database platform in
+the <a
+href="https://github.com/OHDSI/CommonDataModel">OHDSI/CommonDataModel</a>
+Github repository. Refer back to the OMOP CDM v5.31 release you
+downloaded in step 1.</li>
+<li>Execute the vocabulary patch file from the <a
+href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
+repository to support metadata description/reference of the Oncology CDM
+Extension’s new tables and added columns. This is a temporary additional
+step that will be removed once the Oncology CDM Extension has been
+incorporated into an official OMOP CDM release. The patch file currently
+only supports the PostgreSQL database platform. You will need to
+manually translate the vocabulary patch file to other database
+platforms. <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/CDM_patch.sql">See
+patch file here.</a></li>
+<li>Run the vocabulary ingestion script to populate the Oncology CDM
+Extension’s newly added CONCEPT_NUMERIC vocabulary table from the <a
+href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
+repository. This is a temporary additional step that will be removed
+once the Oncology CDM Extension has been incorporated into an official
+OMOP CDM release. The ingestion script depends on a CONCEPT_NUMERIC.CSV
+file. Find the ingestion script (and CSV file) relevant to your database
+platform (PostgreSQL, Sql Server, Oracle and Redshift). <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/ddl">See DDL
+folder here.</a>
+<ul>
+<li>For example, for the PostgreSQL database platform, execute the
+ingestion script. <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/VocabImport/OMOP%20CDM%20vocabulary%20load%20-%20PostgreSQL.sql">See
+PostgreSQL ingestion script here.</a></li>
+</ul></li>
+</ul>
+</div>
+<div id="step-4-etl-the-omop-standardized-clinical-data-tables"
+class="section level3">
+<h3>Step 4: ETL the OMOP Standardized Clinical Data Tables</h3>
+<ul>
+<li>This step will be institution-specific and involves transforming
+your local EHR, claims database and other data sources into the common
+data structures and semantics of the OMOP CDM. The OMOP CDM includes
+(among others) representations for patients (PERSON), providers
+(PROVIDER), healthcare facilities (CARE_SITE and LOCATION), healthcare
+encounters (VISIT_OCCURRENCE), diagnoses (CONDITION_OCCURRENCE),
+medication prescriptions and administrations (DRUG_EXPOSURE), labs
+(MEASUREMENT), medical procedures (PROCEDURE_OCCURRENCE) and clinical
+notes (NOTE). <a
+href="https://www.ohdsi.org/web/wiki/doku.php?id=documentation:etl_best_practices">See
+ETL creation best practices here.</a></li>
+<li>Some implementations will layer the ETL of data into the Oncology
+CDM Extension tables on top of an OMOP CDM instance populated from other
+sources. Other implementations will ETL data into the Oncology CDM
+Extension tables in a satellite OMOP CDM instance and merge the data
+into a main OMOP CDM instance. This will based on local institutional
+practices and strategies.</li>
+</ul>
+</div>
+<div id="step-5-compile-the-indexes-and-constraints."
+class="section level3">
+<h3>Step 5: Compile the indexes and constraints.</h3>
+<ul>
+<li>Compile the OMOP CDM v5.31 indexes and constraints from the <a
+href="https://github.com/OHDxSI/CommonDataModel">OHDSI/CommonDataModel</a>
+Github repository. Find the indexes and constraints DDL relevant to your
+database platform (PostgreSQL, SQL Server, Oracle and Redshift). Refer
+back to the OMOP CDM v5.31 release you downloaded in step 1.</li>
+<li>Compile the Oncology CDM Extension indexes from the <a
+href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
+repository. This is a temporary additional step that will be removed
+once the Oncology CDM Extension has been incorporated into an official
+OMOP CDM release. Find the indexes DDL relevant to your database
+platform (PostgreSQL, Sql Server, Oracle and Redshift). <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/ddl">See DDL
+folder here.</a>
+<ul>
+<li>For example, for the PostgreSQL database platform, execute the
+indexes DDL script. <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/OMOP%20CDM%20postgresql%20pk%20indexes%20Oncology%20Module.txt">See
+PostgreSQL indexes DDL script here.</a></li>
+</ul></li>
+<li>Compile the Oncology CDM Extension constraints from the <a
+href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
+repository. This is a temporary additional step that will be removed
+once the Oncology CDM Extension has been incorporated into an official
+OMOP CDM release. Find the constraints DDL relevant to your database
+platform (PostgreSQL, Sql Server, Oracle and Redshift). <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/ddl">See DDL
+folder here.</a>
+<ul>
+<li>For example, for the PostgreSQL database platform, execute the
+constraints DDL script. <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/OMOP%20CDM%20postgresql%20constraints%20Oncology%20Module.txt">See
+PostgreSQL constraints DDL script here.</a></li>
+</ul></li>
+</ul>
+</div>
+</div>
 
 
 
@@ -510,7 +645,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2",
+      selectors: "h1,h2,h3",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {

@@ -19,6 +19,7 @@ Oncology support in OMOP is a work in progress. We welcome your participation!
 
 ---
 
+<br>
 
 
 ##   **Subgroups & Meeting Schedule**
@@ -30,16 +31,33 @@ subgroup|schedule|meeting details|Team Lead
 |Genomic|Second and Fourth Tue 9AM EST|[link](https://teams.microsoft.com/l/meetup-join/19%3aa38d75bbaf8b4093b78f4ff4b0201f11%40thread.tacv2/1608669187453?context=%7b%22Tid%22%3a%22a30f0094-9120-4aab-ba4c-e5509023b2d5%22%2c%22Oid%22%3a%22e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%22%7d)|Asieh Golozar
 
 
+
+
+----
+
 <br>
 
+## **Problem Space**
+
+In a typical observational study, the definition of the study population (cohort), exposures and outcomes are usually based on diagnostic codes in addition to drug exposures, procedure occurrences or lab measurements. For cancer studies, this information is typically not sufficient, as more details are required for the proper identification of the study population, treatment and subsequent outcomes.
+
+Appropriate characterization of cancer requires details such as anatomical site, morphology, local penetration, affected lymph nodes, metastatic spread, biomarkers, and disease staging and grading. In typical observational data sources, this necessary level of detail is not regularly present. Patient results from diagnostic procedures are collected but may not be available within the given data source or what is collected cannot appropriately serve as a surrogate for the above attributes. Correct identification of cancer treatment regimens also tends to be more complex compared to other disease modalities within observational data. Most cancer treatments are administered in chemotherapy regimens with complex dosing and scheduling in multiple cycles and are often combined with targeted therapies, immunotherapies, surgery or radiotherapy. None of these attributes follow standard definition to be applied to observational data, as most regimens are personalized to the individual patient need, making a priori standardized definitions more complex. Additionally, clinically relevant information on disease, treatment and outcomes that appropriately reflects a patient's journey including information on the time of diagnosis, response to treatments, time to treatment failure, disease progression, recurrence and (disease-free and overall) survival requires data abstraction and is rarely available in the source data and has not been traditionally supported in OMOP CDM.
+
+The Oncology CDM Extension of the OMOP CDM aims to provide a foundation for representing cancer data at the levels of granularity and abstraction required to support observational cancer research.
+
+The extension has been tested in EHR and Cancer Registry data against a number of typical use cases.
+
+
+
 ---
+
+<br>
 
 ## **Site Map**
 
 
 This site contains the following sections:
 
-<br>
 
 #### **[Background](background.html)**
 
@@ -70,9 +88,26 @@ This site contains the following sections:
 | [Treatment](conventions.html#Treatment)      | Overview of current development effort |
 
 ---
-
 #### **[Model](model.html)**
-
 ---
-
 #### **[Tools](tooling.html)**
+
+
+
+------------------------------------------------------------------------
+
+
+<br>
+
+## **Publications/Presentation**
+
+-   [2020 OHDSI Symposium - Oncology Tutorial](https://github.com/OHDSI/OncologyWG/wiki/Oncology-Tutorial)
+
+-   [2020 OHDSI Symposium - Genomic Variant Harmonization Poster Presentation](https://github.com/OHDSI/OncologyWG/wiki/Genomic-Variant-Harmonization)
+
+-   [Bladder Cancer Study](https://github.com/OHDSI/OncologyWG/wiki/Bladder-Cancer-Study)
+
+-   [JCO Clinical Cancer Informatics](https://ascopubs.org/doi/10.1200/CCI.20.00079)
+
+<br>
+

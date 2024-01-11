@@ -46,6 +46,37 @@ output:
 
 ---
 
+
+# **Goals**
+
+The overarching goals of the OHDSI Oncology Working Group:
+
+<br>
+
+### 1) Oncology research
+
+-   Enabling
+-   Conducting
+-   Promoting
+
+### 2) Maturing oncology standards
+
+-   Data model, ontologies and conventions
+-   A shared, international oncology data standard
+-   Support of observational, claims and curated data sources
+
+### 3) Community growth
+
+-   Model adoption and growth of network
+-   Data holders, developers, and subject matter experts
+-   Research use cases and applications
+
+
+
+<br>
+
+---
+
 # **Context**
 
  - An extensive and international outreach effort has been conducted to aggregate the gaps and pain points of implementing oncology data in OMOP, which is the starting point of this project. All of that feedback has been ingested and organized within a Github Project. That said, we know what we know now but that list is always expanding, for the better. 
@@ -66,6 +97,45 @@ output:
     4) Creating documentation
  - The tasks have been broken down into smaller more easily tackled chunks such as “investigating an issue” or “complete outstanding vocabulary changes that have content provided”, or “documentation of _”. The intent is to enable many small contributions rather than few large ones.
  - The plan is to complete as much as we can, prioritized by use cases, in preparation for a new stable release. After that milestone is reached, we will continue to iterate and improve while adhering to a stable release schedule.
+
+<br>
+
+---
+
+
+# **Notable Challenges**
+
+<br> 
+
+### 1) Oncology data in OMOP
+
+-   OMOP typically a person-centric model
+    -   Oncology data often requires additional levels of detail
+    -   e.g., "Observations about observations"
+-   Novel entity relationships in source data
+
+
+<br>
+
+
+
+### 2) Source data representations
+
+-   Differing granularity and detail between data sources
+-   Goal of maximum accommodation while maintaing FAIR principles
+-   Sources include observational, claims and curated data
+    -   Sources often overlap and can provide complementary data for same patient population
+
+<br>
+
+
+<figure>
+
+<img src="https://user-images.githubusercontent.com/57408355/76053847-9c1c5380-5f3c-11ea-8ac2-4efbcc4ee66e.png" alt="Condition Map"/>
+
+<figcaption>Diagram illustrating condition modifier representation</figcaption>
+
+</figure>
 
 <br>
 
