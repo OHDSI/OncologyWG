@@ -92,10 +92,29 @@ This tool is a product of collaboration. See the validation scripts README for d
 
 ## Delta Vocabulary Framework
 
-<br> 
+A suite of tools to quickly set up an environment for:
+1) making local edits to the OMOP Vocabularies (concept and concept_relationship tables)
+2) generating derived tables (concept_ancestor)
+3) validating the vocabulary changes
+4) outputting the table delta in a sharable format
 
+<br>
 
 ### Structure/Approach
+
+Git and GitHub offer a collaborative environment for proposing, discussing, and implementing changes to a reference vocabulary such as the OMOP Vocabulary. 
+
+However, due to licensing and volume issues, it is not possible to maintain and develop the entire OMOP vocabulary in a GitHub repository as flat files.
+
+To work around this, a group of collaborators can maintain and contribute to a growing list of edits to the OMOP Vocabulary. We call this list of edits the "delta vocab".
+
+The delta vocab, which is literally a collection of concept and concept_relationship records exactly as they would represented in the OMOP Vocabulary table, provides a lightweight representation of any deviations from the official OMOP Vocabulary.
+
+Using the delta vocab and delta helper scripts, a developer with an official OMOP Vocabulary database can quickly create a full, working version of the OMOP Vocabulary with all proposed changes implemented, allowing for advanced testing and use of existing OHDSI tools with a development version of the vocabulary.
+
+The simplicity of maintaining as little of the vocabulary as possible and using scripted logic to apply changes to the existing vocabulary makes this method easy to implement, but also limited in its capabilities. As of now, the primary use for the delta vocab method is for *destandardizing and mapping non-standard terms*.
+
+For details on using the delta vocab and the helper scripts, see the README and function reference (TODO)
 
 <br> 
 
