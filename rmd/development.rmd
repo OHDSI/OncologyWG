@@ -45,6 +45,80 @@ output:
 <br>
 
 ---
+------------------------------------------------------------------------
+
+# **Goals**
+
+The overarching goals of the OHDSI Oncology Working Group:
+
+<br>
+
+### 1) Oncology research
+
+-   Enabling
+-   Conducting
+-   Promoting
+
+### 2) Maturing oncology standards
+
+-   Data model, ontologies and conventions
+-   A shared, international oncology data standard
+-   Support of observational, claims and curated data sources
+
+### 3) Community growth
+
+-   Model adoption and growth of network
+-   Data holders, developers, and subject matter experts
+-   Research use cases and applications
+
+### 4) Transparency
+
+-   Clear processes and mechanisms for collaboration
+-   Thorough documentation of conventions and approaches
+-   Open-source development and project management
+
+<br>
+
+------------------------------------------------------------------------
+
+# **Notable Challenges**
+
+<br> 
+
+### 1) Oncology data in OMOP
+
+-   OMOP typically a person-centric model
+    -   Oncology data often requires additional levels of detail
+    -   e.g., "Observations about observations"
+-   Novel entity relationships in source data
+
+
+<br>
+
+
+
+### 2) Source data representations
+
+-   Differing granularity and detail between data sources
+-   Goal of maximum accommodation while maintaing FAIR principles
+-   Sources include observational, claims and curated data
+    -   Sources often overlap and can provide complementary data for same patient population
+
+<br>
+
+
+<figure>
+
+<img src="https://user-images.githubusercontent.com/57408355/76053847-9c1c5380-5f3c-11ea-8ac2-4efbcc4ee66e.png" alt="Condition Map"/>
+
+<figcaption>Diagram illustrating condition modifier representation</figcaption>
+
+</figure>
+
+<br>
+
+------------------------------------------------------------------------
+
 
 # **Context**
 
