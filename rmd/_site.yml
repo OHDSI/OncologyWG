@@ -31,18 +31,24 @@ navbar:
         - text: "   Getting Involved"
           href: gettingInvolved.html
           icon: fa-user-plus
-    - text: " Conventions"
-      icon: fa-gavel
-      href: conventions.html
-    - text: " Implementation"
+    - text: " Specifications"
       icon: fa-circle-info
       menu:
+        - text: " Conventions"
+          icon: fa-gavel
+          href: conventions.html
         - text: " Model"
           href: model.html
           icon: fa-sitemap
+        - text: " Genomics"
+          href: genomics.html
+          icon: fa-dna
+    - text: " Implementation"
+      icon: fa-desktop
+      menu:
         - text: " Installation"
           href: installation.html
-          icon: fa-terminal
+          icon: fa-play
         - text: " Tooling"
           icon: fa-wrench
           href: tooling.html

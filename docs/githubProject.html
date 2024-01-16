@@ -374,22 +374,22 @@ div.tocify {
     </li>
   </ul>
 </li>
-<li>
-  <a href="conventions.html">
-    <span class="fa fa-gavel"></span>
-     
-     Conventions
-  </a>
-</li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     <span class="fa fa-circle-info"></span>
      
-     Implementation
+     Specifications
      
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="conventions.html">
+        <span class="fa fa-gavel"></span>
+         
+         Conventions
+      </a>
+    </li>
     <li>
       <a href="model.html">
         <span class="fa fa-sitemap"></span>
@@ -398,8 +398,26 @@ div.tocify {
       </a>
     </li>
     <li>
+      <a href="genomics.html">
+        <span class="fa fa-dna"></span>
+         
+         Genomics
+      </a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-desktop"></span>
+     
+     Implementation
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
       <a href="installation.html">
-        <span class="fa fa-terminal"></span>
+        <span class="fa fa-play"></span>
          
          Installation
       </a>
@@ -452,7 +470,7 @@ Github Project</h1>
 <h1><strong>Overview</strong></h1>
 <p><br></p>
 <div id="architecture" class="section level2">
-<h2><strong>Architecture</strong></h2>
+<h2>Architecture</h2>
 <ul>
 <li>While most of the relevant “issues” exist within the
 OHDSI/OncologyWG repository, the project itself lives at the
@@ -466,7 +484,7 @@ the project (see: Project Views below)</li>
 <hr />
 </div>
 <div id="strategy" class="section level2">
-<h2><strong>Strategy</strong></h2>
+<h2>Strategy</h2>
 <ul>
 <li>Leverage community feedback to establish dynamic inventory of
 maturity tasks</li>
@@ -494,7 +512,7 @@ vocab readme</a>)</li>
 <h1><strong>Project Navigation</strong></h1>
 <p><br></p>
 <div id="task-status" class="section level2">
-<h2><strong>Task status</strong></h2>
+<h2>Task status</h2>
 <p><br></p>
 <p>All views within the project use the same four “status” groups:</p>
 <div>
@@ -524,7 +542,7 @@ Finished.
 <hr />
 </div>
 <div id="project-views" class="section level2">
-<h2><strong>Project Views</strong></h2>
+<h2>Project Views</h2>
 <p><br></p>
 <p>The Github “project” can be thought of as a mechanism to “slice up”
 or organize the Github issues into different groupings and subsets. Each
@@ -587,7 +605,7 @@ available</li>
 <p><br></p>
 <hr />
 <div id="task-group" class="section level2">
-<h2><strong>Task group</strong></h2>
+<h2>Task group</h2>
 <p>Start with a Task Group: a unit of work of orders related to a
 component of oncology research. If you’d like to contribute to a
 specific Task Group, add yourself as an assignee and change the status
@@ -609,7 +627,7 @@ work, Validate and ingest, and Document.</p>
 <hr />
 </div>
 <div id="resolve-decision-points" class="section level2">
-<h2><strong>Resolve Decision points</strong></h2>
+<h2>Resolve Decision points</h2>
 <p>This subissue lists the decision points that need to be finalized
 before work can begin on the Task Group. Decision points must be
 finalized by the OHDSI Oncology WG and often require input from
@@ -623,7 +641,7 @@ finalized and closed before work begins on a task group.</p>
 <hr />
 </div>
 <div id="investigate-and-create-tasks" class="section level2">
-<h2><strong>Investigate and Create Tasks</strong></h2>
+<h2>Investigate and Create Tasks</h2>
 <p>The next task in the Task Group involves scoping the work necessary
 to solve the problems laid out in the Problem Space. In the context of
 vocabulary development, this task may be broken into two main steps. The
@@ -672,7 +690,7 @@ checkboxes in this issue can be checked and the issue closed:</p>
 <hr />
 </div>
 <div id="complete-outstanding-work" class="section level2">
-<h2><strong>Complete outstanding work</strong></h2>
+<h2>Complete outstanding work</h2>
 <p>In the last task, you worked to add content to the top comment in
 this issue:</p>
 <div>
@@ -737,7 +755,7 @@ issue can be closed:</p>
 <hr />
 </div>
 <div id="validate-and-ingest" class="section level2">
-<h2><strong>Validate and ingest</strong></h2>
+<h2>Validate and ingest</h2>
 <blockquote>
 <p><svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM192 160H320c17.7 0 32 14.3 32 32V320c0 17.7-14.3 32-32 32H192c-17.7 0-32-14.3-32-32V192c0-17.7 14.3-32 32-32z"/></svg>
 A small number of community members (who are familiar with this process)
@@ -894,7 +912,7 @@ you if any changes need to be made before the PR can be accepted.</p>
 </div>
 </div>
 <div id="document" class="section level2">
-<h2><strong>Document</strong></h2>
+<h2>Document</h2>
 <ul>
 <li>Finalized documentation ends up in the ‘Conventions’ part of this
 site</li>
@@ -924,19 +942,29 @@ rmarkdown::render_site()</code></pre>
 <p><br></p>
 <p><strong>Option 2)</strong> <strong>Use Github.Dev</strong> or other
 markdown editor</p>
-<pre><code>- Leverages tools within Github Website
-- Can edit and visualize resulting documentation without needing to use R 
-
-Steps:
-
-1) Create a new branch from &quot;main&quot;
-2) Edit the RMD files and, once satisfied, push those commits to the new branch
-3)  Once completed, create a Pull Request
-&gt; - There is a (finicky) Github Action in place that has the logic:
-&gt;  - If a pull request gets created where anything in the &quot;rmd/&quot; folder was edited, then generate the HTML files
-&gt; - By the time the pull request is reviewed, the &quot;docs/&quot; folder and contained HTML files should have been automatically generated from whatever you edited in &quot;rmd/&quot;</code></pre>
-<p>Tips: - Change the “language to markdown” in the bottom right corner
-<img src="image.png" alt="Alt text" /></p>
+<ul>
+<li>Leverages tools within Github Website</li>
+<li>Can edit and visualize resulting documentation without needing to
+use R</li>
+</ul>
+<p>Steps:</p>
+<ol style="list-style-type: decimal">
+<li>Create a new branch from “main”</li>
+<li>Edit the RMD files and, once satisfied, push those commits to the
+new branch</li>
+<li>Once completed, create a Pull Request &gt; - There is a (finicky)
+Github Action in place that has the logic: &gt; - If a pull request gets
+created where anything in the “rmd/” folder was edited, then generate
+the HTML files &gt; - By the time the pull request is reviewed, the
+“docs/” folder and contained HTML files should have been automatically
+generated from whatever you edited in “rmd/”</li>
+</ol>
+<p>Tips:</p>
+<ul>
+<li>Change the “language to markdown” in the bottom right corner <img
+src="image.png" alt="Alt text" /></li>
+</ul>
+<p><br></p>
 <ul>
 <li>After the language has been set to markdown, you can then switch to
 a split view which shows you the final visual result of the markdown
@@ -947,8 +975,13 @@ alt="Alt text" /></li>
 <p><br></p>
 <p><strong>Option 3)</strong> If neither above options are feasible, you
 can write the documentation in whatever format you’re comfortable with
-and 1) submit the content as a comment in the github ticket 2) one of
-the repository maintainers will convert it into the proper format</p>
+and</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>submit the content as a comment</strong> in the github
+ticket</p></li>
+<li><p>one of the repository maintainers will convert it into the proper
+format</p></li>
+</ol>
 </div>
 </div>
 

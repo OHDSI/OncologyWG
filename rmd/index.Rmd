@@ -11,7 +11,7 @@ output:
 
 <br>
 
-## **Mission**
+## **Mission** 
 
 The OHDSI Oncology Working Group aims to provide a foundation for representing cancer data within the OMOP CDM at the levels of granularity and abstraction required to support observational cancer research.
 

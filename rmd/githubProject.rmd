@@ -16,7 +16,7 @@ library(fontawesome)
 
 <br>
 
-## **Architecture**
+## Architecture
 
  - While most of the relevant "issues" exist within the OHDSI/OncologyWG repository, the project itself lives at the organization (OHDSI) level: https://github.com/orgs/OHDSI/projects/13
  - You can navigate the issues through the repository if you wish but it is much more organized and intuitive to leverage the "Views" within the project (see: Project Views below)
@@ -24,7 +24,7 @@ library(fontawesome)
  
 --- 
 
-## **Strategy**
+## Strategy
 
  - Leverage community feedback to establish dynamic inventory of maturity tasks 
  - Break down the problems into granular tasks
@@ -45,7 +45,7 @@ library(fontawesome)
 
 <br>
 
-## **Task status**
+## Task status
 
 <br>
 
@@ -74,7 +74,7 @@ Complete
 
 --- 
 
-## **Project Views**
+## Project Views
 
 <br>
 
@@ -119,7 +119,7 @@ The Github "project" can be thought of as a mechanism to "slice up" or organize 
 --- 
 
 
-## **Task group**
+## Task group
 Start with a Task Group: a unit of work of orders related to a component of oncology research.
 If you'd like to contribute to a specific Task Group, add yourself as an assignee and change the status from **Outstanding** to **In Progress**
 
@@ -139,7 +139,7 @@ Within each Task Group, there are typically five subissues: Resolve decision poi
 
 --- 
 
-## **Resolve Decision points**
+## Resolve Decision points
 This subissue lists the decision points that need to be finalized before work can begin on the Task Group. Decision points must be finalized by the OHDSI Oncology WG and often require input from oncologists and informaticists before they are introduced as discussion topics at a WG meeting. Generally, all decision point issues should be finalized and closed before work begins on a task group.
 
 <div><img src="images/resolveDecisionPoints.png"></img></div>
@@ -148,7 +148,7 @@ This subissue lists the decision points that need to be finalized before work ca
 
 --- 
 
-## **Investigate and Create Tasks**
+## Investigate and Create Tasks
 
 The next task in the Task Group involves scoping the work necessary to solve the problems laid out in the Problem Space. In the context of vocabulary development, this task may be broken into two main steps. The first involves outlining the preparatory work necessary to enable the Task Group’s main work. This means identifying vocabularies with problematic terms and creating a checklist for the preparatory work required:
 
@@ -174,7 +174,7 @@ After all work order issues are created, linked to the “Complete outstanding w
 
 --- 
 
-## **Complete outstanding work**
+## Complete outstanding work
 
 In the last task, you worked to add content to the top comment in this issue:
 
@@ -214,7 +214,7 @@ Closing the tickets will automatically check the boxes in the Task issue. Once a
 
 --- 
 
-## **Validate and ingest**
+## Validate and ingest
 
 > `r fa("circle-stop", fill="red", prefer_type="solid")` A small number of community members (who are familiar with this process) will handle the majority of validation and ingestion requests thus it is not required that these processes be fully understood by the majority. For more information see the Validation tooling [readme](https://github.com/OHDSI/OncologyWG/tree/master/vocabTools#tools-used-to-assist-with-developing-omop-vocabulary)
 
@@ -304,7 +304,7 @@ After that, you can select your new branch on [a PR to OncologyWG GitHub](https:
 
 --- 
 
-## **Document**
+## Document
 
 
  - Finalized documentation ends up in the 'Conventions' part of this site
@@ -335,28 +335,33 @@ After that, you can select your new branch on [a PR to OncologyWG GitHub](https:
         
 **Option 2)** **Use Github.Dev** or other markdown editor
   
-    - Leverages tools within Github Website
-    - Can edit and visualize resulting documentation without needing to use R 
-    
-    Steps:
+- Leverages tools within Github Website
+- Can edit and visualize resulting documentation without needing to use R 
 
-    1) Create a new branch from "main"
-    2) Edit the RMD files and, once satisfied, push those commits to the new branch
-    3)  Once completed, create a Pull Request
-    > - There is a (finicky) Github Action in place that has the logic:
-    >  - If a pull request gets created where anything in the "rmd/" folder was edited, then generate the HTML files
-    > - By the time the pull request is reviewed, the "docs/" folder and contained HTML files should have been automatically generated from whatever you edited in "rmd/"
+Steps:
+
+1) Create a new branch from "main"
+2) Edit the RMD files and, once satisfied, push those commits to the new branch
+3)  Once completed, create a Pull Request
+> - There is a (finicky) Github Action in place that has the logic:
+>  - If a pull request gets created where anything in the "rmd/" folder was edited, then generate the HTML files
+> - By the time the pull request is reviewed, the "docs/" folder and contained HTML files should have been automatically generated from whatever you edited in "rmd/"
 
 Tips: 
+
 - Change the "language to markdown" in the bottom right corner
 ![Alt text](image.png)
 
+<br> 
+
 - After the language has been set to markdown, you can then switch to a split view which shows you the final visual result of the markdown file you are editing. To open the visualization tab click the split box with the magnifying glass in the top right
-![Alt text](image-3.png)
+![Alt text](image-3.png) 
 
 <br>
 
-**Option 3)** If neither above options are feasible, you can write the documentation in whatever format you're comfortable with and 
-1) submit the content as a comment in the github ticket
+**Option 3)** If neither above options are feasible, you can write the documentation in whatever format you're comfortable with and
+
+1) **submit the content as a comment** in the github ticket
+
 2) one of the repository maintainers will convert it into the proper format
 

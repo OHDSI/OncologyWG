@@ -53,15 +53,20 @@ This package identifies oncology regimens. Firstly, it identifies all patients w
 
 ---
 
-# **Database Characterization and Validation**
+
+# **Development & Testing**
+
+<br>
+
+## Characterization and Validation
 
 <br> 
 
-## Purpose
+### Purpose
 
 Provide a semi-automated and extensible framework for generating, visualizing, and sharing an assessment of an OMOP-shaped database's adherence to the OHDSI Oncology Standard (tables, vocabulary) and the availabilty and types of oncology data it contains.
 
-## Overview
+### Overview
 
 The star of the framework is an R Package. Along with cataloguing an extensible set of queries and analyses used for assessing OMOP-shaped oncology data, the R package provides functionality for the four major processes involved in the framework:
 
@@ -85,10 +90,9 @@ _Threshholds_ provide study specific context to the results of analyses. An anal
 This tool is a product of collaboration. See the validation scripts README for detailed instructions on creating analyses (TODO) and using the R package to author and execute assessment specifications (TODO).
 <br> 
 
-
-# **Development & Testing**
-
 <br>
+
+---
 
 ## Delta Vocabulary Framework
 
@@ -115,17 +119,6 @@ Using the delta vocab and delta helper scripts, a developer with an official OMO
 The simplicity of maintaining as little of the vocabulary as possible and using scripted logic to apply changes to the existing vocabulary makes this method easy to implement, but also limited in its capabilities. As of now, the primary use for the delta vocab method is for *destandardizing and mapping non-standard terms*.
 
 For details on using the delta vocab and the helper scripts, see the README and function reference (TODO)
-
-<br> 
-
-
-### Testing & Validation
-
-<br> 
-
-
-### Local Deployment
-
 
 
 <br>
