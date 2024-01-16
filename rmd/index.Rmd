@@ -24,6 +24,8 @@ Oncology support in OMOP is a work in progress. We welcome your participation!
 
 ##   **Subgroups & Meeting Schedule**
 
+*TODO: update the following table with the new 2024 meeting links. Until then, and even after then, it is highly recommended that you add the meetings series to your own calendar, which are found within the oncology teams calendar, instead of reyling on this table.*
+
 subgroup|schedule|meeting details|Team Lead
 :------------------|:--------------------------|:------------|:--------------
 |CDM/Vocabulary & Development|First Thu 1PM EST<br>Third Thu 9AM EST|[link](https://teams.microsoft.com/l/meetup-join/19%3a239caede18574bc183f75a7a5eb9e826%40thread.tacv2/1608665830064?context=%7b%22Tid%22%3a%22a30f0094-9120-4aab-ba4c-e5509023b2d5%22%2c%22Oid%22%3a%22e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%22%7d)|Thomas Falconer, Michael Gurley, & Robert Miller
@@ -59,47 +61,49 @@ The extension has been tested in EHR and Cancer Registry data against a number o
 This site contains the following sections:
 
 
-#### **[Background](background.html)**
+#### **[WG Home](index.html)**
 
 |  |    |
 | -------- | :----------- |
-| [Problem Space](background.html#Problem_Space)      | High level summary of working group mission |
-| [Goals](background.html#Goals)        | Goals of working group |
-| [Notable Challenges](background.html#Notable_Challenges)      | Core challenges of effort |
+| [Problem Space](index.html#Problem_Space)      | High level summary of working group mission |
 | [Publications/Presentations](background.html#PublicationsPresentation)      | Links to some relevant publications & presentations |
 
 #### **Development Effort** 
  
 | | | 
 | -------- | :----------- |
-| **[Development Overview](development.html)**    <br> [Purpose and Goals](development.html#Purpose_and_Goals) <br> [Context](development.html#Context) <br> [Scope](development.html#Scope) <br> [What we need](development.html##What_we_need) <br> [Project Management](development.html#Project_Management)| Overview of current development effort |
+| **[Development Overview](development.html)**    <br> [Purpose](development.html#Purpose) <br> [Goals](development.html#Goals)  <br>  [Notable Challenges](development.html#Notable_Challenges)  <br>     [Context](development.html#Context) <br> [Scope](development.html#Scope) <br> [What we need](development.html#What_we_need) <br> [Project Management](development.html#Project_Management)| Overview of current development effort |
 | **[Progress Map](progressMap.html)**  <br> [Miro Map](progressMap.html#Miro_Map)  <br> [Roadmap](progressMap.html#Roadmap)  | Miro Map of completed and outstanding work within scope (with links)  |
-| **[Github Project Orientation](githubProject.html)**    <br> [Approach](githubProject.html#Approach)   <br> [Architecture](githubProject.html#Architecture) <br> [Project Views](githubProject.html#Project_Views)  <br> [Example Walkthrough](githubProject.html#Approach)   | Documentation about navigating and understanding the Github Project and approach  |
-| **[Getting Involved](gettingInvolved.html)** <br> [Collaboration Channels](gettingInvolved.html#join_collaboration_channels) <br> [Review Project Documentation](gettingInvolved.html#Review_Project_Documentation)      | Suggestions and links for getting started in the effort!  |
+| **[Github Project Orientation](githubProject.html)**    <br>  [Architecture](githubProject.html#Architecture) <br> [Strategy](githubProject.html#strategy)   <br> [Project Navigation](githubProject.html#Project_Navigation)  <br> [Example Walkthrough](githubProject.html#Approach)   | Documentation about navigating and understanding the Github Project and approach  |
+| **[Getting Involved](gettingInvolved.html)** <br> [Join Collaboration Channels](gettingInvolved.html#join_collaboration_channels) <br> [Submit Collaborator Form](gettingInvolved.html#Submit_a_new_collaborator_form) <br> [Review Project Documentation](gettingInvolved.html#Review_Project_Documentation) <br> [Contributing](gettingInvolved.html#Contributing)     | Suggestions and links for getting started in the effort!  |
 
 
 
-#### **[Conventions](conventions.html)**
+#### **Specifications**
 
 
 | | | 
 | -------- | :----------- |
-| [Diagnostic](conventions.html#Diagnostic)      | Overview of current development effort |  |
-| [Treatment](conventions.html#Treatment)      | Overview of current development effort |
+| **[Conventions](conventions.html)** <br> [Diagnostic](conventions.html#Diagnostic)  <br> [Treatment](conventions.html#Treatment)      | Overview of current development effort |
+| **[Model](model.html)** ||
+| **[Genomics](genomics.html)** ||
 
 ---
-#### **[Model](model.html)**
----
-#### **[Tools](tooling.html)**
 
 
+#### **Implementation**
 
+| | | 
+| -------- | :----------- |
+| **[Installation](installation.html)** ||
+| **[Tooling](tooling.html)** ||
+| **ETLs** <br> **[NAACCR ETL](naaccr.html)** ||
 ------------------------------------------------------------------------
 
 
 <br>
 
-## **Publications/Presentation**
+## **Publications/Presentations**
 
 -   [2020 OHDSI Symposium - Oncology Tutorial](https://github.com/OHDSI/OncologyWG/wiki/Oncology-Tutorial)
 
