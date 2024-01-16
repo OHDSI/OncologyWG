@@ -188,7 +188,6 @@ The overarching goals of the OHDSI Oncology Working Group:
 
 ---
 
-<br>
 
 ## Github Project
 
