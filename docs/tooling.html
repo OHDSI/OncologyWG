@@ -11,9 +11,9 @@
 
 
 
-<title>tooling.knit</title>
+<title> Tooling</title>
 
-<script src="site_libs/header-attrs-2.15/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -29,14 +29,14 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 
 <style type="text/css">
@@ -185,8 +185,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -194,16 +194,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -339,14 +332,7 @@ div.tocify {
   <a href="index.html">
     <span class="fa fa-home"></span>
      
-     Home
-  </a>
-</li>
-<li>
-  <a href="background.html">
-    <span class="fa fa-circle-info"></span>
-     
-     Background
+     WG Overview
   </a>
 </li>
 <li class="dropdown">
@@ -388,26 +374,74 @@ div.tocify {
     </li>
   </ul>
 </li>
-<li>
-  <a href="conventions.html">
-    <span class="fa fa-gavel"></span>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-circle-info"></span>
      
-     Conventions
+     Specifications
+     
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="conventions.html">
+        <span class="fa fa-gavel"></span>
+         
+         Conventions
+      </a>
+    </li>
+    <li>
+      <a href="model.html">
+        <span class="fa fa-sitemap"></span>
+         
+         Model
+      </a>
+    </li>
+    <li>
+      <a href="genomics.html">
+        <span class="fa fa-dna"></span>
+         
+         Genomics
+      </a>
+    </li>
+  </ul>
 </li>
-<li>
-  <a href="model.html">
-    <span class="fa fa-sitemap"></span>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-desktop"></span>
      
-     Model
-  </a>
-</li>
-<li>
-  <a href="tooling.html">
-    <span class="fa fa-wrench"></span>
+     Implementation
      
-     Tools
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="installation.html">
+        <span class="fa fa-play"></span>
+         
+         Installation
+      </a>
+    </li>
+    <li>
+      <a href="tooling.html">
+        <span class="fa fa-wrench"></span>
+         
+         Tooling
+      </a>
+    </li>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="fa fa-code"></span>
+         
+         ETLs
+      </a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="naaccr.html"> NAACCR</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -426,26 +460,18 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore"><div>
-<img src="images/ohdsi40x40.png"></img> Tooling
-</div></h1>
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
+Tooling</h1>
 
 </div>
 
 
 <p><br></p>
-<blockquote>
-<p><svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:orange;overflow:visible;position:relative;"><path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>
-Under Construction</p>
-</blockquote>
-<div id="applications" class="section level1">
-<h1><strong>Applications</strong></h1>
-<p><em>TODO: Brief overview </em></p>
-<p>TODO</p>
-<div id="genomics-derivation" class="section level2">
-<h2><strong>Genomics Derivation</strong></h2>
-<div id="koios" class="section level3">
-<h3>KOIOS</h3>
+<div id="genomics" class="section level1">
+<h1><strong>Genomics</strong></h1>
+<p><br></p>
+<div id="koios" class="section level2">
+<h2>KOIOS</h2>
 <p>Github: <a href="https://github.com/OHDSI/Koios">OHDSI/KOIOS</a></p>
 <p>KOIOS is a tool developed by Odysseus Data Services Inc that allows
 you to find matching and missing concepts in OMOP Genomic Vocabulary for
@@ -459,211 +485,130 @@ new entities.</p>
 <hr />
 </div>
 </div>
-<div id="regimen-derivation" class="section level2">
-<h2><strong>Regimen Derivation</strong></h2>
-<ul>
-<li>TODO <br> —</li>
-</ul>
-</div>
-<div id="episode-derivation" class="section level2">
-<h2><strong>Episode Derivation</strong></h2>
-<ul>
-<li>TODO <br></li>
-</ul>
-<hr />
-</div>
-<div id="etl" class="section level2">
-<h2><strong>ETL</strong></h2>
-<div id="tumor-registry" class="section level3">
-<h3>Tumor Registry</h3>
-<ul>
-<li>TODO <br></li>
-</ul>
-</div>
-<div id="ehr-data" class="section level3">
-<h3>EHR Data</h3>
-<ul>
-<li>TODO <br></li>
-</ul>
-<hr />
-</div>
-</div>
-</div>
-<div id="module-installation" class="section level1">
-<h1><strong>Module Installation</strong></h1>
-<p>This page covers how to install the Oncology CDM Extension. The
-Oncology CDM Extension has <strong>not</strong> yet been incorporated
-into an official OMOP CDM release. Consequently, the installation of the
-Oncology CDM Extension requires additional steps beyond installing the
-OMOP CDM. The Oncology CDM Extension currently supports OMOP CDM v5.31
-and the following database platforms: PostgreSQL, SQL Redshift.Server,
-Oracle and</p>
+<div id="regimen-derivation" class="section level1">
+<h1><strong>Regimen Derivation</strong></h1>
 <p><br></p>
-<div id="step-1-compile-the-omop-cdm-v5.31-tables"
-class="section level3">
-<h3>Step 1: Compile the OMOP CDM v5.31 Tables</h3>
-<p>Compile the OMOP CDM v5.31 data model tables from the <a
-href="https://github.com/OHDSI/CommonDataModel">OHDSI/CommonDataModel</a>
-Github repository. Find the DDL relevant to your database platform
-(PostgreSQL, SQL Server, Oracle and Redshift). <a
-href="https://github.com/OHDSI/CommonDataModel/releases/tag/v5.3.1">See
-the OMOP CDM v5.31 release here.</a> Do not yet compile indexes and
-constraints. Do not yet load the vocabulary tables. We will do these in
-subsequent steps.</p>
+<div id="artemis" class="section level2">
+<h2>ARTEMIS</h2>
+<p>Github: <a
+href="https://github.com/OdyOSG/ARTEMIS">OdyOSG/ARTEMIS</a></p>
+<p>ARTEMIS provides an interface for utilizing a modified Temporal
+Smith-Waterman (TSW) algorithm, derived from 10.1109/DSAA.2015.7344785,
+to summarize longitudinal EHR data into discrete regimen eras. Primarily
+intended to be used for cancer patients, ARTEMIS utilizes data derived
+from the HemOnc oncology reference to form the basic regimen data used
+in testing.</p>
+<hr />
 </div>
-<div id="step-2-compile-the-oncology-cdm-extension-tables"
-class="section level3">
-<h3>Step 2: Compile the Oncology CDM Extension Tables</h3>
-<ul>
-<li>Compile the Oncology CDM Extension data model tables from the <a
-href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
-repository. This is a temporary additional step that will be removed
-once the Oncology CDM Extension has been incorporated into an official
-OMOP CDM release. Find the DDL relevant to your database platform
-(PostgreSQL, Sql Server, Oracle and Redshift). <a
-href="https://github.com/OHDSI/OncologyWG/tree/master/ddl">See DDL
-folder here.</a></li>
-<li>For example, for the PostgreSQL database platform, execute the DDL
-script. <a
-href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/OMOP%20CDM%20postgresql%20ddl%20Oncology%20Module.txt">See
-PostgreSQL DDL script here.</a></li>
-</ul>
+<div id="oncoregimenfinder" class="section level2">
+<h2>OncoRegimenFinder</h2>
+<p><em>Last update 2021</em></p>
+<p>Github: <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/OncoRegimenFinder">OHDSI/OncologyWG/OncoRegimenFinder</a></p>
+<p>This package identifies oncology regimens. Firstly, it identifies all
+patients who have been exposed with an Antineoplastic Agent (ATC code).
+Then it collapses the antineoplastic agents into regimens when there is
+a date difference less that <span
+class="citation">@date_lag_input</span>(30days is used as standard).</p>
+<hr />
 </div>
-<div id="step-3-load-the-omop-standardized-vocabulary-tables."
-class="section level3">
-<h3>Step 3: Load the OMOP Standardized Vocabulary Tables.</h3>
-<ul>
-<li>Populate the OMOP CDM vocabulary tables with, at minimum, the most
-recent version of the following vocabularies: SNOMED, ICDO3, HemOnc,
-RxNorm, NAACCR, and Episode Type.</li>
-<li>ATHENA is the recommended approach for navigating and downloading
-OHDSI vocabularies. <a href="http://athena.ohdsi.org/">See ATHENA
-here.</a></li>
-<li>Vocabulary ingestion scripts are organized by database platform in
-the <a
-href="https://github.com/OHDSI/CommonDataModel">OHDSI/CommonDataModel</a>
-Github repository. Refer back to the OMOP CDM v5.31 release you
-downloaded in step 1.</li>
-<li>Execute the vocabulary patch file from the <a
-href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
-repository to support metadata description/reference of the Oncology CDM
-Extension’s new tables and added columns. This is a temporary additional
-step that will be removed once the Oncology CDM Extension has been
-incorporated into an official OMOP CDM release. The patch file currently
-only supports the PostgreSQL database platform. You will need to
-manually translate the vocabulary patch file to other database
-platforms. <a
-href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/CDM_patch.sql">See
-patch file here.</a></li>
-<li>Run the vocabulary ingestion script to populate the Oncology CDM
-Extension’s newly added CONCEPT_NUMERIC vocabulary table from the <a
-href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
-repository. This is a temporary additional step that will be removed
-once the Oncology CDM Extension has been incorporated into an official
-OMOP CDM release. The ingestion script depends on a CONCEPT_NUMERIC.CSV
-file. Find the ingestion script (and CSV file) relevant to your database
-platform (PostgreSQL, Sql Server, Oracle and Redshift). <a
-href="https://github.com/OHDSI/OncologyWG/tree/master/ddl">See DDL
-folder here.</a>
-<ul>
-<li>For example, for the PostgreSQL database platform, execute the
-ingestion script. <a
-href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/VocabImport/OMOP%20CDM%20vocabulary%20load%20-%20PostgreSQL.sql">See
-PostgreSQL ingestion script here.</a></li>
-</ul></li>
-</ul>
 </div>
-<div id="step-4-etl-the-omop-standardized-clinical-data-tables"
-class="section level3">
-<h3>Step 4: ETL the OMOP Standardized Clinical Data Tables</h3>
-<ul>
-<li>This step will be institution-specific and involves transforming
-your local EHR, claims database and other data sources into the common
-data structures and semantics of the OMOP CDM. The OMOP CDM includes
-(among others) representations for patients (PERSON), providers
-(PROVIDER), healthcare facilities (CARE_SITE and LOCATION), healthcare
-encounters (VISIT_OCCURRENCE), diagnoses (CONDITION_OCCURRENCE),
-medication prescriptions and administrations (DRUG_EXPOSURE), labs
-(MEASUREMENT), medical procedures (PROCEDURE_OCCURRENCE) and clinical
-notes (NOTE). <a
-href="https://www.ohdsi.org/web/wiki/doku.php?id=documentation:etl_best_practices">See
-ETL creation best practices here.</a></li>
-<li>Some implementations will layer the ETL of data into the Oncology
-CDM Extension tables on top of an OMOP CDM instance populated from other
-sources. Other implementations will ETL data into the Oncology CDM
-Extension tables in a satellite OMOP CDM instance and merge the data
-into a main OMOP CDM instance. This will based on local institutional
-practices and strategies.</li>
-</ul>
+<div id="development-testing" class="section level1">
+<h1><strong>Development &amp; Testing</strong></h1>
+<p><br></p>
+<div id="characterization-and-validation" class="section level2">
+<h2>Characterization and Validation</h2>
+<p><br></p>
+<div id="purpose" class="section level3">
+<h3>Purpose</h3>
+<p>Provide a semi-automated and extensible framework for generating,
+visualizing, and sharing an assessment of an OMOP-shaped database’s
+adherence to the OHDSI Oncology Standard (tables, vocabulary) and the
+availabilty and types of oncology data it contains.</p>
 </div>
-<div id="step-5-compile-the-indexes-and-constraints."
-class="section level3">
-<h3>Step 5: Compile the indexes and constraints.</h3>
-<ul>
-<li>Compile the OMOP CDM v5.31 indexes and constraints from the <a
-href="https://github.com/OHDxSI/CommonDataModel">OHDSI/CommonDataModel</a>
-Github repository. Find the indexes and constraints DDL relevant to your
-database platform (PostgreSQL, SQL Server, Oracle and Redshift). Refer
-back to the OMOP CDM v5.31 release you downloaded in step 1.</li>
-<li>Compile the Oncology CDM Extension indexes from the <a
-href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
-repository. This is a temporary additional step that will be removed
-once the Oncology CDM Extension has been incorporated into an official
-OMOP CDM release. Find the indexes DDL relevant to your database
-platform (PostgreSQL, Sql Server, Oracle and Redshift). <a
-href="https://github.com/OHDSI/OncologyWG/tree/master/ddl">See DDL
-folder here.</a>
-<ul>
-<li>For example, for the PostgreSQL database platform, execute the
-indexes DDL script. <a
-href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/OMOP%20CDM%20postgresql%20pk%20indexes%20Oncology%20Module.txt">See
-PostgreSQL indexes DDL script here.</a></li>
-</ul></li>
-<li>Compile the Oncology CDM Extension constraints from the <a
-href="https://github.com/OHDSI/OncologyWG">OncologyWG</a> Github
-repository. This is a temporary additional step that will be removed
-once the Oncology CDM Extension has been incorporated into an official
-OMOP CDM release. Find the constraints DDL relevant to your database
-platform (PostgreSQL, Sql Server, Oracle and Redshift). <a
-href="https://github.com/OHDSI/OncologyWG/tree/master/ddl">See DDL
-folder here.</a>
-<ul>
-<li>For example, for the PostgreSQL database platform, execute the
-constraints DDL script. <a
-href="https://github.com/OHDSI/OncologyWG/blob/master/ddl/PostgreSQL/OMOP%20CDM%20postgresql%20constraints%20Oncology%20Module.txt">See
-PostgreSQL constraints DDL script here.</a></li>
-</ul></li>
-</ul>
-<p>There are multiple strategies for populating the Oncology data within
-OMOP:</p>
+<div id="overview" class="section level3">
+<h3>Overview</h3>
+<p>The star of the framework is an R Package. Along with cataloguing an
+extensible set of queries and analyses used for assessing OMOP-shaped
+oncology data, the R package provides functionality for the four major
+processes involved in the framework:</p>
+<ol style="list-style-type: decimal">
+<li>Authoring an assessment specification</li>
+<li>Executing an assessment specification</li>
+<li>Generating assessment results</li>
+<li>Visualizing assessment results</li>
+</ol>
+</div>
+<div id="approach" class="section level3">
+<h3>Approach</h3>
+<p><em>Assessments</em> can be executed against an OMOP-shaped database
+to create a characterization and quality report. They are created using
+specificications.</p>
+<p><em>Specifications</em> are JSON files that describe an assessment.
+They are composed by compiling analyses together with threshhold
+values.</p>
+<p><em>Analyses</em> execute a query and return a row count or
+proportion describing the contents in the database. For example,
+analysis_id=1234 returns “the number of cancer diagnosis records derived
+from Tumor Registry source data”.</p>
+<p><em>Threshholds</em> provide study specific context to the results of
+analyses. An analysis asks how many cancer diagnoses derived from tumor
+registry data are in the database. Using threshholds, an assessment
+author can give ranges for “bad”, “questionable”, and “good” analysis
+results as they pertain to their study. An example threshhold, which
+would be encoded as JSON, could express the sentiment “A database with
+0-200 diagnoses from tumor registry data would be unfit for this study,
+201-500 diagnoses may be suitable, and over 500 diagnoses will be more
+enough.”</p>
+</div>
+<div id="extensibility" class="section level3">
+<h3>Extensibility</h3>
+<p>This tool is a product of collaboration. See the validation scripts
+README for detailed instructions on creating analyses (TODO) and using
+the R package to author and execute assessment specifications (TODO).
+<br></p>
 <p><br></p>
 <hr />
 </div>
 </div>
-<div id="data-population" class="section level1">
-<h1><strong>Data Population</strong></h1>
+<div id="delta-vocabulary-framework" class="section level2">
+<h2>Delta Vocabulary Framework</h2>
+<p>A suite of tools to quickly set up an environment for: 1) making
+local edits to the OMOP Vocabularies (concept and concept_relationship
+tables) 2) generating derived tables (concept_ancestor) 3) validating
+the vocabulary changes 4) outputting the table delta in a sharable
+format</p>
 <p><br></p>
-<div id="directly-from-tumor-registries" class="section level3">
-<h3>Directly from Tumor Registries:</h3>
-<p>Tumor registries natively capture many of the abstractions and
-detailed modifiers that the Oncology CDM Extension strives to
-instantiate. A standard ETL has been written capable of ETLing
-NAACCR-formatted tumor registry data. See the documentation of the
-NAACCR ETL here</p>
-<p>TODO – ABOVE WILL ME OVERWRITTEN</p>
+<div id="structureapproach" class="section level3">
+<h3>Structure/Approach</h3>
+<p>Git and GitHub offer a collaborative environment for proposing,
+discussing, and implementing changes to a reference vocabulary such as
+the OMOP Vocabulary.</p>
+<p>However, due to licensing and volume issues, it is not possible to
+maintain and develop the entire OMOP vocabulary in a GitHub repository
+as flat files.</p>
+<p>To work around this, a group of collaborators can maintain and
+contribute to a growing list of edits to the OMOP Vocabulary. We call
+this list of edits the “delta vocab”.</p>
+<p>The delta vocab, which is literally a collection of concept and
+concept_relationship records exactly as they would represented in the
+OMOP Vocabulary table, provides a lightweight representation of any
+deviations from the official OMOP Vocabulary.</p>
+<p>Using the delta vocab and delta helper scripts, a developer with an
+official OMOP Vocabulary database can quickly create a full, working
+version of the OMOP Vocabulary with all proposed changes implemented,
+allowing for advanced testing and use of existing OHDSI tools with a
+development version of the vocabulary.</p>
+<p>The simplicity of maintaining as little of the vocabulary as possible
+and using scripted logic to apply changes to the existing vocabulary
+makes this method easy to implement, but also limited in its
+capabilities. As of now, the primary use for the delta vocab method is
+for <em>destandardizing and mapping non-standard terms</em>.</p>
+<p>For details on using the delta vocab and the helper scripts, see the
+README and function reference (TODO)</p>
 <p><br></p>
+<hr />
 </div>
-<div id="directly-from-non-registry-sources" class="section level3">
-<h3>Directly from non-registry sources:</h3>
-<p>TODO – Explanation of mapping to standard concepts and conventions to
-be elaborated on below. Perhaps with links in the conventions
-section</p>
-<p><br></p>
-</div>
-<div id="indirectly-via-algorithmic-derivation-on-top-of-the-omop-cdm"
-class="section level3">
-<h3>Indirectly via Algorithmic Derivation on top of the OMOP CDM:</h3>
-<p>TODO</p>
 </div>
 </div>
 

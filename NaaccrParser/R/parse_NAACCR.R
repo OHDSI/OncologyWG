@@ -3,6 +3,7 @@
 # main function for parsing fixed-width data
 NAACCR_to_db <- function(file_path
                          ,record_id_prefix = NULL
+                         ,ndp_schema
                          ,connectionDetails){
 
 
@@ -148,7 +149,7 @@ NAACCR_to_db <- function(file_path
 
         DatabaseConnector::insertTable(connection = conn,
                                        tableName = "naaccr_data_points",
-                                       databaseSchema = "NAACCR_OMOP.dbo",
+                                       databaseSchema = ndp_schema,
                                        data = tmp_df,
                                        dropTableIfExists = FALSE,
                                        createTable = FALSE,
@@ -196,6 +197,7 @@ assign_person_id <- function(connectionDetails
 # main function for parsing XML
 parse_XML_to_DB <- function(file_path
                              ,record_id_prefix = NULL
+                             ,ndp_schema
                              ,connectionDetails){
 
   if(is.null(file_path)){
@@ -420,7 +422,7 @@ parse_XML_to_DB <- function(file_path
 
     DatabaseConnector::insertTable(connection = conn,
                                    tableName = "naaccr_data_points",
-                                   databaseSchema = "NAACCR_OMOP.dbo",
+                                   databaseSchema = ndp_schema,
                                    data = res,
                                    dropTableIfExists = FALSE,
                                    createTable = FALSE,
@@ -439,6 +441,7 @@ parse_XML_to_DB <- function(file_path
 # umbrella function to parse directory of source files
 # can be either fixed width or XML
 parse_directory <- function(dir_path
+                            ,ndp_schema
                             ,connectionDetails){
 
 
@@ -456,10 +459,12 @@ parse_directory <- function(dir_path
     if(fext == "XML"){
       parse_XML_to_DB(file_path = curr_file
                       ,record_id_prefix = NULL
+                      ,ndp_schema = ndp_schema
                       ,connectionDetails = connectionDetails)
     }else{
       NAACCR_to_db(file_path = curr_file
                    ,record_id_prefix = NULL
+                   ,ndp_schema = ndp_schema
                    ,connectionDetails = connectionDetails)
     }
 

@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title> NAACCR Tumor Registry ETL</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"><div><img src="images/ohdsi16x16.png"></img> OHDSI Oncology WG </div></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+     WG Overview
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-people-group"></span>
+     
+       Development Effort
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="development.html">
+        <span class="fa fa-map"></span>
+         
+         Development Overview
+      </a>
+    </li>
+    <li>
+      <a href="progressMap.html">
+        <span class="fa fa-list-check"></span>
+         
+         Progress Map
+      </a>
+    </li>
+    <li>
+      <a href="githubProject.html">
+        <span class="fa fa-github"></span>
+         
+         Github Project Orientation
+      </a>
+    </li>
+    <li>
+      <a href="gettingInvolved.html">
+        <span class="fa fa-user-plus"></span>
+         
+           Getting Involved
+      </a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-circle-info"></span>
+     
+     Specifications
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="conventions.html">
+        <span class="fa fa-gavel"></span>
+         
+         Conventions
+      </a>
+    </li>
+    <li>
+      <a href="model.html">
+        <span class="fa fa-sitemap"></span>
+         
+         Model
+      </a>
+    </li>
+    <li>
+      <a href="genomics.html">
+        <span class="fa fa-dna"></span>
+         
+         Genomics
+      </a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-desktop"></span>
+     
+     Implementation
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="installation.html">
+        <span class="fa fa-play"></span>
+         
+         Installation
+      </a>
+    </li>
+    <li>
+      <a href="tooling.html">
+        <span class="fa fa-wrench"></span>
+         
+         Tooling
+      </a>
+    </li>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="fa fa-code"></span>
+         
+         ETLs
+      </a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="naaccr.html"> NAACCR</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/OHDSI/OncologyWG">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
+NAACCR Tumor Registry ETL</h1>
+
+</div>
+
+
+<p><br></p>
+<div id="etl-overview" class="section level1">
+<h1>ETL Overview</h1>
+<p>The OHDSI Oncology Development Subgroup has created a standardized
+ETL to ingest NAACCR data into the Oncology CDM Extension. The ETL is a
+SQL script that assumes your NAACCR data has been transformed into a
+common EAV input format. The SQL script uses the common NAACCR data
+dictionary input format in conjunction with the ICDO-3, NAACCR, and
+Hemonc.org vocabularies within the OMOP vocabulary tables to perform the
+following tasks:</p>
+<ul>
+<li>Mapping of ICDO-3 site and histology and diagnosis dates present in
+NAACCR data to insert low-level cancer diagnoses into the
+CONDITION_OCCURRENCE table and ‘Disease First Occurrence’ disease
+episodes into the EPISODE table.</li>
+<li>Mapping of NAACCR staging and prognostic factors present in NAACCR
+data to insert low-level diagnostic modifiers into the MEASUREMENT table
+pointing to the CONDITION_OCCURRENCE table and episode modifiers into
+the MEASUREMENT table pointing to the ‘Disease First Occurrence’ disease
+episode it inserts into the EPISODE table.</li>
+<li>Mapping of NAACCR treatment variables and treatment dates present in
+NAACCR data to insert low-level treatments into the PROCEDURE_OCCURRENCE
+and DRUG_EXPOSURE tables and ‘Treatment Regimen’ treatment episodes into
+the EPISODE table. For surgical and radiation therapy treatments, the
+script places NAACCR item code values into the
+EPISODE.episode_object_concept_id column. For drug treatments, the
+script places into the EPISODE.episode_object_concept_id column mappings
+from non-standard NAACCR items code values to Hemonc.org ‘Modality’
+concepts:
+<ul>
+<li>35803401 Chemotherapy</li>
+<li>35803410 Immunotherapy</li>
+<li>35803407 Hormonotherapy</li>
+</ul></li>
+<li>Linking child first-course ‘Treatment Regimen’ treatment episodes to
+parent ‘Disease First Occurrence’ disease episode via the column
+EPISODE.episode_parent_id.</li>
+<li>Mapping of NAACCR treatment attribute variables present in NAACCR
+data to insert low-level treatment modifiers into the MEASUREMENT table
+pointing to the PROCEDURE_OCCURENECE table and episode modifiers into
+the MEASUREMENT table pointing to the ‘Treatment Regimen’ treatment
+episodes it inserts into the EPISODE table.</li>
+<li>Inserting persons into the PERSON table if no such person_id exists
+in the PERSON table. The ETL will also insert an entry in the
+OBSERVATION_PERIOD table based on survival variables present in the
+NAACCR data. This is to help support the strategy of ETLing data into
+the Oncology CDM Extension tables in a satellite OMOP CDM instance and
+merging the data into a main OMOP CDM instance.</li>
+<li>Inserting a date entry in the DEATH table if the death variable
+present in the NAACCR data indicates that the patient is deceased. If
+prior information in the DEATH table conflicts with death data present
+in the NAACCR data the ETL refrains from updating the DEATH table.<br />
+</li>
+<li>Updates the OBSERVATION_PERIOD.observation_period_start_date and
+OBSERVATION_PERIOD.observation_period_end_date for patients that have
+survival variables present in the NAACCR data that indicate longer
+survival.</li>
+</ul>
+</div>
+<div id="naaccr-data-dictionary" class="section level1">
+<h1>NAACCR Data Dictionary</h1>
+<p>North American Association of Central Cancer Registries <a
+href="https://www.naaccr.org/">(NAACCR)</a> is the organization that
+governs <a href="http://datadictionary.naaccr.org/">the format</a> that
+is used to standardize the encoding and transmission of cancer registry
+data in the United States. All healthcare facilities in the United
+States that diagnose or treat cancer patients are mandated by law to
+track and collect cancer data and submit it in the NAACCR data
+dictionary format for all first-course diagnosed/treated primary
+neoplasms.</p>
+<p>The NAACCR data dictionary standard is used by multiple cancer
+registry aggregators:</p>
+<ul>
+<li><a href="https://seer.cancer.gov/">Surveillance, Epidemiology, and
+End Results (SEER)</a></li>
+<li><a href="https://www.cdc.gov/cancer/npcr/index.htm">CDC National
+Program of Cancer Registries (NPCR)</a></li>
+<li><a href="https://www.facs.org/quality-programs/cancer/ncdb">National
+Cancer Database from the American College of Surgeons</a></li>
+<li>Central Cancer Registries at state/jurisdictional public health
+agencies</li>
+</ul>
+<p>The NAACCR data dictionary format most importantly covers the
+following areas:</p>
+<ul>
+<li>Demographics</li>
+<li>Cancer Identification</li>
+<li>Stage/Prognostic Factors</li>
+<li>Treatment-1st Course</li>
+<li>Follow-up/Recurrence/Death</li>
+</ul>
+<p>NAACCR data is generally considered a gold-standard source for the
+following areas:</p>
+<ul>
+<li><strong>Disease First Occurrence</strong>: Fine-grained first
+occurrence cancer diagnosis date and characterization via the collection
+of ICDO-3 site/histology.</li>
+<li><strong>Diagnostic Modifiers</strong>: Detailed staging and
+prognostic factors (clinical and pathological TNM Staging, grade,
+lymphatic invasion, biomarkers, and other data points) curated from
+oncology progress notes and pathology reports that are
+<strong>not</strong> normally discretely captured in EHRs and or claims
+databases.</li>
+<li><strong>First-course Treatment</strong>: Overall treatment modality
+and high-value treatment modifiers.</li>
+<li><strong>Death and Survival</strong>.</li>
+</ul>
+<p>NAACCR data is generally considered to be a valuable but not
+gold-standard source for the following area:</p>
+<ul>
+<li><strong>Disease outcomes</strong>: ‘Disease Remission’, ‘Disease
+Recurrence’, ‘Disease Progression’, and ‘Disease Metastasis’.</li>
+</ul>
+<p>The NAACCR data dictionary format is a question/answer or EAV format
+that mixes: * De novo definition of data points. * Sourcing of data
+points from existing standard bodies: cancer diagnosis (site/histology)
+from <a
+href="https://www.who.int/classifications/icd/adaptations/oncology/en/">ICDO-3
+via WHO</a>; staging variables and values from <a
+href="https://cancerstaging.org/Pages/default.aspx">AJCC</a>.</p>
+<p>The NAACCR data dictionary format and the source ICDO-3 vocabulary
+have been ingested into the OMOP vocabulary.<br />
+* See <a
+href="https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:NAACCR">here</a>
+for details of how the NAACCR dictionary format has been ingested into
+the OMOP vocabulary tables. * See <a
+href="https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:NAACCR">here</a>
+for details of how the ICDO-3 vocabulary has been ingested into the OMOP
+vocabulary tables. * Presently, only the source AJCC Staging Edition 7
+vocabulary has been ingested into the OMOP vocabulary tables. The OHDSI
+vocabulary team is working with AJCC to cover AJCC Edition 8 and prior
+editions.</p>
+<p>The Hemonc.org oncology drug regimen ontology has been ingested into
+the OMOP vocabulary. Some treatment NAACCR item coded values are mapped
+to Hemonc.org ‘Modality’ concepts. * See <a
+href="https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:HemOnc">here</a>
+for details of how the Hemonc.org oncology drug regimen ontology has
+been ingested into the OMOP vocabulary tables.</p>
+</div>
+<div id="walkthrough" class="section level1">
+<h1>Walkthrough</h1>
+<p><br></p>
+<div id="prepareinstall" class="section level2">
+<h2>Prepare/Install</h2>
+<ol style="list-style-type: decimal">
+<li>Install the Oncology CDM Extension. See <a
+href="https://github.com/OHDSI/OncologyWG/wiki/Oncology-CDM-Extension-Installation">here</a></li>
+<li>Install the common NAACCR data dictionary input format:
+NAACCR_DATA_POINTS.<br />
+See NAACCR_DATA_POINTS DDL <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/etl/naaccr_etl_input_format_ddl.sql">here</a></li>
+<li>Install an ancillary provenance table to aid data quality checks:
+CDM_SOURCE_PROVENANCE. See CDM_SOURCE_PROVENANCE DDL <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/etl/cdm_source_provenance.sql">here</a></li>
+</ol>
+</div>
+<div id="populate-eav" class="section level2">
+<h2>Populate EAV</h2>
+<p>The NAACCR data is natively a flat or pivoted format, typically
+available to ETL developers in either the native NAACCR fixed-width file
+format, XML, or in a custom relational structure determined by local
+tumor registry software.</p>
+<p>Currently the OHDSI Oncology Development Subgroup supports two
+methods to convert and populate the NAACCR_DATA_POINTS input format from
+native NAACCR data.</p>
+<ol style="list-style-type: decimal">
+<li>An R package to parse the native NAACCR flat-file format (v15-18) as
+well as XML (v20-23) and ingest it into the NAACCR_DATA_POINTS input
+format. The package and execution instructions can be found <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/NaaccrParser">here</a>.</li>
+<li>An SQL script to transform the relational model of Elekta METRIQ
+(the most popular tumor registry software). As this script references
+Elkta METRIQ’s proprietary data model, it cannot be shared as open
+source. For more information contact <a
+href="mailto:m-gurley@northwestern.edu">Michael Gurley</a>, a co-lead of
+the OHDSI Development Subgroup.</li>
+</ol>
+<p>All methods of transforming the NAACCR data to the NAACCR_DATA_POINTS
+input format will need to include a method to populate the
+NAACCR_DATA_POINTS.person_id column. Normally, this will be done by
+mapping NAACCR item <a
+href="http://datadictionary.naaccr.org/?c=10#2300">2300 -‘Medical Record
+Number’</a> to a medical record number in a local EHR or Enterprise
+Master Patient Index (EMPI). The aforementioned R package contains a
+function to populate the person identifier which assumes a database
+table exists that maps MRN to person_id.</p>
+</div>
+<div id="execute-sql-script" class="section level2">
+<h2>Execute SQL Script</h2>
+<p>The NAACCR ETL SQL, which translates the EAV into OMOP, has been
+written in vanilla SQL to facilitate it being run on multiple different
+database platforms. Currently, the OHDSI Oncology Development Subgroup
+uses the <a href="https://github.com/OHDSI/SqlRender">SQLRender</a>
+OHDSI package to translate the NAACCR ETL to the four supported database
+platforms (PostgreSQL, Sql Server, Oracle, and Redshift). The NAACCR ETL
+SQL is wrapped in a database transaction to support the complete
+rollback of data changes. To execute, grab the NAACCR SQL ETL from the
+<a href="https://github.com/OHDSI/OncologyWG/etl">OncologyWG</a> Github
+repository. Find the SQL script relevant to your database platform
+(PostgreSQL, Sql Server, Oracle and Redshift). <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/etl">See NAACCR
+SQL ETL folder here.</a></p>
+</div>
+<div id="unit-testing" class="section level2">
+<h2>Unit Testing</h2>
+<p>The NAACCR ETL SQL has a full-coverage unit test suite. <a
+href="https://github.com/OHDSI/OncologyWG/blob/master/etl/naaccr-etl/spec/lib/naaccr_etl_spec.rb">See
+here to inspect the NAACCR ETL’s unit tests.</a>. The NAACCR ETL SQL
+uses a dummy Ruby on Rails application to set up a unit testing
+environment. If you would like to help develop the NAACCR SQL ETL by
+making pull requests and writing unit tests to cover your changes,
+please read the instructions for setting up the unit testing environment
+locally. <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/etl/naaccr-etl">See
+here instructions for setting up the NAACCR ETL unit testing
+environment.</a></p>
+<p><br></p>
+<p><br></p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

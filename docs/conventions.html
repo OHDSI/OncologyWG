@@ -11,9 +11,9 @@
 
 
 
-<title>conventions.knit</title>
+<title>Oncology Conventions</title>
 
-<script src="site_libs/header-attrs-2.15/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -29,14 +29,14 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 
 <style type="text/css">
@@ -185,8 +185,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -194,16 +194,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -339,14 +332,7 @@ div.tocify {
   <a href="index.html">
     <span class="fa fa-home"></span>
      
-     Home
-  </a>
-</li>
-<li>
-  <a href="background.html">
-    <span class="fa fa-circle-info"></span>
-     
-     Background
+     WG Overview
   </a>
 </li>
 <li class="dropdown">
@@ -388,26 +374,74 @@ div.tocify {
     </li>
   </ul>
 </li>
-<li>
-  <a href="conventions.html">
-    <span class="fa fa-gavel"></span>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-circle-info"></span>
      
-     Conventions
+     Specifications
+     
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="conventions.html">
+        <span class="fa fa-gavel"></span>
+         
+         Conventions
+      </a>
+    </li>
+    <li>
+      <a href="model.html">
+        <span class="fa fa-sitemap"></span>
+         
+         Model
+      </a>
+    </li>
+    <li>
+      <a href="genomics.html">
+        <span class="fa fa-dna"></span>
+         
+         Genomics
+      </a>
+    </li>
+  </ul>
 </li>
-<li>
-  <a href="model.html">
-    <span class="fa fa-sitemap"></span>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-desktop"></span>
      
-     Model
-  </a>
-</li>
-<li>
-  <a href="tooling.html">
-    <span class="fa fa-wrench"></span>
+     Implementation
      
-     Tools
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="installation.html">
+        <span class="fa fa-play"></span>
+         
+         Installation
+      </a>
+    </li>
+    <li>
+      <a href="tooling.html">
+        <span class="fa fa-wrench"></span>
+         
+         Tooling
+      </a>
+    </li>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="fa fa-code"></span>
+         
+         ETLs
+      </a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="naaccr.html"> NAACCR</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -426,9 +460,8 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore"><div>
-<img src="images/ohdsi40x40.png"></img>Oncology Conventions
-</div></h1>
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>Oncology
+Conventions</h1>
 
 </div>
 
@@ -466,8 +499,8 @@ Measurements using the Cancer Modifier vocabulary.</p>
 <p>A linkage between the Condition Modifier and the respective condition
 is made leveraging the two columns in the Measurement table that serve
 as a foreign key. This same mechanism is used for procedure modifiers as
-well. The first (modifier_of_field_concept_id) indicates which table we
-are referring to, the second (modifier_of_event_id) indicates which
+well. The first (meas_event_field_concept_id) indicates which table we
+are referring to, the second (measurement_event_id) indicates which
 row.</p>
 <p>There are concepts for every potential PK that a measurement can
 potentially modify.</p>
@@ -480,8 +513,8 @@ class="uri">https://athena.ohdsi.org/search-terms/terms/1147127</a>)</p>
 would contain:</p>
 <pre class="sql"><code>  SELECT 
   ...
-  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
-  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to </code></pre>
+  1147127 as meas_event_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as measurement_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to </code></pre>
 <p><br></p>
 <hr />
 </div>
@@ -555,8 +588,8 @@ the modifier is not used.</p>
   SELECT
   ...
   734306 as measurement_concept_id -- &quot;Initial Diagnosis&quot; ****** 
-  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
-  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to </code></pre>
+  1147127 as meas_event_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as measurement_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to </code></pre>
 <hr />
 </div>
 <div id="usage" class="section level4">
@@ -566,10 +599,10 @@ the modifier is not used.</p>
 <pre class="sql"><code>  SELECT * 
   FROM CONDITION_OCCURRENCE co
   WHERE CONDITION_OCCURRENCE_ID IN (
-    SELECT modifier_of_event_id
+    SELECT measurement_event_id
     FROM measurement
     WHERE measurement_concept_id = 734306 -- Initial diagnosis
-    AND modifier_of_field_concept_id = 1147127 -- Condition_Occurrence
+    AND meas_event_field_concept_id = 1147127 -- Condition_Occurrence
 )</code></pre>
 <hr />
 </div>
@@ -869,8 +902,8 @@ Cancer Modifiers mechanisms.</p>
   SELECT
   ...
   36770283 as measurement_concept_id -- &quot;Metastasis to Lung&quot; ****** 
-  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
-  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to </code></pre>
+  1147127 as meas_event_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as measurement_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to </code></pre>
 <hr />
 <hr />
 </div>

@@ -1,0 +1,15 @@
+---
+title: '<div><img src="images/ohdsi40x40.png"></img> Genomics</div>'
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 3
+        toc_float:
+          collapsed: false
+---
+
+```{r load_packages, message=FALSE, warning=FALSE, include=FALSE} 
+library(fontawesome)
+```
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 

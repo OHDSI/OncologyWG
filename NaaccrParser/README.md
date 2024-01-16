@@ -43,6 +43,13 @@ connectionDetails <- createConnectionDetails(
 
 ```
 
+Specify the database schema where the NAACCR_DATA_POINTS table exists. 
+
+```r
+ndp_schema <- 'NAACCR_OMOP.dbo'
+
+```
+
 There are separate functions for parsing and ingesting fixed-width source files (v16-18) as well as for XML formatted source files (v20+). If you have a collection of files in the same directory you can leverage an umbrella function that parses all files, regardless of version. 
 
 ### Option 1: (directory specific)
@@ -50,6 +57,7 @@ There are separate functions for parsing and ingesting fixed-width source files 
 Parse and ingest **all NAACCR files within a specified directory**
 ```r
 parse_directory(dir_path = dir_path # folder containing NAACCR files
+                ,ndp_schema = ndp_schema
                 ,connectionDetails = connectionDetails)
 
 ```
@@ -63,6 +71,7 @@ Parse and ingest a **fixed-width file**:
 # Import data  into database
 NAACCR_to_db(file_path = "path_to_data/naaccr_file.csv"
              , record_id_prefix = record_id_prefix  # optional
+             , ndp_schema = ndp_schema
              , connectionDetails = connectionDetails)
 ```
 
@@ -73,6 +82,7 @@ Parse and ingest a **XML file**:
 # Import data  into database
 parse_XML_to_DB(file_path = file_path
                 ,record_id_prefix = NULL  # optional
+                ,ndp_schema = ndp_schema
                 ,connectionDetails = connectionDetails)
 ```
 
@@ -82,7 +92,7 @@ At this point the data exists in your database without person_id assigned. This 
 
 ```r
 assign_person_id(connectionDetails = connectionDetails
-                ,ndp_schema = 'NAACCR_OMOP.dbo'
+                ,ndp_schema = ndp_schema
                 ,person_map_schema = 'OMOP_COMMON.dbo'
                 ,person_map_table = 'person_map'
                 ,person_map_field = "MRN")

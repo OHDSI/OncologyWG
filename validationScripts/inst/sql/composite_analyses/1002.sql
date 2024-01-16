@@ -1,0 +1,1 @@
+-- 1002  Proportion of poorly-formed date of initial diagnosis modifier records

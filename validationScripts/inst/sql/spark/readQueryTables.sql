@@ -1,0 +1,1 @@
+SHOW TABLES FROM @resultsDatabaseSchema LIKE 'onc_val_*';
