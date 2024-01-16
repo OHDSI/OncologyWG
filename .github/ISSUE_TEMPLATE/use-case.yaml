@@ -1,0 +1,58 @@
+name: Use Case 
+description: Proposal for a new OHDSI Oncology WG Use Case.
+title: "[Use Case]: <Add your project's name here>"
+labels: ["Use Case"]
+projects: "OHDSI/26"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # OHDSI Oncology WG Use Case
+        ## Project Deliverable
+        Please provide the following information about your project's deliverable:
+  - type: textarea
+    id: deliverable
+    attributes:
+      label: Description
+      description: "What is your deliverable?"        
+      placeholder: "Give a description of your deliverable here"
+  - type: textarea
+    id: infrastructure
+    attributes:
+      label: Infrastructure
+      description: "Can this be delivered with existing Infrastructure? If no, what needs to be added?"        
+      placeholder: "Can this be delivered with existing infrastructure?"
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: "What is your desired timeline for completing this work?"        
+      placeholder: "Explain your desired timeline here"
+  - type: textarea
+    id: credit
+    attributes:
+      label: Credit
+      description: "How would you and your team like to receive credit for this work?"        
+      placeholder: "Can this be delivered with existing infrastructure?"
+  - type: textarea
+    id: support
+    attributes:
+      label: Support
+      description: "What kind of support does your team need from the workgroup?"        
+      placeholder: "Describe the type of support you will need"
+  - type: textarea
+    id: datasets
+    attributes:
+      label: Datasets of Interest
+      description: "Provide a list of datasets (titles, links, descriptions, etc.) that your project is interested in using."
+      placeholder: "List the datasets your project is interested in using"
+  - type: markdown
+    attributes:
+      value: |
+        # Use Case Work Orders
+  - type: textarea
+    id: depends
+    attributes:
+      label: Depends On
+      description: "Work orders that are associated with this Use Case."
+      placeholder: "Issue task list goes here. This can be filled out after "
