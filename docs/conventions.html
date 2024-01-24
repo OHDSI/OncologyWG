@@ -756,8 +756,8 @@ concept codes. For the same example as above:</p>
 <div id="grading" class="section level3 tabset tabset-fade">
 <h3 class="tabset tabset-fade">Grading</h3>
 <blockquote>
-<p><svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:orange;overflow:visible;position:relative;"><path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>
-Under Construction</p>
+<p><svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:green;overflow:visible;position:relative;"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"/></svg>
+Complete</p>
 </blockquote>
 <blockquote>
 <p><svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
@@ -765,17 +765,61 @@ Condition Modifier</p>
 </blockquote>
 <div id="description-3" class="section level4">
 <h4>Description</h4>
-<p>Abcdefg</p>
+<p>Map directly to the concepts in the Cancer Modifier vocabulary. The
+standard concepts for grade are broken down into 1-4 as well as High,
+Intermediate, and Low.</p>
+<p>A few specific grading systems (e.g. Nottingham, FIGO) are
+represented as standard concepts in the Cancer Modifier vocabulary. Map
+to these concepts if they match the granularity of your data. If you
+have a specific need for a different grading system, you can request
+that it be standardized by <a
+href="https://github.com/OHDSI/OncologyWG/issues/new?assignees=&amp;labels=&amp;projects=&amp;template=issue-.md&amp;title=">creating
+an issue</a>.</p>
 <hr />
 </div>
 <div id="mapping-3" class="section level4">
 <h4>Mapping</h4>
-<p>HIJKLM</p>
+<p>For example: Grade 1</p>
+<p>Above: Any tumor that has been assigned a Grade 1 in any grading
+system</p>
+<p>To find the correct standard concept, you need to join to the concept
+code, as shown here:</p>
+<pre class="sql"><code>SELECT concept_id
+FROM concept
+WHERE vocabulary_id = &#39;Cancer Modifier&#39;
+AND concept_class_id = &#39;Staging/Grading&#39;
+AND standard_concept = &#39;S&#39;
+AND concept_code = &#39;Grade-1&#39;</code></pre>
+<p>Another example: Gleason Score 8</p>
+<p>Above: A tumor assigned a Gleason Score of 8 using the Gleason
+grading system</p>
+<p>To find the correct standard concept, you need to join to the concept
+code, as shown here:</p>
+<pre class="sql"><code>SELECT concept_id
+FROM concept
+WHERE vocabulary_id = &#39;Cancer Modifier&#39;
+AND concept_class_id = &#39;Staging/Grading&#39;
+AND standard_concept = &#39;S&#39;
+AND concept_code = &#39;Gleason-Score-8&#39;</code></pre>
 <hr />
 </div>
 <div id="usage-3" class="section level4">
 <h4>Usage</h4>
-<p>NOPQ</p>
+<p>To find all standard Grade concepts in the Cancer Modifier
+vocabulary:</p>
+<pre class="sql"><code>SELECT b.concept_id, b.concept_code, b.concept_name
+FROM (
+  SELECT *
+  FROM concept c
+  INNER JOIN concept_ancestor ca
+  ON c.concept_id = ca.ancestor_concept_id
+  WHERE vocabulary_id = &#39;Cancer Modifier&#39;
+  AND concept_class_id = &#39;Staging/Grading&#39;
+  AND standard_concept = &#39;S&#39;
+  AND lower(concept_code) LIKE &#39;%grade%&#39;
+) a
+INNER JOIN concept b
+ON a.descendant_concept_id = b.concept_id</code></pre>
 <hr />
 </div>
 </div>
