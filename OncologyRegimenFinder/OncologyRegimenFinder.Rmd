@@ -1,0 +1,18 @@
+---
+title: "Updated version of OncologyRegimenFinder"
+output: pdf_document
+---
+
+## Changes
+
+- Rebuilding the code structure, dividing functions into blocks
+- Translated SQL form only Redshift to PostgreSQL and BigQuery 
+- Generally has been changed an approach of ingredient finding (was ATC classification concept_id) =>
+  HemOnc relationship_idS: 'Has AB-drug cjgt Rx', 'Has cytotox chemo Rx', 'Has endocrine tx Rx',
+  'Has immunotherapy Rx',  'Has pept-drg cjg Rx',  'Has radiocjgt Rx',  'Has radiotherapy Rx',
+  'Has targeted tx Rx', 'Has antineopl Rx', 'Has immunosuppr Rx' with filtering supportive drugs and some 
+  very specific ones for some diseases and generally not specific (Amoxicillin, Doxycycline, Parvastatine etc.)
+- Added  option include or not to include corticosteroids 
+- Added  option create or not to create a vocabulary
+- Added  option to use HemOnc as a source of ingredients or internal csv 
+- Added  ETL option to delete and insert (parameterized arguments) info in episode and episode_event table 
