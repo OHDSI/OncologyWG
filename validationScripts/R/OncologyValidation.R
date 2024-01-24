@@ -174,7 +174,7 @@ executeAnalysis <- function(connectionDetails,
                 scratchDatabaseSchema = scratchDatabaseSchema,
                 resultsDatabaseSchema = resultsDatabaseSchema) {
   
-  composites_path <- file.path('./inst/json/onc_analysis_composite.json')
+  composites_path <- file.path('./inst/json/onc_analyses.json')
   
   composites <- fromJSON(composites_path)$composite_analyses
   
@@ -325,7 +325,7 @@ DatabaseConnector::disconnect(conn)
 
 # User asks: How many cancer diagnosis records are in my data?
 
-executeAnalysis(connectionDetails,  analysisNumber = 1001,
+executeAnalysis(connectionDetails,  analysisNumber = 2,
                 cdmDatabaseSchema = cdmDatabaseSchema,
                 vocabDatabaseSchema = vocabDatabaseSchema,
                 scratchDatabaseSchema = scratchDatabaseSchema,
