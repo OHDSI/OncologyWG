@@ -1,4 +1,4 @@
-﻿"granular_analysis_id","distribution","distributed_field","analysis_name","stratum_1_name","stratum_2_name","stratum_3_name","stratum_4_name","stratum_5_name","is_default","category"
+﻿"query_id","distribution","distributed_field","query_name","stratum_1_name","stratum_2_name","stratum_3_name","stratum_4_name","stratum_5_name","is_default","category"
 "1","0",,"Person_ids of persons with cancer diagnosis",,,,,,"1","General"
 "2","0",,"Condition_occurrence_ids of cancer diagnoses",,,,,,"1","General"
 "10","0",,"Measurement_ids of date of initial diagnosis modifier records",,,,,,"1","Date of Initial Diagnosis"

@@ -11,8 +11,8 @@ library(jsonlite)
 #' @export
 #'
 #' @examples
-getOncAnalysisQueries <- function() {
-  read.csv(file.path('./inst/csv/onc_analysis_queries.csv'))
+getOncQueries <- function() {
+  read.csv(file.path('./inst/csv/onc_queries.csv'))
 }
 
 
@@ -51,7 +51,7 @@ getQueryText <- function(queryNumber) {
 #'
 #' @examples
 getExistingQueryNumbers <- function(connectionDetails, scratchDatabaseSchema) {
-  # REad table names from scratchDatabase
+  # Read table names from scratchDatabase
   # There is not way to translate between these operations, so will need one for each supported database
   
   sql <- render('SHOW TABLES FROM @scratchDatabaseSchema LIKE \'onc_val_*\'',
@@ -60,6 +60,39 @@ getExistingQueryNumbers <- function(connectionDetails, scratchDatabaseSchema) {
   on.exit(DatabaseConnector::disconnect(conn))
   queryTables <- DatabaseConnector::querySql(conn, sql = sql)$TABLENAME
   as.numeric(gsub(".*_([0-9]+)$", "\\1", queryTables))
+}
+
+
+#' Title
+#'
+#' @param connectionDetails 
+#' @param resultsDatabaseSchema 
+#'
+#' @return
+#' @export
+#'
+
+getExistingAnalysisNumbers <- function(connectionDetails, resultsDatabaseSchema) {
+  sql <- render('SELECT DISTINCT analysis_id FROM @resultsDatabaseSchema.onc_validation_results',
+                resultsDatabaseSchema = resultsDatabaseSchema)
+  conn <- DatabaseConnector::connect(connectionDetails)
+  on.exit(DatabaseConnector::disconnect(conn))
+  DatabaseConnector::querySql(conn, sql = sql)$ANALYSIS_ID
+}
+
+
+#' Title
+#'
+#' @param queries 
+#' @param queryNumber 
+#'
+#' @return
+#' 
+
+getQueryTableName <- function(queries, queryNumber) {
+  category <- queries$category[queries['query_id'] == queryNumber]
+  formattedCategory <- tolower(gsub(" ", "_", category))
+  paste("onc_val", formattedCategory, queryNumber, sep ='_')
 }
 
 
@@ -77,9 +110,9 @@ getExistingQueryNumbers <- function(connectionDetails, scratchDatabaseSchema) {
 #' @examples
 #' 
 
-createAnalysisTable <- function(connectionDetails, resultsDatabaseSchema, createTable = TRUE) {
+createQueryTable <- function(connectionDetails, resultsDatabaseSchema, createTable = TRUE) {
   if (isTRUE(createTable)) {
-    fp <- file.path('.', 'inst', 'sql', 'onc_validation_analysis_ddl.sql')
+    fp <- file.path('.', 'inst', 'sql', 'onc_validation_query_ddl.sql')
     sql <- readChar(fp, file.info(fp)$size)
     rendered <- render(sql, resultsDatabaseSchema = resultsDatabaseSchema)
     renderedTranslated <- translate(rendered, targetDialect = connectionDetails$dbms)
@@ -120,6 +153,20 @@ createResultsTable <- function(connectionDetails, resultsDatabaseSchema, overwri
 
 # Execution Handlers ------------------------------------------------------
 
+#' Title
+#'
+#' @param connectionDetails 
+#' @param analysisNumber 
+#' @param cdmDatabaseSchema 
+#' @param vocabDatabaseSchema 
+#' @param scratchDatabaseSchema 
+#' @param resultsDatabaseSchema 
+#'
+#' @return
+#' @export
+#'
+
+# TODO this appends even if analysis_id already exists... it should replace existing
 executeAnalysis <- function(connectionDetails, 
                 analysisNumber,
                 cdmDatabaseSchema = cdmDatabaseSchema,
@@ -131,11 +178,30 @@ executeAnalysis <- function(connectionDetails,
   
   composites <- fromJSON(composites_path)$composite_analyses
   
+  requisiteAnalysisNumbers <- composites$composite_analyses[composites['analysis_id'] == analysisNumber][[1]]
+  
+  existingAnalysisNumbers <- getExistingAnalysisNumbers(connectionDetails, resultsDatabaseSchema)
+  
+  missingAnalyses <- requisiteAnalysisNumbers[which(!requisiteAnalysisNumbers %in% existingAnalysisNumbers)]
+  
+  if (length(missingAnalyses)) {
+    message("Executing required analyses")
+    lapply(missingAnalyses, function(x) {
+      executeAnalysis(connectionDetails,
+                   analysisNumber = x,
+                   cdmDatabaseSchema = cdmDatabaseSchema,
+                   vocabDatabaseSchema = vocabDatabaseSchema,
+                   scratchDatabaseSchema = scratchDatabaseSchema,
+                   resultsDatabaseSchema = resultsDatabaseSchema)
+    })
+  }
+  message("All requisite analyses executed.")
+  
   requisiteQueryNumbers <-  composites$queries[composites['analysis_id'] == analysisNumber][[1]]
   
   existingQueryNumbers <- getExistingQueryNumbers(connectionDetails, scratchDatabaseSchema)
   
-  missingQueries <- which(!requisiteQueryNumbers %in% existingQueryNumbers)
+  missingQueries <- requisiteQueryNumbers[which(!requisiteQueryNumbers %in% existingQueryNumbers)]
   
   if (length(missingQueries)) {
     message("Executing required queries")
@@ -151,10 +217,11 @@ executeAnalysis <- function(connectionDetails,
   
   
   renderedAnalysisText <- render(getAnalysisText(analysisNumber),
-                                 scratchDatabaseSchema = scratchDatabaseSchema)
+                                 scratchDatabaseSchema = scratchDatabaseSchema,
+                                 resultsDatabaseSchema = resultsDatabaseSchema)
   
   renderedInsertAnalysisText <- render(getAnalysisText('analysisInsert'),
-                                    insertSchema = scratchDatabaseSchema,
+                                    insertSchema = resultsDatabaseSchema,
                                     analysisText = renderedAnalysisText)
   
   translatedRenderedInsertAnalysisText <- translate(renderedInsertAnalysisText, targetDialect = connectionDetails$dbms)
@@ -184,9 +251,9 @@ executeQuery <- function(connectionDetails,
                          vocabDatabaseSchema = vocabDatabaseSchema,
                          scratchDatabaseSchema = scratchDatabaseSchema) {
   
-  queries <- getOncAnalysisQueries()
+  queries <- getOncQueries()
   
-  queryTableName <- paste("onc_val", queries$category[queries['granular_analysis_id'] == queryNumber], queryNumber, sep ='_')
+  queryTableName <- getQueryTableName(queries, queryNumber)
   
   
   renderedQueryText <- render(getQueryText(queryNumber),
@@ -232,22 +299,22 @@ scratchDatabaseSchema <- resultsDatabaseSchema <- 'ctsi.kzollo'
 
 
 
-createAnalysisTable(connectionDetails, resultsDatabaseSchema)
+createQueryTable(connectionDetails, resultsDatabaseSchema)
 
-createResultsTable(connectionDetails, resultsDatabaseSchema)
+createResultsTable(connectionDetails, resultsDatabaseSchema, overwrite = TRUE)
 
 
-oncAnalysisQueriesCsv <- getOncAnalysisQueries()
-oncAnalysisQueriesCsv <- oncAnalysisQueriesCsv[, -c(2, 3)]
+oncQueriesCsv <- getOncQueries()
+oncQueriesCsv <- oncQueriesCsv[, -c(2, 3)]
 
 conn <- DatabaseConnector::connect(connectionDetails)
 
 # Populate ONC_analysis with data from ONC_ANALYSIS_QUERIES. from above
 DatabaseConnector::insertTable(
-  connection        = connection,
+  connection        = conn,
   databaseSchema    = resultsDatabaseSchema,
-  tableName         = "ONC_VALIDATION_ANALYSIS",
-  data              = oncAnalysisQueriesCsv,
+  tableName         = "onc_validation_query",
+  data              = oncQueriesCsv,
   dropTableIfExists = FALSE,
   createTable       = FALSE,
   tempTable         = FALSE
@@ -258,7 +325,7 @@ DatabaseConnector::disconnect(conn)
 
 # User asks: How many cancer diagnosis records are in my data?
 
-executeAnalysis(connectionDetails,  analysisNumber = 2,
+executeAnalysis(connectionDetails,  analysisNumber = 1001,
                 cdmDatabaseSchema = cdmDatabaseSchema,
                 vocabDatabaseSchema = vocabDatabaseSchema,
                 scratchDatabaseSchema = scratchDatabaseSchema,

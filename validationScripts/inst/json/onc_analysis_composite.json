@@ -51,16 +51,23 @@
         },
         {
             "analysis_id": "15",
-            "analysis_name": "Number of date of initial diagnosis modifier records that come from tumor registry data source", 
+            "analysis_name": "Number of date of initial diagnosis modifier records by data source", 
             "analysis_type": "count", 
             "queries": [15],
             "composite_analyses": []
         },
         {
+            "analysis_id": "150",
+            "analysis_name": "Number of date of initial diagnosis modifier records that come from tumor registry data source", 
+            "analysis_type": "count", 
+            "queries": [],
+            "composite_analyses": [15]
+        },
+        {
             "analysis_id": "1001",
             "analysis_name": "Number of poorly-formed date of initial diagnosis modifier records", 
             "analysis_type": "derived", 
-            "queries": [2, 12, 13, 14],
+            "queries": [12, 13, 14],
             "composite_analyses": []
         },
         {

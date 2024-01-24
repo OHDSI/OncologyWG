@@ -1,6 +1,6 @@
 -- 14  Measurement_ids of invalid dates associated with date of initial diagnosis modifier records
 
-SELECT m.measurement_id
+SELECT measurement_id
 FROM (
     SELECT m.measurement_id
         , CASE WHEN p.birth_datetime > m.measurement_datetime THEN 1

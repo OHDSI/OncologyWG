@@ -1,12 +1,20 @@
-Trying to figure out how to manage analyses/queries..
+# Oncology Validation Framework: Analyses and Queries
 
-I'm toying with two styles: 1) Achilles, verbatim. 2) Based off Achilles for storage, but growing increasingly different
+## Overview
+The analyses in the Oncology Validation Framework are meant to be extensible. Practically, this means that OncologyWG developers should be able to create these analyses to support the quality control needs of specific studies and study authors. This document outlines how analyses and queries are managed in this directory. Further, it explains how analyses are built from queries and demonstrates how to do this with examples.
 
-Benefits of Achilles are that the analyses could all be added back into Achilles. This is a big deal as then they could integrate with Atlas or DQD and be exported to Ares where they could have distinct visualizations.
+## Definitions
 
-Downside of Achilles is that it is a little restrictive and may be a bit off the mark from what I understand we are trying to do. 
+Definitions for the major terms to know
 
-Benefits of the (increasingly) ad hoc approach is that we can make the queries as granular as we would like and then combine them together to get answers to different questions.
+### Analyses
 
-Also, keeping them granular makes it possible (easier) to track the records of interest (e.g. mal-formed measurement records)
+### Queries
 
+## Directory Structure
+
+### csv
+
+### json
+
+### sql
