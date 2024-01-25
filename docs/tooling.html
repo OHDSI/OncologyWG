@@ -11,9 +11,9 @@
 
 
 
-<title> Tooling</title>
+<title>tooling.knit</title>
 
-<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.15/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -29,14 +29,14 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 
 <style type="text/css">
@@ -185,8 +185,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "\e259";
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -194,9 +194,16 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "\e258";
-  font-family: 'Glyphicons Halflings';
+  content: "&#xe258;";
   border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -346,9 +353,16 @@ div.tocify {
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="development.html">
-        <span class="fa fa-map"></span>
+        <span class="fa fa-tower-observation"></span>
          
-         Development Overview
+         Overview
+      </a>
+    </li>
+    <li>
+      <a href="strategy.html">
+        <span class="fa fa-chess"></span>
+         
+         Strategy
       </a>
     </li>
     <li>
@@ -460,8 +474,9 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
-Tooling</h1>
+<h1 class="title toc-ignore"><div>
+<img src="images/ohdsi40x40.png"></img> Tooling
+</div></h1>
 
 </div>
 
@@ -513,102 +528,33 @@ class="citation">@date_lag_input</span>(30days is used as standard).</p>
 <hr />
 </div>
 </div>
-<div id="development-testing" class="section level1">
-<h1><strong>Development &amp; Testing</strong></h1>
+<div id="development" class="section level1">
+<h1><strong>Development</strong></h1>
 <p><br></p>
-<div id="characterization-and-validation" class="section level2">
-<h2>Characterization and Validation</h2>
-<p><br></p>
-<div id="purpose" class="section level3">
-<h3>Purpose</h3>
-<p>Provide a semi-automated and extensible framework for generating,
-visualizing, and sharing an assessment of an OMOP-shaped database’s
-adherence to the OHDSI Oncology Standard (tables, vocabulary) and the
-availabilty and types of oncology data it contains.</p>
-</div>
-<div id="overview" class="section level3">
-<h3>Overview</h3>
-<p>The star of the framework is an R Package. Along with cataloguing an
-extensible set of queries and analyses used for assessing OMOP-shaped
-oncology data, the R package provides functionality for the four major
-processes involved in the framework:</p>
-<ol style="list-style-type: decimal">
-<li>Authoring an assessment specification</li>
-<li>Executing an assessment specification</li>
-<li>Generating assessment results</li>
-<li>Visualizing assessment results</li>
-</ol>
-</div>
-<div id="approach" class="section level3">
-<h3>Approach</h3>
-<p><em>Assessments</em> can be executed against an OMOP-shaped database
-to create a characterization and quality report. They are created using
-specificications.</p>
-<p><em>Specifications</em> are JSON files that describe an assessment.
-They are composed by compiling analyses together with threshhold
-values.</p>
-<p><em>Analyses</em> execute a query and return a row count or
-proportion describing the contents in the database. For example,
-analysis_id=1234 returns “the number of cancer diagnosis records derived
-from Tumor Registry source data”.</p>
-<p><em>Threshholds</em> provide study specific context to the results of
-analyses. An analysis asks how many cancer diagnoses derived from tumor
-registry data are in the database. Using threshholds, an assessment
-author can give ranges for “bad”, “questionable”, and “good” analysis
-results as they pertain to their study. An example threshhold, which
-would be encoded as JSON, could express the sentiment “A database with
-0-200 diagnoses from tumor registry data would be unfit for this study,
-201-500 diagnoses may be suitable, and over 500 diagnoses will be more
-enough.”</p>
-</div>
-<div id="extensibility" class="section level3">
-<h3>Extensibility</h3>
-<p>This tool is a product of collaboration. See the validation scripts
-README for detailed instructions on creating analyses (TODO) and using
-the R package to author and execute assessment specifications (TODO).
-<br></p>
-<p><br></p>
+<div id="delta-vocabulary" class="section level2">
+<h2>Delta Vocabulary</h2>
+<p>Documentation: <a href="strategy.html#Delta_Vocabulary">Delta
+Vocabulary</a></p>
+<p>Maintaining the change between the official OMOP Vocabulary release
+and the Oncology Development Vocabulary allows for rapid development of
+OHDSI Oncology studies that are untethered from the official OMOP
+Vocabulary release cadence. By preserving only the changed elements,
+instead of the entire Oncology Development Vocabulary, this method
+provides a lightweight, GitHub-friendly solution, that is also
+respectful of (by way of avoiding) the licensed vocabulary terms.</p>
 <hr />
 </div>
 </div>
-<div id="delta-vocabulary-framework" class="section level2">
-<h2>Delta Vocabulary Framework</h2>
-<p>A suite of tools to quickly set up an environment for: 1) making
-local edits to the OMOP Vocabularies (concept and concept_relationship
-tables) 2) generating derived tables (concept_ancestor) 3) validating
-the vocabulary changes 4) outputting the table delta in a sharable
-format</p>
+<div id="data-quality-and-characterization" class="section level1">
+<h1><strong>Data Quality and Characterization</strong></h1>
 <p><br></p>
-<div id="structureapproach" class="section level3">
-<h3>Structure/Approach</h3>
-<p>Git and GitHub offer a collaborative environment for proposing,
-discussing, and implementing changes to a reference vocabulary such as
-the OMOP Vocabulary.</p>
-<p>However, due to licensing and volume issues, it is not possible to
-maintain and develop the entire OMOP vocabulary in a GitHub repository
-as flat files.</p>
-<p>To work around this, a group of collaborators can maintain and
-contribute to a growing list of edits to the OMOP Vocabulary. We call
-this list of edits the “delta vocab”.</p>
-<p>The delta vocab, which is literally a collection of concept and
-concept_relationship records exactly as they would represented in the
-OMOP Vocabulary table, provides a lightweight representation of any
-deviations from the official OMOP Vocabulary.</p>
-<p>Using the delta vocab and delta helper scripts, a developer with an
-official OMOP Vocabulary database can quickly create a full, working
-version of the OMOP Vocabulary with all proposed changes implemented,
-allowing for advanced testing and use of existing OHDSI tools with a
-development version of the vocabulary.</p>
-<p>The simplicity of maintaining as little of the vocabulary as possible
-and using scripted logic to apply changes to the existing vocabulary
-makes this method easy to implement, but also limited in its
-capabilities. As of now, the primary use for the delta vocab method is
-for <em>destandardizing and mapping non-standard terms</em>.</p>
-<p>For details on using the delta vocab and the helper scripts, see the
-README and function reference (TODO)</p>
-<p><br></p>
-<hr />
-</div>
+<div id="adoption-validation-framework" class="section level2">
+<h2>Adoption Validation Framework</h2>
+<p>Documentation: <a
+href="strategy.html#Validation_Framework">Validation Framework</a></p>
+<p>A semi-automated and extensible framework for generating,
+visualizing, and sharing database characterization and adherence to the
+OHDSI Oncology Standard Conventions.</p>
 </div>
 </div>
 

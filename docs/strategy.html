@@ -11,7 +11,7 @@
 
 
 
-<title>naaccr.knit</title>
+<title>strategy.knit</title>
 
 <script src="site_libs/header-attrs-2.15/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -475,229 +475,247 @@ div.tocify {
 
 
 <h1 class="title toc-ignore"><div>
-<img src="images/ohdsi40x40.png"></img> NAACCR Tumor Registry ETL
+<img src="images/ohdsi40x40.png"></img> Development Strategy
 </div></h1>
 
 </div>
 
 
+<hr />
 <p><br></p>
-<div id="etl-overview" class="section level1">
-<h1>ETL Overview</h1>
-<p>The OHDSI Oncology Development Subgroup has created a standardized
-ETL to ingest NAACCR data into the Oncology CDM Extension. The ETL is a
-SQL script that assumes your NAACCR data has been transformed into a
-common EAV input format. The SQL script uses the common NAACCR data
-dictionary input format in conjunction with the ICDO-3, NAACCR, and
-Hemonc.org vocabularies within the OMOP vocabulary tables to perform the
-following tasks:</p>
-<ul>
-<li>Mapping of ICDO-3 site and histology and diagnosis dates present in
-NAACCR data to insert low-level cancer diagnoses into the
-CONDITION_OCCURRENCE table and ‘Disease First Occurrence’ disease
-episodes into the EPISODE table.</li>
-<li>Mapping of NAACCR staging and prognostic factors present in NAACCR
-data to insert low-level diagnostic modifiers into the MEASUREMENT table
-pointing to the CONDITION_OCCURRENCE table and episode modifiers into
-the MEASUREMENT table pointing to the ‘Disease First Occurrence’ disease
-episode it inserts into the EPISODE table.</li>
-<li>Mapping of NAACCR treatment variables and treatment dates present in
-NAACCR data to insert low-level treatments into the PROCEDURE_OCCURRENCE
-and DRUG_EXPOSURE tables and ‘Treatment Regimen’ treatment episodes into
-the EPISODE table. For surgical and radiation therapy treatments, the
-script places NAACCR item code values into the
-EPISODE.episode_object_concept_id column. For drug treatments, the
-script places into the EPISODE.episode_object_concept_id column mappings
-from non-standard NAACCR items code values to Hemonc.org ‘Modality’
-concepts:
-<ul>
-<li>35803401 Chemotherapy</li>
-<li>35803410 Immunotherapy</li>
-<li>35803407 Hormonotherapy</li>
-</ul></li>
-<li>Linking child first-course ‘Treatment Regimen’ treatment episodes to
-parent ‘Disease First Occurrence’ disease episode via the column
-EPISODE.episode_parent_id.</li>
-<li>Mapping of NAACCR treatment attribute variables present in NAACCR
-data to insert low-level treatment modifiers into the MEASUREMENT table
-pointing to the PROCEDURE_OCCURENECE table and episode modifiers into
-the MEASUREMENT table pointing to the ‘Treatment Regimen’ treatment
-episodes it inserts into the EPISODE table.</li>
-<li>Inserting persons into the PERSON table if no such person_id exists
-in the PERSON table. The ETL will also insert an entry in the
-OBSERVATION_PERIOD table based on survival variables present in the
-NAACCR data. This is to help support the strategy of ETLing data into
-the Oncology CDM Extension tables in a satellite OMOP CDM instance and
-merging the data into a main OMOP CDM instance.</li>
-<li>Inserting a date entry in the DEATH table if the death variable
-present in the NAACCR data indicates that the patient is deceased. If
-prior information in the DEATH table conflicts with death data present
-in the NAACCR data the ETL refrains from updating the DEATH table.<br />
-</li>
-<li>Updates the OBSERVATION_PERIOD.observation_period_start_date and
-OBSERVATION_PERIOD.observation_period_end_date for patients that have
-survival variables present in the NAACCR data that indicate longer
-survival.</li>
-</ul>
-</div>
-<div id="naaccr-data-dictionary" class="section level1">
-<h1>NAACCR Data Dictionary</h1>
-<p>North American Association of Central Cancer Registries <a
-href="https://www.naaccr.org/">(NAACCR)</a> is the organization that
-governs <a href="http://datadictionary.naaccr.org/">the format</a> that
-is used to standardize the encoding and transmission of cancer registry
-data in the United States. All healthcare facilities in the United
-States that diagnose or treat cancer patients are mandated by law to
-track and collect cancer data and submit it in the NAACCR data
-dictionary format for all first-course diagnosed/treated primary
-neoplasms.</p>
-<p>The NAACCR data dictionary standard is used by multiple cancer
-registry aggregators:</p>
-<ul>
-<li><a href="https://seer.cancer.gov/">Surveillance, Epidemiology, and
-End Results (SEER)</a></li>
-<li><a href="https://www.cdc.gov/cancer/npcr/index.htm">CDC National
-Program of Cancer Registries (NPCR)</a></li>
-<li><a href="https://www.facs.org/quality-programs/cancer/ncdb">National
-Cancer Database from the American College of Surgeons</a></li>
-<li>Central Cancer Registries at state/jurisdictional public health
-agencies</li>
-</ul>
-<p>The NAACCR data dictionary format most importantly covers the
-following areas:</p>
-<ul>
-<li>Demographics</li>
-<li>Cancer Identification</li>
-<li>Stage/Prognostic Factors</li>
-<li>Treatment-1st Course</li>
-<li>Follow-up/Recurrence/Death</li>
-</ul>
-<p>NAACCR data is generally considered a gold-standard source for the
-following areas:</p>
-<ul>
-<li><strong>Disease First Occurrence</strong>: Fine-grained first
-occurrence cancer diagnosis date and characterization via the collection
-of ICDO-3 site/histology.</li>
-<li><strong>Diagnostic Modifiers</strong>: Detailed staging and
-prognostic factors (clinical and pathological TNM Staging, grade,
-lymphatic invasion, biomarkers, and other data points) curated from
-oncology progress notes and pathology reports that are
-<strong>not</strong> normally discretely captured in EHRs and or claims
-databases.</li>
-<li><strong>First-course Treatment</strong>: Overall treatment modality
-and high-value treatment modifiers.</li>
-<li><strong>Death and Survival</strong>.</li>
-</ul>
-<p>NAACCR data is generally considered to be a valuable but not
-gold-standard source for the following area:</p>
-<ul>
-<li><strong>Disease outcomes</strong>: ‘Disease Remission’, ‘Disease
-Recurrence’, ‘Disease Progression’, and ‘Disease Metastasis’.</li>
-</ul>
-<p>The NAACCR data dictionary format is a question/answer or EAV format
-that mixes: * De novo definition of data points. * Sourcing of data
-points from existing standard bodies: cancer diagnosis (site/histology)
-from <a
-href="https://www.who.int/classifications/icd/adaptations/oncology/en/">ICDO-3
-via WHO</a>; staging variables and values from <a
-href="https://cancerstaging.org/Pages/default.aspx">AJCC</a>.</p>
-<p>The NAACCR data dictionary format and the source ICDO-3 vocabulary
-have been ingested into the OMOP vocabulary.<br />
-* See <a
-href="https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:NAACCR">here</a>
-for details of how the NAACCR dictionary format has been ingested into
-the OMOP vocabulary tables. * See <a
-href="https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:NAACCR">here</a>
-for details of how the ICDO-3 vocabulary has been ingested into the OMOP
-vocabulary tables. * Presently, only the source AJCC Staging Edition 7
-vocabulary has been ingested into the OMOP vocabulary tables. The OHDSI
-vocabulary team is working with AJCC to cover AJCC Edition 8 and prior
-editions.</p>
-<p>The Hemonc.org oncology drug regimen ontology has been ingested into
-the OMOP vocabulary. Some treatment NAACCR item coded values are mapped
-to Hemonc.org ‘Modality’ concepts. * See <a
-href="https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:HemOnc">here</a>
-for details of how the Hemonc.org oncology drug regimen ontology has
-been ingested into the OMOP vocabulary tables.</p>
-</div>
-<div id="walkthrough" class="section level1">
-<h1>Walkthrough</h1>
+<div id="delta-vocabulary" class="section level1">
+<h1><strong>Delta Vocabulary</strong></h1>
 <p><br></p>
-<div id="prepareinstall" class="section level2">
-<h2>Prepare/Install</h2>
+<div id="context" class="section level2">
+<h2>Context</h2>
+<ul>
+<li>Support for the Oncology vocabularies was dropped by the central
+OHDSI Vocabulary team in 2023. Since then, the responsibility for
+maintaining these vocabularies has been assumed by the Oncology
+Workgroup</li>
+<li>We are moving at a faster pace than the official OHDSI vocabulary
+releases and consequently will be maintaining a “delta”, or
+“development”, version of the vocabularies. At the end of this effort we
+plan to have these changes folded back into the standards. Additionally
+we will consult with the vocabulary team when applicable.</li>
+</ul>
+<hr />
+</div>
+<div id="details" class="section level2">
+<h2>Details</h2>
+<p><br></p>
+<div id="process" class="section level3">
+<h3>Process</h3>
 <ol style="list-style-type: decimal">
-<li>Install the Oncology CDM Extension. See <a
-href="https://github.com/OHDSI/OncologyWG/wiki/Oncology-CDM-Extension-Installation">here</a></li>
-<li>Install the common NAACCR data dictionary input format:
-NAACCR_DATA_POINTS.<br />
-See NAACCR_DATA_POINTS DDL <a
-href="https://github.com/OHDSI/OncologyWG/blob/master/etl/naaccr_etl_input_format_ddl.sql">here</a></li>
-<li>Install an ancillary provenance table to aid data quality checks:
-CDM_SOURCE_PROVENANCE. See CDM_SOURCE_PROVENANCE DDL <a
-href="https://github.com/OHDSI/OncologyWG/blob/master/etl/cdm_source_provenance.sql">here</a></li>
+<li><strong>Make local edits</strong> to the relevant OMOP Vocabulary
+tables (concept and concept_relationship)</li>
+<li><strong>Rebuild concept_ancestor</strong> table
+programmatically</li>
+<li><strong>Run validation checks</strong> on updated vocabulary to
+ensure integrity</li>
+<li><strong>Export</strong> the delta records and push to GitHub</li>
 </ol>
 </div>
-<div id="populate-eav" class="section level2">
-<h2>Populate EAV</h2>
-<p>The NAACCR data is natively a flat or pivoted format, typically
-available to ETL developers in either the native NAACCR fixed-width file
-format, XML, or in a custom relational structure determined by local
-tumor registry software.</p>
-<p>Currently the OHDSI Oncology Development Subgroup supports two
-methods to convert and populate the NAACCR_DATA_POINTS input format from
-native NAACCR data.</p>
+<div id="rationale" class="section level3">
+<h3>Rationale</h3>
+<p>Git and GitHub offer a collaborative environment for proposing,
+discussing, and implementing changes to a reference vocabulary such as
+the OMOP Vocabulary.</p>
+<p>However, due to licensing and volume issues, it is not possible to
+maintain and develop the entire OMOP vocabulary in a GitHub repository
+as flat files.</p>
+<p>To work around this, a group of collaborators can maintain and
+contribute to a growing list of edits to the OMOP Vocabulary. We call
+this list of edits the “delta vocab”.</p>
+<p>The delta vocab, which is literally a collection of concept and
+concept_relationship records exactly as they would represented in the
+OMOP Vocabulary table, provides a lightweight representation of any
+deviations from the official OMOP Vocabulary. From these tables, the
+concept_ancestor table is then programmatically generated.</p>
+<p>Maintaining the <strong>change</strong> between the official OMOP
+Vocabulary release and the Oncology Development Vocabulary allows for
+rapid development of OHDSI Oncology studies that are untethered from the
+official OMOP Vocabulary release cadence. By preserving only the changed
+elements, instead of the entire Oncology Development Vocabulary, this
+method provides a lightweight, GitHub-friendly solution, that is also
+respectful of (by way of avoiding) the licensed vocabulary terms.</p>
+<p>The simplicity of maintaining as little of the vocabulary as possible
+and using scripted logic to apply changes to the existing vocabulary
+makes this method easy to implement and ideal for the core use case -
+establishing standard concepts and remapping newly destandardized
+terms.</p>
+<hr />
+</div>
+</div>
+<div id="implementation" class="section level2">
+<h2>Implementation</h2>
+<p>Three steps are necessary to deploy the delta vocabularies to your
+local database:</p>
 <ol style="list-style-type: decimal">
-<li>An R package to parse the native NAACCR flat-file format (v15-18) as
-well as XML (v20-23) and ingest it into the NAACCR_DATA_POINTS input
-format. The package and execution instructions can be found <a
-href="https://github.com/OHDSI/OncologyWG/tree/master/NaaccrParser">here</a>.</li>
-<li>An SQL script to transform the relational model of Elekta METRIQ
-(the most popular tumor registry software). As this script references
-Elkta METRIQ’s proprietary data model, it cannot be shared as open
-source. For more information contact <a
-href="mailto:m-gurley@northwestern.edu">Michael Gurley</a>, a co-lead of
-the OHDSI Development Subgroup.</li>
+<li><p><strong>Download</strong> source vocab data and tools</p></li>
+<li><p><strong>Configure</strong> your local database</p></li>
+<li><p><strong>Ingest</strong> delta vocabulary files</p></li>
 </ol>
-<p>All methods of transforming the NAACCR data to the NAACCR_DATA_POINTS
-input format will need to include a method to populate the
-NAACCR_DATA_POINTS.person_id column. Normally, this will be done by
-mapping NAACCR item <a
-href="http://datadictionary.naaccr.org/?c=10#2300">2300 -‘Medical Record
-Number’</a> to a medical record number in a local EHR or Enterprise
-Master Patient Index (EMPI). The aforementioned R package contains a
-function to populate the person identifier which assumes a database
-table exists that maps MRN to person_id.</p>
+<div id="download" class="section level3">
+<h3>Download</h3>
+<p>To create the Oncology Development Vocabulary, you must download the
+<strong><a
+href="https://github.com/OHDSI/OncologyWG/tree/master/vocabTools">vocabTools</a></strong>
+and <strong><a
+href="https://github.com/OHDSI/OncologyWG/tree/master/deltaVocab">deltaVocab</a></strong>
+folders from the OHDSI/OncologyWG repository. It may be simplest to
+clone the OHDSI/OncologyWG and work from there:</p>
+<p><code>git clone https://github.com/OHDSI/OncologyWG.git</code></p>
 </div>
-<div id="execute-sql-script" class="section level2">
-<h2>Execute SQL Script</h2>
-<p>The NAACCR ETL SQL, which translates the EAV into OMOP, has been
-written in vanilla SQL to facilitate it being run on multiple different
-database platforms. Currently, the OHDSI Oncology Development Subgroup
-uses the <a href="https://github.com/OHDSI/SqlRender">SQLRender</a>
-OHDSI package to translate the NAACCR ETL to the four supported database
-platforms (PostgreSQL, Sql Server, Oracle, and Redshift). The NAACCR ETL
-SQL is wrapped in a database transaction to support the complete
-rollback of data changes. To execute, grab the NAACCR SQL ETL from the
-<a href="https://github.com/OHDSI/OncologyWG/etl">OncologyWG</a> Github
-repository. Find the SQL script relevant to your database platform
-(PostgreSQL, Sql Server, Oracle and Redshift). <a
-href="https://github.com/OHDSI/OncologyWG/tree/master/etl">See NAACCR
-SQL ETL folder here.</a></p>
+<div id="configure" class="section level3">
+<h3>Configure</h3>
+<p>These methods assume you have the latest official release of the OMOP
+Vocabulary in <em>two identical schemas</em> in a Postgres database: -
+<strong>prod</strong>: The <strong>prod</strong> schema contains the
+official (“production”) OMOP Vocabulary. This vocabulary will not be
+changed but can be used to refresh the <strong>dev</strong> schema. -
+<strong>dev</strong>: The <strong>dev</strong> schema begins as an exact
+copy of the official OMOP Vocabulary, but will be transformed into the
+Oncology Development Vocabulary using the deltaVocab files and the
+scripts in vocabTools.</p>
+<p>To enable the scripts in vocabTools, enter your database connection
+details into the <strong>config.txt</strong> file.</p>
 </div>
-<div id="unit-testing" class="section level2">
-<h2>Unit Testing</h2>
-<p>The NAACCR ETL SQL has a full-coverage unit test suite. <a
-href="https://github.com/OHDSI/OncologyWG/blob/master/etl/naaccr-etl/spec/lib/naaccr_etl_spec.rb">See
-here to inspect the NAACCR ETL’s unit tests.</a>. The NAACCR ETL SQL
-uses a dummy Ruby on Rails application to set up a unit testing
-environment. If you would like to help develop the NAACCR SQL ETL by
-making pull requests and writing unit tests to cover your changes,
-please read the instructions for setting up the unit testing environment
-locally. <a
-href="https://github.com/OHDSI/OncologyWG/tree/master/etl/naaccr-etl">See
-here instructions for setting up the NAACCR ETL unit testing
-environment.</a></p>
+<div id="ingest" class="section level3">
+<h3>Ingest</h3>
+<p>Create two folders in the vocabTools folder: concept and
+concept_relationship.</p>
+<p>Move the deltaConcept and deltaConceptRelationship files to the new
+concept and concept_relationship folders, respectively.</p>
+<p>Run <strong>updateConcept.bat</strong> to implement the changes from
+deltaConcept to the dev schema in your database.</p>
+<p>Run <strong>updateConceptRelationship.bat</strong> to implement the
+changes from deltaConceptRelationship to the dev schema in your
+database.</p>
+<p>Run <strong>updateConceptAncestor.bat</strong> to rebuild
+concept_ancestor based on the new concept and concept_relationship
+tables in the dev schema.</p>
+<hr />
+</div>
+</div>
+<div id="development" class="section level2">
+<h2>Development</h2>
+<p>Using the delta vocab and helper scripts, a developer with an
+official OMOP Vocabulary database can quickly create a full, working
+version of the OMOP Vocabulary with all proposed changes implemented,
+allowing for advanced testing and use of existing OHDSI tools with a
+development version of the vocabulary.</p>
+<blockquote>
+<p>See README of the <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/vocabTools">vocabTools</a>
+directory for instructions for contributing to the Oncology Delta
+Vocabulary</p>
+</blockquote>
+<hr />
 <p><br></p>
+</div>
+</div>
+<div id="github-project" class="section level1">
+<h1><strong>GitHub Project</strong></h1>
+<p>A GitHub Project has been created and customized to enable
+collaborative and dynamic project management. Notably this project
+exists at the organization level, not the repository level, thus
+enabling extended functionality including issue triage across multiple
+repositories.</p>
+<blockquote>
+<p>Orientation and Onramp: <a href="githubProject.html">GitHub Project
+Orientation</a></p>
+<p>GitHub Project: <a
+href="https://github.com/orgs/OHDSI/projects/13">Oncology Maturity
+Sprint</a></p>
+</blockquote>
+<hr />
+<p><br></p>
+</div>
+<div id="rmarkdown-for-documentation" class="section level1">
+<h1><strong>RMarkdown for Documentation</strong></h1>
+<p>We leverage the RMarkdown R Package to create content in Rmd files
+and generate them as HTML. Through GitHub Pages, these HTML files can be
+easily deployed as a project website. There are several options varying
+in technical complexity to contribute to this documentation.</p>
+<blockquote>
+<p><a href="githubProject.html#Document">See here</a> for more
+details</p>
+</blockquote>
+<hr />
+<p><br></p>
+</div>
+<div id="validation-framework" class="section level1">
+<h1><strong>Validation Framework</strong></h1>
+<div id="context-1" class="section level2">
+<h2>Context</h2>
+<ul>
+<li>Support the automated execution of scripts that return a simple
+signal (stoplight) that indicates whether a necessary component of an
+OHDSI study can run without error on appropriate required data content.
+Signals comprehensively cover data availability, data quality, and
+analytic algorithms specified in an OHDSI study.</li>
+<li>Signal generation and display can be generated locally and,
+optionally, shared centrally in order to facilitate rapid unambiguous
+assessment of candidate site’s ability to participate in a study.</li>
+<li>A version of the same approach might be extended to a
+non-study-specific display of a prespecified set of requirements for
+formally defined “levels of readiness” for OHDSI oncology studies that
+use the OHDSI Oncology 2.0 infrastructure.</li>
+</ul>
+</div>
+<div id="details-1" class="section level2">
+<h2>Details</h2>
+<div id="rationale-1" class="section level3">
+<h3>Rationale</h3>
+<p>Provide a semi-automated and extensible framework for generating,
+visualizing, and sharing an assessment of an OMOP-shaped database’s
+adherence to the OHDSI Oncology Standard (tables, vocabulary) and the
+availabilty and types of oncology data it contains.</p>
+</div>
+<div id="approach" class="section level3">
+<h3>Approach</h3>
+<p><em>Assessments</em> can be executed against an OMOP-shaped database
+to create a characterization and quality report. They are created using
+specificications.</p>
+<p><em>Specifications</em> are JSON files that describe an assessment.
+They are composed by compiling analyses together with threshhold
+values.</p>
+<p><em>Analyses</em> execute a query and return a row count or
+proportion describing the contents in the database. For example,
+analysis_id=1234 returns “the number of cancer diagnosis records derived
+from Tumor Registry source data”.</p>
+<p><em>Threshholds</em> provide study specific context to the results of
+analyses. An analysis asks how many cancer diagnoses derived from tumor
+registry data are in the database. Using threshholds, an assessment
+author can give ranges for “bad”, “questionable”, and “good” analysis
+results as they pertain to their study. An example threshhold, which
+would be encoded as JSON, could express the sentiment “A database with
+0-200 diagnoses from tumor registry data would be unfit for this study,
+201-500 diagnoses may be suitable, and over 500 diagnoses will be more
+enough.”</p>
+</div>
+</div>
+<div id="implementation-1" class="section level2">
+<h2>Implementation</h2>
+<p>The R package provides functionality for the four major processes
+involved in the framework:</p>
+<ul>
+<li>Authoring an assessment specification</li>
+<li>Executing an assessment specification</li>
+<li>Generating assessment results</li>
+<li>Visualizing assessment results</li>
+</ul>
+</div>
+<div id="development-1" class="section level2">
+<h2>Development</h2>
+<blockquote>
+<p>See README of the <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/validationScripts">validationScripts</a>
+directory for instructions for contributing to the Oncology Validation
+Framework</p>
+</blockquote>
+<hr />
 <p><br></p>
 </div>
 </div>
@@ -751,7 +769,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2,h3,h4",
+      selectors: "h1,h2",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
