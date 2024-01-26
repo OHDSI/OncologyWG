@@ -11,9 +11,9 @@
 
 
 
-<title>strategy.knit</title>
+<title> Development Strategy</title>
 
-<script src="site_libs/header-attrs-2.15/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -29,14 +29,14 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 
 <style type="text/css">
@@ -185,8 +185,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -194,16 +194,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -474,9 +467,8 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore"><div>
-<img src="images/ohdsi40x40.png"></img> Development Strategy
-</div></h1>
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
+Development Strategy</h1>
 
 </div>
 
@@ -515,6 +507,7 @@ programmatically</li>
 ensure integrity</li>
 <li><strong>Export</strong> the delta records and push to GitHub</li>
 </ol>
+<p><br></p>
 </div>
 <div id="rationale" class="section level3">
 <h3>Rationale</h3>
@@ -556,6 +549,7 @@ local database:</p>
 <li><p><strong>Configure</strong> your local database</p></li>
 <li><p><strong>Ingest</strong> delta vocabulary files</p></li>
 </ol>
+<p><br></p>
 <div id="download" class="section level3">
 <h3>Download</h3>
 <p>To create the Oncology Development Vocabulary, you must download the
@@ -566,6 +560,7 @@ href="https://github.com/OHDSI/OncologyWG/tree/master/deltaVocab">deltaVocab</a>
 folders from the OHDSI/OncologyWG repository. It may be simplest to
 clone the OHDSI/OncologyWG and work from there:</p>
 <p><code>git clone https://github.com/OHDSI/OncologyWG.git</code></p>
+<p><br></p>
 </div>
 <div id="configure" class="section level3">
 <h3>Configure</h3>
@@ -580,6 +575,7 @@ Oncology Development Vocabulary using the deltaVocab files and the
 scripts in vocabTools.</p>
 <p>To enable the scripts in vocabTools, enter your database connection
 details into the <strong>config.txt</strong> file.</p>
+<p><br></p>
 </div>
 <div id="ingest" class="section level3">
 <h3>Ingest</h3>
@@ -632,8 +628,8 @@ Sprint</a></p>
 <hr />
 <p><br></p>
 </div>
-<div id="rmarkdown-for-documentation" class="section level1">
-<h1><strong>RMarkdown for Documentation</strong></h1>
+<div id="rmarkdown-docs" class="section level1">
+<h1><strong>RMarkdown (docs)</strong></h1>
 <p>We leverage the RMarkdown R Package to create content in Rmd files
 and generate them as HTML. Through GitHub Pages, these HTML files can be
 easily deployed as a project website. There are several options varying
@@ -647,6 +643,7 @@ details</p>
 </div>
 <div id="validation-framework" class="section level1">
 <h1><strong>Validation Framework</strong></h1>
+<p><br></p>
 <div id="context-1" class="section level2">
 <h2>Context</h2>
 <ul>
@@ -663,15 +660,19 @@ non-study-specific display of a prespecified set of requirements for
 formally defined “levels of readiness” for OHDSI oncology studies that
 use the OHDSI Oncology 2.0 infrastructure.</li>
 </ul>
+<p><br></p>
+<hr />
 </div>
 <div id="details-1" class="section level2">
 <h2>Details</h2>
+<p><br></p>
 <div id="rationale-1" class="section level3">
 <h3>Rationale</h3>
 <p>Provide a semi-automated and extensible framework for generating,
 visualizing, and sharing an assessment of an OMOP-shaped database’s
 adherence to the OHDSI Oncology Standard (tables, vocabulary) and the
 availabilty and types of oncology data it contains.</p>
+<p><br></p>
 </div>
 <div id="approach" class="section level3">
 <h3>Approach</h3>
@@ -694,6 +695,8 @@ would be encoded as JSON, could express the sentiment “A database with
 0-200 diagnoses from tumor registry data would be unfit for this study,
 201-500 diagnoses may be suitable, and over 500 diagnoses will be more
 enough.”</p>
+<hr />
+<p><br></p>
 </div>
 </div>
 <div id="implementation-1" class="section level2">
@@ -706,6 +709,8 @@ involved in the framework:</p>
 <li>Generating assessment results</li>
 <li>Visualizing assessment results</li>
 </ul>
+<hr />
+<p><br></p>
 </div>
 <div id="development-1" class="section level2">
 <h2>Development</h2>

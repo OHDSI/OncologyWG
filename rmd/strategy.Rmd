@@ -37,6 +37,8 @@ library(fontawesome)
 1. **Run validation checks** on updated vocabulary to ensure integrity
 1. **Export** the delta records and push to GitHub
 
+<br>
+
 ### Rationale
 Git and GitHub offer a collaborative environment for proposing, discussing, and implementing changes to a reference vocabulary such as the OMOP Vocabulary.
 
@@ -62,11 +64,14 @@ Three steps are necessary to deploy the delta vocabularies to your local databas
 
 1. **Ingest** delta vocabulary files
 
+<br>
 
 ### Download
 To create the Oncology Development Vocabulary, you must download the **[vocabTools](https://github.com/OHDSI/OncologyWG/tree/master/vocabTools)** and **[deltaVocab](https://github.com/OHDSI/OncologyWG/tree/master/deltaVocab)** folders from the OHDSI/OncologyWG repository. It may be simplest to clone the OHDSI/OncologyWG and work from there:
 
 `git clone https://github.com/OHDSI/OncologyWG.git`
+
+<br>
 
 ### Configure
 
@@ -75,6 +80,8 @@ These methods assume you have the latest official release of the OMOP Vocabulary
 - **dev**: The **dev** schema begins as an exact copy of the official OMOP Vocabulary, but will be transformed into the Oncology Development Vocabulary using the deltaVocab files and the scripts in vocabTools.
 
 To enable the scripts in vocabTools, enter your database connection details into the **config.txt** file.
+
+<br>
 
 ### Ingest
 
@@ -112,7 +119,7 @@ A GitHub Project has been created and customized to enable collaborative and dyn
 
 <br>
 
-# **RMarkdown for Documentation**
+# **RMarkdown (docs)**
 
 We leverage the RMarkdown R Package to create content in Rmd files and generate them as HTML. Through GitHub Pages, these HTML files can be easily deployed as a project website. There are several options varying in technical complexity to contribute to this documentation.
 
@@ -124,17 +131,28 @@ We leverage the RMarkdown R Package to create content in Rmd files and generate 
 
 # **Validation Framework**
 
+<br>
+
 ## Context
 
  - Support the automated execution of scripts that return a simple signal (stoplight) that indicates whether a necessary component of an OHDSI study can run without error on appropriate required data content. Signals comprehensively cover data availability, data quality, and analytic algorithms specified in an OHDSI study.
  - Signal generation and display can be generated locally and, optionally, shared centrally in order to facilitate rapid unambiguous assessment of candidate site’s ability to participate in a study. 
  - A version of the same approach might be extended to a non-study-specific display of a prespecified set of requirements for formally defined “levels of readiness” for OHDSI oncology studies that use the OHDSI Oncology 2.0 infrastructure.  
+ 
+<br> 
+
+--- 
+ 
+
 
 ## Details
 
+<br>
 
 ### Rationale
 Provide a semi-automated and extensible framework for generating, visualizing, and sharing an assessment of an OMOP-shaped database’s adherence to the OHDSI Oncology Standard (tables, vocabulary) and the availabilty and types of oncology data it contains.
+
+<br>
 
 ### Approach
 *Assessments* can be executed against an OMOP-shaped database to create a characterization and quality report. They are created using specificications.
@@ -145,6 +163,10 @@ Provide a semi-automated and extensible framework for generating, visualizing, a
 
 *Threshholds* provide study specific context to the results of analyses. An analysis asks how many cancer diagnoses derived from tumor registry data are in the database. Using threshholds, an assessment author can give ranges for “bad”, “questionable”, and “good” analysis results as they pertain to their study. An example threshhold, which would be encoded as JSON, could express the sentiment “A database with 0-200 diagnoses from tumor registry data would be unfit for this study, 201-500 diagnoses may be suitable, and over 500 diagnoses will be more enough.”
 
+--- 
+ 
+<br>
+
 ## Implementation
 
 The R package provides functionality for the four major processes involved in the framework:
@@ -153,6 +175,10 @@ The R package provides functionality for the four major processes involved in th
  - Executing an assessment specification
  - Generating assessment results
  - Visualizing assessment results
+ 
+--- 
+ 
+<br>
 
 ## Development
 
