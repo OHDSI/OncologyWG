@@ -11,7 +11,7 @@
 
 
 
-<title> Progress Map</title>
+<title> Development Strategy</title>
 
 <script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -468,42 +468,261 @@ div.tocify {
 
 
 <h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
-Progress Map</h1>
+Development Strategy</h1>
 
 </div>
 
 
-<p><br></p>
 <hr />
-<div id="miro-map" class="section level1">
-<h1><strong>Miro Map</strong></h1>
-<p>The Miro Map below is an alternate way to view the progress of the
-development effort at the task group level.</p>
-<ul>
-<li><strong>Green</strong> indicates the task group is
-<strong>complete</strong> and should contain <strong>a link to the
-documentation</strong></li>
-<li><strong>Orange</strong> indicates the task group is still <strong>in
-progress</strong> and should contain <strong>a link to the Github
-ticket</strong></li>
-</ul>
 <p><br></p>
-<iframe width="768" height="432" src="https://miro.com/app/live-embed/uXjVNeNGMhQ=/?moveToViewport=7473,-157,1086,1135&amp;embedId=264604379153" frameborder="0" scrolling="no" allow="fullscreen; clipboard-read; clipboard-write" allowfullscreen>
-</iframe>
+<div id="delta-vocabulary" class="section level1">
+<h1><strong>Delta Vocabulary</strong></h1>
+<p><br></p>
+<div id="context" class="section level2">
+<h2>Context</h2>
+<ul>
+<li>Support for the Oncology vocabularies was dropped by the central
+OHDSI Vocabulary team in 2023. Since then, the responsibility for
+maintaining these vocabularies has been assumed by the Oncology
+Workgroup</li>
+<li>We are moving at a faster pace than the official OHDSI vocabulary
+releases and consequently will be maintaining a “delta”, or
+“development”, version of the vocabularies. At the end of this effort we
+plan to have these changes folded back into the standards. Additionally
+we will consult with the vocabulary team when applicable.</li>
+</ul>
+<hr />
+</div>
+<div id="details" class="section level2">
+<h2>Details</h2>
+<p><br></p>
+<div id="process" class="section level3">
+<h3>Process</h3>
+<ol style="list-style-type: decimal">
+<li><strong>Make local edits</strong> to the relevant OMOP Vocabulary
+tables (concept and concept_relationship)</li>
+<li><strong>Rebuild concept_ancestor</strong> table
+programmatically</li>
+<li><strong>Run validation checks</strong> on updated vocabulary to
+ensure integrity</li>
+<li><strong>Export</strong> the delta records and push to GitHub</li>
+</ol>
+<p><br></p>
+</div>
+<div id="rationale" class="section level3">
+<h3>Rationale</h3>
+<p>Git and GitHub offer a collaborative environment for proposing,
+discussing, and implementing changes to a reference vocabulary such as
+the OMOP Vocabulary.</p>
+<p>However, due to licensing and volume issues, it is not possible to
+maintain and develop the entire OMOP vocabulary in a GitHub repository
+as flat files.</p>
+<p>To work around this, a group of collaborators can maintain and
+contribute to a growing list of edits to the OMOP Vocabulary. We call
+this list of edits the “delta vocab”.</p>
+<p>The delta vocab, which is literally a collection of concept and
+concept_relationship records exactly as they would represented in the
+OMOP Vocabulary table, provides a lightweight representation of any
+deviations from the official OMOP Vocabulary. From these tables, the
+concept_ancestor table is then programmatically generated.</p>
+<p>Maintaining the <strong>change</strong> between the official OMOP
+Vocabulary release and the Oncology Development Vocabulary allows for
+rapid development of OHDSI Oncology studies that are untethered from the
+official OMOP Vocabulary release cadence. By preserving only the changed
+elements, instead of the entire Oncology Development Vocabulary, this
+method provides a lightweight, GitHub-friendly solution, that is also
+respectful of (by way of avoiding) the licensed vocabulary terms.</p>
+<p>The simplicity of maintaining as little of the vocabulary as possible
+and using scripted logic to apply changes to the existing vocabulary
+makes this method easy to implement and ideal for the core use case -
+establishing standard concepts and remapping newly destandardized
+terms.</p>
+<hr />
+</div>
+</div>
+<div id="implementation" class="section level2">
+<h2>Implementation</h2>
+<p>Three steps are necessary to deploy the delta vocabularies to your
+local database:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Download</strong> source vocab data and tools</p></li>
+<li><p><strong>Configure</strong> your local database</p></li>
+<li><p><strong>Ingest</strong> delta vocabulary files</p></li>
+</ol>
+<p><br></p>
+<div id="download" class="section level3">
+<h3>Download</h3>
+<p>To create the Oncology Development Vocabulary, you must download the
+<strong><a
+href="https://github.com/OHDSI/OncologyWG/tree/master/vocabTools">vocabTools</a></strong>
+and <strong><a
+href="https://github.com/OHDSI/OncologyWG/tree/master/deltaVocab">deltaVocab</a></strong>
+folders from the OHDSI/OncologyWG repository. It may be simplest to
+clone the OHDSI/OncologyWG and work from there:</p>
+<p><code>git clone https://github.com/OHDSI/OncologyWG.git</code></p>
+<p><br></p>
+</div>
+<div id="configure" class="section level3">
+<h3>Configure</h3>
+<p>These methods assume you have the latest official release of the OMOP
+Vocabulary in <em>two identical schemas</em> in a Postgres database: -
+<strong>prod</strong>: The <strong>prod</strong> schema contains the
+official (“production”) OMOP Vocabulary. This vocabulary will not be
+changed but can be used to refresh the <strong>dev</strong> schema. -
+<strong>dev</strong>: The <strong>dev</strong> schema begins as an exact
+copy of the official OMOP Vocabulary, but will be transformed into the
+Oncology Development Vocabulary using the deltaVocab files and the
+scripts in vocabTools.</p>
+<p>To enable the scripts in vocabTools, enter your database connection
+details into the <strong>config.txt</strong> file.</p>
+<p><br></p>
+</div>
+<div id="ingest" class="section level3">
+<h3>Ingest</h3>
+<p>Create two folders in the vocabTools folder: concept and
+concept_relationship.</p>
+<p>Move the deltaConcept and deltaConceptRelationship files to the new
+concept and concept_relationship folders, respectively.</p>
+<p>Run <strong>updateConcept.bat</strong> to implement the changes from
+deltaConcept to the dev schema in your database.</p>
+<p>Run <strong>updateConceptRelationship.bat</strong> to implement the
+changes from deltaConceptRelationship to the dev schema in your
+database.</p>
+<p>Run <strong>updateConceptAncestor.bat</strong> to rebuild
+concept_ancestor based on the new concept and concept_relationship
+tables in the dev schema.</p>
+<hr />
+</div>
+</div>
+<div id="development" class="section level2">
+<h2>Development</h2>
+<p>Using the delta vocab and helper scripts, a developer with an
+official OMOP Vocabulary database can quickly create a full, working
+version of the OMOP Vocabulary with all proposed changes implemented,
+allowing for advanced testing and use of existing OHDSI tools with a
+development version of the vocabulary.</p>
+<blockquote>
+<p>See README of the <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/vocabTools">vocabTools</a>
+directory for instructions for contributing to the Oncology Delta
+Vocabulary</p>
+</blockquote>
+<hr />
+<p><br></p>
+</div>
+</div>
+<div id="github-project" class="section level1">
+<h1><strong>GitHub Project</strong></h1>
+<p>A GitHub Project has been created and customized to enable
+collaborative and dynamic project management. Notably this project
+exists at the organization level, not the repository level, thus
+enabling extended functionality including issue triage across multiple
+repositories.</p>
+<blockquote>
+<p>Orientation and Onramp: <a href="githubProject.html">GitHub Project
+Orientation</a></p>
+<p>GitHub Project: <a
+href="https://github.com/orgs/OHDSI/projects/13">Oncology Maturity
+Sprint</a></p>
+</blockquote>
+<hr />
+<p><br></p>
+</div>
+<div id="rmarkdown-docs" class="section level1">
+<h1><strong>RMarkdown (docs)</strong></h1>
+<p>We leverage the RMarkdown R Package to create content in Rmd files
+and generate them as HTML. Through GitHub Pages, these HTML files can be
+easily deployed as a project website. There are several options varying
+in technical complexity to contribute to this documentation.</p>
+<blockquote>
+<p><a href="githubProject.html#Document">See here</a> for more
+details</p>
+</blockquote>
+<hr />
+<p><br></p>
+</div>
+<div id="validation-framework" class="section level1">
+<h1><strong>Validation Framework</strong></h1>
+<p><br></p>
+<div id="context-1" class="section level2">
+<h2>Context</h2>
+<ul>
+<li>Support the automated execution of scripts that return a simple
+signal (stoplight) that indicates whether a necessary component of an
+OHDSI study can run without error on appropriate required data content.
+Signals comprehensively cover data availability, data quality, and
+analytic algorithms specified in an OHDSI study.</li>
+<li>Signal generation and display can be generated locally and,
+optionally, shared centrally in order to facilitate rapid unambiguous
+assessment of candidate site’s ability to participate in a study.</li>
+<li>A version of the same approach might be extended to a
+non-study-specific display of a prespecified set of requirements for
+formally defined “levels of readiness” for OHDSI oncology studies that
+use the OHDSI Oncology 2.0 infrastructure.</li>
+</ul>
 <p><br></p>
 <hr />
 </div>
-<div id="roadmap" class="section level1">
-<h1><strong>Roadmap</strong></h1>
-<p>Our goal is to create an comprehensive, interoperable representation
-for oncology data in OMOP and consequently leverage the full suite of
-OMOP analysis tools.</p>
-<p>For more information see:</p>
+<div id="details-1" class="section level2">
+<h2>Details</h2>
+<p><br></p>
+<div id="rationale-1" class="section level3">
+<h3>Rationale</h3>
+<p>Provide a semi-automated and extensible framework for generating,
+visualizing, and sharing an assessment of an OMOP-shaped database’s
+adherence to the OHDSI Oncology Standard (tables, vocabulary) and the
+availabilty and types of oncology data it contains.</p>
+<p><br></p>
+</div>
+<div id="approach" class="section level3">
+<h3>Approach</h3>
+<p><em>Assessments</em> can be executed against an OMOP-shaped database
+to create a characterization and quality report. They are created using
+specificications.</p>
+<p><em>Specifications</em> are JSON files that describe an assessment.
+They are composed by compiling analyses together with threshhold
+values.</p>
+<p><em>Analyses</em> execute a query and return a row count or
+proportion describing the contents in the database. For example,
+analysis_id=1234 returns “the number of cancer diagnosis records derived
+from Tumor Registry source data”.</p>
+<p><em>Threshholds</em> provide study specific context to the results of
+analyses. An analysis asks how many cancer diagnoses derived from tumor
+registry data are in the database. Using threshholds, an assessment
+author can give ranges for “bad”, “questionable”, and “good” analysis
+results as they pertain to their study. An example threshhold, which
+would be encoded as JSON, could express the sentiment “A database with
+0-200 diagnoses from tumor registry data would be unfit for this study,
+201-500 diagnoses may be suitable, and over 500 diagnoses will be more
+enough.”</p>
+<hr />
+<p><br></p>
+</div>
+</div>
+<div id="implementation-1" class="section level2">
+<h2>Implementation</h2>
+<p>The R package provides functionality for the four major processes
+involved in the framework:</p>
 <ul>
-<li><a href="development.html">Development Effort documentation</a></li>
-<li>and <a href="https://github.com/orgs/OHDSI/projects/13">OHDSI Github
-- Oncology Release 2.0 Project</a></li>
+<li>Authoring an assessment specification</li>
+<li>Executing an assessment specification</li>
+<li>Generating assessment results</li>
+<li>Visualizing assessment results</li>
 </ul>
+<hr />
+<p><br></p>
+</div>
+<div id="development-1" class="section level2">
+<h2>Development</h2>
+<blockquote>
+<p>See README of the <a
+href="https://github.com/OHDSI/OncologyWG/tree/master/validationScripts">validationScripts</a>
+directory for instructions for contributing to the Oncology Validation
+Framework</p>
+</blockquote>
+<hr />
+<p><br></p>
+</div>
 </div>
 
 
@@ -555,7 +774,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2,h3",
+      selectors: "h1,h2",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {

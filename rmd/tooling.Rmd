@@ -54,74 +54,28 @@ This package identifies oncology regimens. Firstly, it identifies all patients w
 ---
 
 
-# **Development & Testing**
+# **Development**
 
 <br>
 
-## Characterization and Validation
+## Delta Vocabulary
 
-<br> 
+Documentation: [Delta Vocabulary](strategy.html#Delta_Vocabulary)
 
-### Purpose
+Maintaining the change between the official OMOP Vocabulary release and the Oncology Development Vocabulary allows for rapid development of OHDSI Oncology studies that are untethered from the official OMOP Vocabulary release cadence. By preserving only the changed elements, instead of the entire Oncology Development Vocabulary, this method provides a lightweight, GitHub-friendly solution, that is also respectful of (by way of avoiding) the licensed vocabulary terms.
 
-Provide a semi-automated and extensible framework for generating, visualizing, and sharing an assessment of an OMOP-shaped database's adherence to the OHDSI Oncology Standard (tables, vocabulary) and the availabilty and types of oncology data it contains.
-
-### Overview
-
-The star of the framework is an R Package. Along with cataloguing an extensible set of queries and analyses used for assessing OMOP-shaped oncology data, the R package provides functionality for the four major processes involved in the framework:
-
-1) Authoring an assessment specification
-2) Executing an assessment specification
-3) Generating assessment results
-4) Visualizing assessment results
-
-### Approach
-
-_Assessments_ can be executed against an OMOP-shaped database to create a characterization and quality report. They are created using specificications. 
-
-_Specifications_ are JSON files that describe an assessment. They are composed by compiling analyses together with threshhold values. 
-
-_Analyses_ execute a query and return a row count or proportion describing the contents in the database. For example, analysis_id=1234 returns "the number of cancer diagnosis records derived from Tumor Registry source data".
-
-_Threshholds_ provide study specific context to the results of analyses. An analysis asks how many cancer diagnoses derived from tumor registry data are in the database. Using threshholds, an assessment author can give ranges for "bad", "questionable", and "good" analysis results as they pertain to their study. An example threshhold, which would be encoded as JSON, could express the sentiment "A database with 0-200 diagnoses from tumor registry data would be unfit for this study, 201-500 diagnoses may be suitable, and over 500 diagnoses will be more enough."
-
-### Extensibility
-
-This tool is a product of collaboration. See the validation scripts README for detailed instructions on creating analyses (TODO) and using the R package to author and execute assessment specifications (TODO).
-<br> 
-
-<br>
 
 ---
 
-## Delta Vocabulary Framework
-
-A suite of tools to quickly set up an environment for:
-1) making local edits to the OMOP Vocabularies (concept and concept_relationship tables)
-2) generating derived tables (concept_ancestor)
-3) validating the vocabulary changes
-4) outputting the table delta in a sharable format
+# **Data Quality and Characterization**
 
 <br>
 
-### Structure/Approach
+## Adoption Validation Framework
 
-Git and GitHub offer a collaborative environment for proposing, discussing, and implementing changes to a reference vocabulary such as the OMOP Vocabulary. 
+Documentation: [Validation Framework](strategy.html#Validation_Framework)
 
-However, due to licensing and volume issues, it is not possible to maintain and develop the entire OMOP vocabulary in a GitHub repository as flat files.
-
-To work around this, a group of collaborators can maintain and contribute to a growing list of edits to the OMOP Vocabulary. We call this list of edits the "delta vocab".
-
-The delta vocab, which is literally a collection of concept and concept_relationship records exactly as they would represented in the OMOP Vocabulary table, provides a lightweight representation of any deviations from the official OMOP Vocabulary.
-
-Using the delta vocab and delta helper scripts, a developer with an official OMOP Vocabulary database can quickly create a full, working version of the OMOP Vocabulary with all proposed changes implemented, allowing for advanced testing and use of existing OHDSI tools with a development version of the vocabulary.
-
-The simplicity of maintaining as little of the vocabulary as possible and using scripted logic to apply changes to the existing vocabulary makes this method easy to implement, but also limited in its capabilities. As of now, the primary use for the delta vocab method is for *destandardizing and mapping non-standard terms*.
-
-For details on using the delta vocab and the helper scripts, see the README and function reference (TODO)
+A semi-automated and extensible framework for generating, visualizing, and sharing database characterization and adherence to the OHDSI Oncology Standard Conventions.
 
 
-<br>
 
-
----

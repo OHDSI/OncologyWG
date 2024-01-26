@@ -19,9 +19,12 @@ navbar:
     - text: "   Development Effort"
       icon: fa-people-group
       menu:
-        - text: " Development Overview"
+        - text: " Overview"
           href: development.html
-          icon: fa-map
+          icon: fa-tower-observation
+        - text: " Strategy"
+          href: strategy.html
+          icon: fa-chess
         - text: " Progress Map"
           href: progressMap.html
           icon: fa-list-check
