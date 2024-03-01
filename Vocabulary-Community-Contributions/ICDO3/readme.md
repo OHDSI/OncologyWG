@@ -1,4 +1,14 @@
 # ICD-O-3.2 Vocabulary update
+**Critical Note**
+
+Updates to Vocabulary-v5.0 submitted to vocab subgroup via ICDO3_Update branch:
+
+https://github.com/OHDSI/Vocabulary-v5.0/tree/ICDO3_update
+
+Please review updates there.
+
+---
+
 **Primary Maintainers**
 *as of 11/3/2023*
 
