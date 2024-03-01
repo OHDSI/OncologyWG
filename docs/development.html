@@ -11,9 +11,9 @@
 
 
 
-<title>development.knit</title>
+<title> Development Overview</title>
 
-<script src="site_libs/header-attrs-2.15/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -29,14 +29,14 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 
 <style type="text/css">
@@ -185,8 +185,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -194,16 +194,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -339,14 +332,7 @@ div.tocify {
   <a href="index.html">
     <span class="fa fa-home"></span>
      
-     Home
-  </a>
-</li>
-<li>
-  <a href="background.html">
-    <span class="fa fa-circle-info"></span>
-     
-     Background
+     WG Overview
   </a>
 </li>
 <li class="dropdown">
@@ -360,9 +346,16 @@ div.tocify {
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="development.html">
-        <span class="fa fa-map"></span>
+        <span class="fa fa-tower-observation"></span>
          
-         Development Overview
+         Overview
+      </a>
+    </li>
+    <li>
+      <a href="strategy.html">
+        <span class="fa fa-chess"></span>
+         
+         Strategy
       </a>
     </li>
     <li>
@@ -388,26 +381,74 @@ div.tocify {
     </li>
   </ul>
 </li>
-<li>
-  <a href="conventions.html">
-    <span class="fa fa-gavel"></span>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-circle-info"></span>
      
-     Conventions
+     Specifications
+     
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="conventions.html">
+        <span class="fa fa-gavel"></span>
+         
+         Conventions
+      </a>
+    </li>
+    <li>
+      <a href="model.html">
+        <span class="fa fa-sitemap"></span>
+         
+         Model
+      </a>
+    </li>
+    <li>
+      <a href="genomics.html">
+        <span class="fa fa-dna"></span>
+         
+         Genomics
+      </a>
+    </li>
+  </ul>
 </li>
-<li>
-  <a href="model.html">
-    <span class="fa fa-sitemap"></span>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-desktop"></span>
      
-     Model
-  </a>
-</li>
-<li>
-  <a href="tooling.html">
-    <span class="fa fa-wrench"></span>
+     Implementation
      
-     Tools
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="installation.html">
+        <span class="fa fa-play"></span>
+         
+         Installation
+      </a>
+    </li>
+    <li>
+      <a href="tooling.html">
+        <span class="fa fa-wrench"></span>
+         
+         Tooling
+      </a>
+    </li>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="fa fa-code"></span>
+         
+         ETLs
+      </a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="naaccr.html"> NAACCR</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -426,16 +467,14 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore"><div>
-<img src="images/ohdsi40x40.png"></img> Development Overview
-</div></h1>
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
+Development Overview</h1>
 
 </div>
 
 
-<hr />
-<div id="purpose-and-goals" class="section level1">
-<h1><strong>Purpose and Goals</strong></h1>
+<div id="purpose" class="section level1">
+<h1><strong>Purpose</strong></h1>
 <p><br></p>
 <blockquote>
 <p><strong>“<ins>Collaboratively</ins> mature and <ins>expand</ins> the
@@ -474,6 +513,75 @@ effort</li>
 <p><br></p>
 <hr />
 </div>
+<div id="goals" class="section level1">
+<h1><strong>Goals</strong></h1>
+<p>The overarching goals of the OHDSI Oncology Working Group:</p>
+<p><br></p>
+<div id="oncology-research" class="section level3">
+<h3>1) Oncology research</h3>
+<ul>
+<li>Enabling</li>
+<li>Conducting</li>
+<li>Promoting</li>
+</ul>
+</div>
+<div id="maturing-oncology-standards" class="section level3">
+<h3>2) Maturing oncology standards</h3>
+<ul>
+<li>Data model, ontologies and conventions</li>
+<li>A shared, international oncology data standard</li>
+<li>Support of observational, claims and curated data sources</li>
+</ul>
+</div>
+<div id="community-growth" class="section level3">
+<h3>3) Community growth</h3>
+<ul>
+<li>Model adoption and growth of network</li>
+<li>Data holders, developers, and subject matter experts</li>
+<li>Research use cases and applications</li>
+</ul>
+<p><br></p>
+<hr />
+</div>
+</div>
+<div id="notable-challenges" class="section level1">
+<h1><strong>Notable Challenges</strong></h1>
+<p><br></p>
+<div id="oncology-data-in-omop" class="section level3">
+<h3>1) Oncology data in OMOP</h3>
+<ul>
+<li>OMOP typically a person-centric model
+<ul>
+<li>Oncology data often requires additional levels of detail</li>
+<li>e.g., “Observations about observations”</li>
+</ul></li>
+<li>Novel entity relationships in source data</li>
+</ul>
+<p><br></p>
+</div>
+<div id="source-data-representations" class="section level3">
+<h3>2) Source data representations</h3>
+<ul>
+<li>Differing granularity and detail between data sources</li>
+<li>Goal of maximum accommodation while maintaing FAIR principles</li>
+<li>Sources include observational, claims and curated data
+<ul>
+<li>Sources often overlap and can provide complementary data for same
+patient population</li>
+</ul></li>
+</ul>
+<p><br></p>
+<figure>
+<p><img src="https://user-images.githubusercontent.com/57408355/76053847-9c1c5380-5f3c-11ea-8ac2-4efbcc4ee66e.png" alt="Condition Map"/></p>
+<figcaption>
+Diagram illustrating condition modifier representation
+</figcaption>
+</figure>
+<p><br></p>
+<hr />
+<p><br></p>
+</div>
+</div>
 <div id="context" class="section level1">
 <h1><strong>Context</strong></h1>
 <ul>
@@ -497,6 +605,7 @@ upon it.</li>
 </ul>
 <p><br></p>
 <hr />
+<p><br></p>
 </div>
 <div id="scope" class="section level1">
 <h1><strong>Scope</strong></h1>
@@ -521,6 +630,7 @@ stable release schedule.</li>
 </ul>
 <p><br></p>
 <hr />
+<p><br></p>
 </div>
 <div id="what-we-need" class="section level1">
 <h1><strong>What we need</strong></h1>
@@ -551,6 +661,7 @@ de-standardize duplicate laterality concepts</em></li>
 </ul>
 <p><br></p>
 <hr />
+<p><br></p>
 </div>
 <div id="project-management" class="section level1">
 <h1><strong>Project Management</strong></h1>
@@ -565,7 +676,22 @@ through Github and the OHDSI Oncology MS Teams. Any decision points
 discussed during the calls will also be represented in Github/Teams for
 further discussion before final decisions are made</li>
 </ul>
+<p><strong>Proposal Review</strong></p>
+<ul>
+<li>Two weeks prior to a scheduled proposal review:
+<ul>
+<li>A MS Teams channel will be created within the Oncology WG group to
+facilitate discussion</li>
+<li>The proposal will be provided and linked within the teams
+channel</li>
+<li>A ping will go out on both the forum post and within the teams group
+to announce the topic</li>
+</ul></li>
+<li>The meeting in which the proposal was discussed will be recorded and
+a link posted in the channel afterwards</li>
+</ul>
 <p><br></p>
+<hr />
 <div id="github-project" class="section level2">
 <h2>Github Project</h2>
 <ul>

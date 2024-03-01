@@ -1,0 +1,108 @@
+---
+title: '<div><img src="images/ohdsi40x40.png"></img> NAACCR Tumor Registry ETL</div>'
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 4
+        toc_float:
+          collapsed: false
+---
+
+```{r load_packages, message=FALSE, warning=FALSE, include=FALSE} 
+library(fontawesome)
+```
+
+<br>
+
+
+# ETL Overview
+The OHDSI Oncology Development Subgroup has created a standardized ETL to ingest NAACCR data into the Oncology CDM Extension.  The ETL is a SQL script that assumes your NAACCR data has been transformed into a common EAV input format.  The SQL script uses the common NAACCR data dictionary input format in conjunction with the ICDO-3, NAACCR, and Hemonc.org vocabularies within the OMOP vocabulary tables to perform the following tasks:
+
+* Mapping of ICDO-3 site and histology and diagnosis dates present in NAACCR data to insert low-level cancer diagnoses into the CONDITION_OCCURRENCE table and 'Disease First Occurrence' disease episodes into the EPISODE table.
+* Mapping of NAACCR staging and prognostic factors present in NAACCR data to insert low-level diagnostic modifiers into the MEASUREMENT table pointing to the CONDITION_OCCURRENCE table and episode modifiers into the MEASUREMENT table pointing to the 'Disease First Occurrence' disease episode it inserts into the EPISODE table.
+* Mapping of NAACCR treatment variables and treatment dates present in NAACCR data to insert low-level treatments into the PROCEDURE_OCCURRENCE and DRUG_EXPOSURE tables and 'Treatment Regimen' treatment episodes into the EPISODE table.  For surgical and radiation therapy treatments, the script places NAACCR item code values into the EPISODE.episode_object_concept_id column.  For drug treatments, the script places into the EPISODE.episode_object_concept_id column mappings from non-standard NAACCR items code values to Hemonc.org 'Modality' concepts:
+  * 35803401 Chemotherapy
+  * 35803410 Immunotherapy
+  * 35803407 Hormonotherapy
+* Linking child first-course 'Treatment Regimen' treatment episodes to parent 'Disease First Occurrence' disease episode via the column EPISODE.episode_parent_id.
+* Mapping of NAACCR treatment attribute variables present in NAACCR data to insert low-level treatment modifiers into the MEASUREMENT table pointing to the PROCEDURE_OCCURENECE table and episode modifiers into the MEASUREMENT table pointing to the 'Treatment Regimen' treatment episodes it inserts into the EPISODE table.
+* Inserting persons into the PERSON table if no such person_id exists in the PERSON table.  The ETL will also insert an entry in the OBSERVATION_PERIOD table based on survival variables present in the NAACCR data.  This is to help support the strategy of ETLing data into the Oncology CDM Extension tables in a satellite OMOP CDM instance and merging the data into a main OMOP CDM instance.
+* Inserting a date entry in the DEATH table if the death variable present in the NAACCR data indicates that the patient is deceased.  If prior information in the DEATH table conflicts with death data present in the NAACCR data the ETL refrains from updating the DEATH table.  
+* Updates the OBSERVATION_PERIOD.observation_period_start_date and OBSERVATION_PERIOD.observation_period_end_date for patients that have survival variables present in the NAACCR data that indicate longer survival.
+
+
+
+# NAACCR Data Dictionary
+
+North American Association of Central Cancer Registries [(NAACCR)](https://www.naaccr.org/) is the organization that governs [the format](http://datadictionary.naaccr.org/) that is used to standardize the encoding and transmission of cancer registry data in the United States.  All healthcare facilities in the United States that diagnose or treat cancer patients are mandated by law to track and collect cancer data and submit it in the NAACCR data dictionary format for all first-course diagnosed/treated primary neoplasms.
+  
+The NAACCR data dictionary standard is used by multiple cancer registry aggregators:
+
+* [Surveillance, Epidemiology, and End Results (SEER)](https://seer.cancer.gov/)
+* [CDC National Program of Cancer Registries (NPCR)](https://www.cdc.gov/cancer/npcr/index.htm)
+* [National Cancer Database from the American College of Surgeons](https://www.facs.org/quality-programs/cancer/ncdb)
+* Central Cancer Registries at state/jurisdictional public health agencies
+
+ The NAACCR data dictionary format most importantly covers the following areas:
+
+* Demographics
+* Cancer Identification 
+* Stage/Prognostic Factors
+* Treatment-1st Course
+* Follow-up/Recurrence/Death
+
+NAACCR data is generally considered a gold-standard source for the following areas:
+
+* **Disease First Occurrence**: Fine-grained first occurrence cancer diagnosis date and characterization via the collection of ICDO-3 site/histology. 
+* **Diagnostic Modifiers**: Detailed staging and prognostic factors (clinical and pathological TNM Staging, grade, lymphatic invasion, biomarkers, and other data points) curated from oncology progress notes and pathology reports that are **not** normally discretely captured in EHRs and or claims databases.
+* **First-course Treatment**: Overall treatment modality and high-value treatment modifiers.
+* **Death and Survival**.
+
+NAACCR data is generally considered to be a valuable but not gold-standard source for the following area:
+
+* **Disease outcomes**: 'Disease Remission', 'Disease Recurrence', 'Disease Progression', and 'Disease Metastasis'.
+
+The NAACCR data dictionary format is a question/answer or EAV format that mixes:
+* De novo definition of data points.
+* Sourcing of data points from existing standard bodies: cancer diagnosis (site/histology) from [ICDO-3 via WHO](https://www.who.int/classifications/icd/adaptations/oncology/en/); staging variables and values from [AJCC](https://cancerstaging.org/Pages/default.aspx).
+
+The NAACCR data dictionary format and the source ICDO-3 vocabulary have been ingested into the OMOP vocabulary.  
+* See [here](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:NAACCR) for details of how the NAACCR dictionary format has been ingested into the OMOP vocabulary tables.
+* See [here](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:NAACCR) for details of how the ICDO-3 vocabulary has been ingested into the OMOP vocabulary tables.
+* Presently, only the source AJCC Staging Edition 7 vocabulary has been ingested into the OMOP vocabulary tables.  The OHDSI vocabulary team is working with AJCC to cover AJCC Edition 8 and prior editions.
+
+The Hemonc.org oncology drug regimen ontology has been ingested into the OMOP vocabulary.  Some treatment NAACCR item coded values are mapped to Hemonc.org 'Modality' concepts. 
+* See [here](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:HemOnc) for details of how the Hemonc.org oncology drug regimen ontology has been ingested into the OMOP vocabulary tables.
+
+# Walkthrough
+
+<br> 
+
+
+## Prepare/Install
+1. Install the Oncology CDM Extension.  See [here](https://github.com/OHDSI/OncologyWG/wiki/Oncology-CDM-Extension-Installation)
+2. Install the common NAACCR data dictionary input format: NAACCR_DATA_POINTS.  
+See NAACCR_DATA_POINTS DDL [here](https://github.com/OHDSI/OncologyWG/blob/master/etl/naaccr_etl_input_format_ddl.sql) 
+3. Install an ancillary provenance table to aid data quality checks: CDM_SOURCE_PROVENANCE.
+See CDM_SOURCE_PROVENANCE DDL [here](https://github.com/OHDSI/OncologyWG/blob/master/etl/cdm_source_provenance.sql)
+
+## Populate EAV 
+The NAACCR data is natively a flat or pivoted format, typically available to ETL developers in either the native NAACCR fixed-width file format, XML, or in a custom relational structure determined by local tumor registry software. 
+
+Currently the OHDSI Oncology Development Subgroup supports two methods to convert and populate the NAACCR_DATA_POINTS input format from native NAACCR data.  
+
+1. An R package to parse the native NAACCR flat-file format (v15-18) as well as XML (v20-23) and ingest it into the NAACCR_DATA_POINTS input format. The package and execution instructions can be found [here](https://github.com/OHDSI/OncologyWG/tree/master/NaaccrParser). 
+1. An SQL script to transform the relational model of Elekta METRIQ (the most popular tumor registry software). As this script references Elkta METRIQ's proprietary data model, it cannot be shared as open source. For more information contact [Michael Gurley](mailto:m-gurley@northwestern.edu), a co-lead of the OHDSI Development Subgroup.
+  
+
+All methods of transforming the NAACCR data to the NAACCR_DATA_POINTS input format will need to include a method to populate the NAACCR_DATA_POINTS.person_id column.  Normally, this will be done by mapping NAACCR item [2300 -'Medical Record Number' ](http://datadictionary.naaccr.org/?c=10#2300) to a medical record number in a local EHR or Enterprise Master Patient Index (EMPI). The aforementioned R package contains a function to populate the person identifier which assumes a database table exists that maps MRN to person_id. 
+
+## Execute SQL Script
+The NAACCR ETL SQL, which translates the EAV into OMOP, has been written in vanilla SQL to facilitate it being run on multiple different database platforms.  Currently, the OHDSI Oncology Development Subgroup uses the [SQLRender](https://github.com/OHDSI/SqlRender) OHDSI package to translate the NAACCR ETL to the four supported database platforms (PostgreSQL, Sql Server, Oracle, and Redshift).  The NAACCR ETL SQL is wrapped in a database transaction to support the complete rollback of data changes.  To execute, grab the NAACCR SQL ETL from the [OncologyWG](https://github.com/OHDSI/OncologyWG/etl) Github repository. Find the SQL script relevant to your database platform (PostgreSQL, Sql Server, Oracle and Redshift).  [See NAACCR SQL ETL folder here.](https://github.com/OHDSI/OncologyWG/tree/master/etl)
+
+## Unit Testing
+The NAACCR ETL SQL has a full-coverage unit test suite.  [See here to inspect the NAACCR ETL's unit tests.](https://github.com/OHDSI/OncologyWG/blob/master/etl/naaccr-etl/spec/lib/naaccr_etl_spec.rb). The NAACCR ETL SQL uses a dummy Ruby on Rails application to set up a unit testing environment.  If you would like to help develop the NAACCR SQL ETL by making pull requests and writing unit tests to cover your changes, please read the instructions for setting up the unit testing environment locally.  [See here instructions for setting up the NAACCR ETL unit testing environment.](https://github.com/OHDSI/OncologyWG/tree/master/etl/naaccr-etl)
+
+<br>
+
+<br>

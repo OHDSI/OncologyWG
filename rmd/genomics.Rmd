@@ -1,0 +1,26 @@
+---
+title: '<div><img src="images/ohdsi40x40.png"></img> Genomics</div>'
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 3
+        toc_float:
+          collapsed: false
+---
+
+```{r load_packages, message=FALSE, warning=FALSE, include=FALSE} 
+library(fontawesome)
+```
+
+> `r fa("triangle-exclamation", fill="orange")` Under Construction 
+
+
+---
+
+While work is in progress on this section...
+
+...if you are looking to get oriented to how the working group is approaching genomics data standardization, there is a particular meeting recording, albeit a bit dated, which provides a nice overview.
+
+
+Link:
+- [Recording](https://ohdsiorg.sharepoint.com/:v:/s/Workgroup-Oncology/EdioIyS_iQRIoifsnlGuWc8Bell7Qme4sLlbfGHOm_1jBA?e=hwYBxm&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D)

@@ -45,7 +45,7 @@ Cancer diagnoses are recorded within the CONDITION table, ideally with ICDO3 con
 
 What we are calling 'Condition Modifiers' are observations/findings/attributes about a cancer and are stored as Measurements using the Cancer Modifier vocabulary. 
 
-A linkage between the Condition Modifier and the respective condition is made leveraging the two columns in the Measurement table that serve as a foreign key. This same mechanism is used for procedure modifiers as well.  The first (modifier_of_field_concept_id) indicates which table we are referring to, the second (modifier_of_event_id) indicates which row. 
+A linkage between the Condition Modifier and the respective condition is made leveraging the two columns in the Measurement table that serve as a foreign key. This same mechanism is used for procedure modifiers as well.  The first (meas_event_field_concept_id) indicates which table we are referring to, the second (measurement_event_id) indicates which row. 
 
 There are concepts for every potential PK that a measurement can potentially modify. 
 
@@ -60,8 +60,8 @@ An example condition modifier record within the measurement table would contain:
 ```{sql eval=FALSE, echo=TRUE}
   SELECT 
   ...
-  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
-  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
+  1147127 as meas_event_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as measurement_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
 ```
 
 
@@ -102,8 +102,8 @@ Adding this condition modifier would look something like:
   SELECT
   ...
   734306 as measurement_concept_id -- "Initial Diagnosis" ****** 
-  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
-  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
+  1147127 as meas_event_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as measurement_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
 ```
 ---
 
@@ -114,10 +114,10 @@ Finding conditions which have the "initial diagnosis date" flag (modifier) can b
   SELECT * 
   FROM CONDITION_OCCURRENCE co
   WHERE CONDITION_OCCURRENCE_ID IN (
-    SELECT modifier_of_event_id
+    SELECT measurement_event_id
     FROM measurement
     WHERE measurement_concept_id = 734306 -- Initial diagnosis
-    AND modifier_of_field_concept_id = 1147127 -- Condition_Occurrence
+    AND meas_event_field_concept_id = 1147127 -- Condition_Occurrence
 )
 ```
 
@@ -291,28 +291,73 @@ Lastly, you can search for the concept directly given the structured concept cod
 
 ### Grading {.tabset .tabset-fade} 
 
+> `r fa("circle-check", fill="green")` Complete
 
-> `r fa("triangle-exclamation", fill="orange")` Under Construction 
 
 > `r fa("circle-info", prefer_type="solid")`         Condition Modifier
 
-
 #### Description
 
-  Abcdefg
+Map directly to the concepts in the Cancer Modifier vocabulary. The standard concepts for grade are broken down into 1-4 as well as High, Intermediate, and Low.
+
+A few specific grading systems (e.g. Nottingham, FIGO) are represented as standard concepts in the Cancer Modifier vocabulary. Map to these concepts if they match the granularity of your data. If you have a specific need for a different grading system, you can request that it be standardized by [creating an issue](https://github.com/OHDSI/OncologyWG/issues/new?assignees=&labels=&projects=&template=issue-.md&title=).
 
 ---
 
 #### Mapping
 
-  HIJKLM
+For example: Grade 1
+
+Above: Any tumor that has been assigned a Grade 1 in any grading system
+
+To find the correct standard concept, you need to join to the concept code, as shown here:
+
+```{sql eval=FALSE, echo=TRUE}
+SELECT concept_id
+FROM concept
+WHERE vocabulary_id = 'Cancer Modifier'
+AND concept_class_id = 'Staging/Grading'
+AND standard_concept = 'S'
+AND concept_code = 'Grade-1'
+```
+
+Another example: Gleason Score 8
+
+Above: A tumor assigned a Gleason Score of 8 using the Gleason grading system
+
+To find the correct standard concept, you need to join to the concept code, as shown here:
+
+```{sql eval=FALSE, echo=TRUE}
+SELECT concept_id
+FROM concept
+WHERE vocabulary_id = 'Cancer Modifier'
+AND concept_class_id = 'Staging/Grading'
+AND standard_concept = 'S'
+AND concept_code = 'Gleason-Score-8'
+```
 
 ---
 
 #### Usage
 
-  NOPQ
-  
+To find all standard Grade concepts in the Cancer Modifier vocabulary:
+
+```{sql eval=FALSE, echo=TRUE}
+SELECT b.concept_id, b.concept_code, b.concept_name
+FROM (
+  SELECT *
+  FROM concept c
+  INNER JOIN concept_ancestor ca
+  ON c.concept_id = ca.ancestor_concept_id
+  WHERE vocabulary_id = 'Cancer Modifier'
+  AND concept_class_id = 'Staging/Grading'
+  AND standard_concept = 'S'
+  AND lower(concept_code) LIKE '%grade%'
+) a
+INNER JOIN concept b
+ON a.descendant_concept_id = b.concept_id
+```
+
 ---
 
 
@@ -424,8 +469,8 @@ For example, a record of 'Metastasis to Lung' would look like:
   SELECT
   ...
   36770283 as measurement_concept_id -- "Metastasis to Lung" ****** 
-  1147127 as modifier_of_field_concept_id -- static for all condition modifiers
-  temp.condition_occurrence_id as modifier_of_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
+  1147127 as meas_event_field_concept_id -- static for all condition modifiers
+  temp.condition_occurrence_id as measurement_event_id -- the condition_occurrence_id to which this Cancer Modifier refers to 
 ```
 
   

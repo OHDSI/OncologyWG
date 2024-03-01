@@ -1,0 +1,189 @@
+---
+title: '<div><img src="images/ohdsi40x40.png"></img> Development Strategy</div>'
+output: 
+  html_document:
+        toc: TRUE
+        toc_depth: 2
+        toc_float:
+          collapsed: false
+---
+
+```{r load_packages, message=FALSE, warning=FALSE, include=FALSE} 
+library(fontawesome)
+```
+
+---
+
+<br>
+
+# **Delta Vocabulary**
+
+<br>
+
+## Context
+ - Support for the Oncology vocabularies was dropped by the central OHDSI Vocabulary team in 2023. Since then, the responsibility for maintaining these vocabularies has been assumed by the Oncology Workgroup
+ - We are moving at a faster pace than the official OHDSI vocabulary releases and consequently will be maintaining a “delta”, or “development”, version of the vocabularies. At the end of this effort we plan to have these changes folded back into the standards. Additionally we will consult with the vocabulary team when applicable.
+
+---
+
+## Details
+
+<br>
+
+### Process
+
+1. **Make local edits** to the relevant OMOP Vocabulary tables (concept and concept_relationship)
+1. **Rebuild concept_ancestor** table programmatically
+1. **Run validation checks** on updated vocabulary to ensure integrity
+1. **Export** the delta records and push to GitHub
+
+<br>
+
+### Rationale
+Git and GitHub offer a collaborative environment for proposing, discussing, and implementing changes to a reference vocabulary such as the OMOP Vocabulary.
+
+However, due to licensing and volume issues, it is not possible to maintain and develop the entire OMOP vocabulary in a GitHub repository as flat files.
+
+To work around this, a group of collaborators can maintain and contribute to a growing list of edits to the OMOP Vocabulary. We call this list of edits the “delta vocab”.
+
+The delta vocab, which is literally a collection of concept and concept_relationship records exactly as they would represented in the OMOP Vocabulary table, provides a lightweight representation of any deviations from the official OMOP Vocabulary. From these tables, the concept_ancestor table is then programmatically generated.
+
+Maintaining the **change** between the official OMOP Vocabulary release and the Oncology Development Vocabulary allows for rapid development of OHDSI Oncology studies that are untethered from the official OMOP Vocabulary release cadence. By preserving only the changed elements, instead of the entire Oncology Development Vocabulary, this method provides a lightweight, GitHub-friendly solution, that is also respectful of (by way of avoiding) the licensed vocabulary terms.
+
+The simplicity of maintaining as little of the vocabulary as possible and using scripted logic to apply changes to the existing vocabulary makes this method easy to implement and ideal for the core use case - establishing standard concepts and remapping newly destandardized terms.
+
+---
+
+## Implementation
+
+Three steps are necessary to deploy the delta vocabularies to your local database:
+
+1. **Download** source vocab data and tools
+
+1. **Configure** your local database
+
+1. **Ingest** delta vocabulary files
+
+<br>
+
+### Download
+To create the Oncology Development Vocabulary, you must download the **[vocabTools](https://github.com/OHDSI/OncologyWG/tree/master/vocabTools)** and **[deltaVocab](https://github.com/OHDSI/OncologyWG/tree/master/deltaVocab)** folders from the OHDSI/OncologyWG repository. It may be simplest to clone the OHDSI/OncologyWG and work from there:
+
+`git clone https://github.com/OHDSI/OncologyWG.git`
+
+<br>
+
+### Configure
+
+These methods assume you have the latest official release of the OMOP Vocabulary in *two identical schemas* in a Postgres database:
+- **prod**: The **prod** schema contains the official ("production") OMOP Vocabulary. This vocabulary will not be changed but can be used to refresh the **dev** schema.
+- **dev**: The **dev** schema begins as an exact copy of the official OMOP Vocabulary, but will be transformed into the Oncology Development Vocabulary using the deltaVocab files and the scripts in vocabTools.
+
+To enable the scripts in vocabTools, enter your database connection details into the **config.txt** file.
+
+<br>
+
+### Ingest
+
+Create two folders in the vocabTools folder: concept and concept_relationship.
+
+Move the deltaConcept and deltaConceptRelationship files to the new concept and concept_relationship folders, respectively.
+
+Run **updateConcept.bat** to implement the changes from deltaConcept to the dev schema in your database.
+
+Run **updateConceptRelationship.bat** to implement the changes from deltaConceptRelationship to the dev schema in your database.
+
+Run **updateConceptAncestor.bat** to rebuild concept_ancestor based on the new concept and concept_relationship tables in the dev schema.
+
+---
+
+## Development 
+
+Using the delta vocab and helper scripts, a developer with an official OMOP Vocabulary database can quickly create a full, working version of the OMOP Vocabulary with all proposed changes implemented, allowing for advanced testing and use of existing OHDSI tools with a development version of the vocabulary.
+
+> See README of the [vocabTools](https://github.com/OHDSI/OncologyWG/tree/master/vocabTools) directory for instructions for contributing to the Oncology Delta Vocabulary
+
+---
+
+<br>
+
+# **GitHub Project**
+
+A GitHub Project has been created and customized to enable collaborative and dynamic project management. Notably this project exists at the organization level, not the repository level, thus enabling extended functionality including issue triage across multiple repositories.
+
+> Orientation and Onramp: [GitHub Project Orientation](githubProject.html)
+>
+> GitHub Project: [Oncology Maturity Sprint](https://github.com/orgs/OHDSI/projects/13)
+
+---
+
+<br>
+
+# **RMarkdown (docs)**
+
+We leverage the RMarkdown R Package to create content in Rmd files and generate them as HTML. Through GitHub Pages, these HTML files can be easily deployed as a project website. There are several options varying in technical complexity to contribute to this documentation.
+
+> [See here](githubProject.html#Document) for more details
+
+---
+
+<br>
+
+# **Validation Framework**
+
+<br>
+
+## Context
+
+ - Support the automated execution of scripts that return a simple signal (stoplight) that indicates whether a necessary component of an OHDSI study can run without error on appropriate required data content. Signals comprehensively cover data availability, data quality, and analytic algorithms specified in an OHDSI study.
+ - Signal generation and display can be generated locally and, optionally, shared centrally in order to facilitate rapid unambiguous assessment of candidate site’s ability to participate in a study. 
+ - A version of the same approach might be extended to a non-study-specific display of a prespecified set of requirements for formally defined “levels of readiness” for OHDSI oncology studies that use the OHDSI Oncology 2.0 infrastructure.  
+ 
+<br> 
+
+--- 
+ 
+
+
+## Details
+
+<br>
+
+### Rationale
+Provide a semi-automated and extensible framework for generating, visualizing, and sharing an assessment of an OMOP-shaped database’s adherence to the OHDSI Oncology Standard (tables, vocabulary) and the availabilty and types of oncology data it contains.
+
+<br>
+
+### Approach
+*Assessments* can be executed against an OMOP-shaped database to create a characterization and quality report. They are created using specificications.
+
+*Specifications* are JSON files that describe an assessment. They are composed by compiling analyses together with threshhold values.
+
+*Analyses* execute a query and return a row count or proportion describing the contents in the database. For example, analysis_id=1234 returns “the number of cancer diagnosis records derived from Tumor Registry source data”.
+
+*Threshholds* provide study specific context to the results of analyses. An analysis asks how many cancer diagnoses derived from tumor registry data are in the database. Using threshholds, an assessment author can give ranges for “bad”, “questionable”, and “good” analysis results as they pertain to their study. An example threshhold, which would be encoded as JSON, could express the sentiment “A database with 0-200 diagnoses from tumor registry data would be unfit for this study, 201-500 diagnoses may be suitable, and over 500 diagnoses will be more enough.”
+
+--- 
+ 
+<br>
+
+## Implementation
+
+The R package provides functionality for the four major processes involved in the framework:
+
+ - Authoring an assessment specification
+ - Executing an assessment specification
+ - Generating assessment results
+ - Visualizing assessment results
+ 
+--- 
+ 
+<br>
+
+## Development
+
+> See README of the [validationScripts](https://github.com/OHDSI/OncologyWG/tree/master/validationScripts) directory for instructions for contributing to the Oncology Validation Framework
+
+---
+
+<br>

@@ -13,18 +13,18 @@ navbar:
     - icon: fa-github
       href: https://github.com/OHDSI/OncologyWG
   left:
-    - text: " Home"
+    - text: " WG Overview"
       icon: fa-home
       href: index.html
-    - text: " Background"      
-      icon: fa-circle-info
-      href: background.html
     - text: "   Development Effort"
       icon: fa-people-group
       menu:
-        - text: " Development Overview"
+        - text: " Overview"
           href: development.html
-          icon: fa-map
+          icon: fa-tower-observation
+        - text: " Strategy"
+          href: strategy.html
+          icon: fa-chess
         - text: " Progress Map"
           href: progressMap.html
           icon: fa-list-check
@@ -34,12 +34,32 @@ navbar:
         - text: "   Getting Involved"
           href: gettingInvolved.html
           icon: fa-user-plus
-    - text: " Conventions"
-      icon: fa-gavel
-      href: conventions.html
-    - text: " Model"
-      href: model.html
-      icon: fa-sitemap
-    - text: " Tools"
-      icon: fa-wrench
-      href: tooling.html  
+    - text: " Specifications"
+      icon: fa-circle-info
+      menu:
+        - text: " Conventions"
+          icon: fa-gavel
+          href: conventions.html
+        - text: " Model"
+          href: model.html
+          icon: fa-sitemap
+        - text: " Genomics"
+          href: genomics.html
+          icon: fa-dna
+    - text: " Implementation"
+      icon: fa-desktop
+      menu:
+        - text: " Installation"
+          href: installation.html
+          icon: fa-play
+        - text: " Tooling"
+          icon: fa-wrench
+          href: tooling.html
+        - text: " ETLs"
+          icon: fa-code
+          menu:
+          - text: " NAACCR"
+            href: naaccr.html
+            
+      
+   

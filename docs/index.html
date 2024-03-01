@@ -11,9 +11,9 @@
 
 
 
-<title>index.knit</title>
+<title> OHDSI Oncology WG</title>
 
-<script src="site_libs/header-attrs-2.15/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -29,14 +29,14 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
 <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
 
 <style type="text/css">
@@ -185,8 +185,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -194,16 +194,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -339,14 +332,7 @@ div.tocify {
   <a href="index.html">
     <span class="fa fa-home"></span>
      
-     Home
-  </a>
-</li>
-<li>
-  <a href="background.html">
-    <span class="fa fa-circle-info"></span>
-     
-     Background
+     WG Overview
   </a>
 </li>
 <li class="dropdown">
@@ -360,9 +346,16 @@ div.tocify {
   <ul class="dropdown-menu" role="menu">
     <li>
       <a href="development.html">
-        <span class="fa fa-map"></span>
+        <span class="fa fa-tower-observation"></span>
          
-         Development Overview
+         Overview
+      </a>
+    </li>
+    <li>
+      <a href="strategy.html">
+        <span class="fa fa-chess"></span>
+         
+         Strategy
       </a>
     </li>
     <li>
@@ -388,26 +381,74 @@ div.tocify {
     </li>
   </ul>
 </li>
-<li>
-  <a href="conventions.html">
-    <span class="fa fa-gavel"></span>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-circle-info"></span>
      
-     Conventions
+     Specifications
+     
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="conventions.html">
+        <span class="fa fa-gavel"></span>
+         
+         Conventions
+      </a>
+    </li>
+    <li>
+      <a href="model.html">
+        <span class="fa fa-sitemap"></span>
+         
+         Model
+      </a>
+    </li>
+    <li>
+      <a href="genomics.html">
+        <span class="fa fa-dna"></span>
+         
+         Genomics
+      </a>
+    </li>
+  </ul>
 </li>
-<li>
-  <a href="model.html">
-    <span class="fa fa-sitemap"></span>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-desktop"></span>
      
-     Model
-  </a>
-</li>
-<li>
-  <a href="tooling.html">
-    <span class="fa fa-wrench"></span>
+     Implementation
      
-     Tools
+    <span class="caret"></span>
   </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="installation.html">
+        <span class="fa fa-play"></span>
+         
+         Installation
+      </a>
+    </li>
+    <li>
+      <a href="tooling.html">
+        <span class="fa fa-wrench"></span>
+         
+         Tooling
+      </a>
+    </li>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="fa fa-code"></span>
+         
+         ETLs
+      </a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="naaccr.html"> NAACCR</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -426,9 +467,8 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore"><div>
-<img src="images/ohdsi40x40.png"></img> OHDSI Oncology WG
-</div></h1>
+<h1 class="title toc-ignore"><img src="images/ohdsi40x40.png"></img>
+OHDSI Oncology WG</h1>
 
 </div>
 
@@ -443,9 +483,14 @@ research.</p>
 <p>Oncology support in OMOP is a work in progress. We welcome your
 participation!</p>
 <hr />
+<p><br></p>
 </div>
 <div id="subgroups-meeting-schedule" class="section level2">
 <h2><strong>Subgroups &amp; Meeting Schedule</strong></h2>
+<p><em>TODO: update the following table with the new 2024 meeting links.
+Until then, and even after then, it is highly recommended that you add
+the meetings series to your own calendar, which are found within the
+oncology teams calendar, instead of reyling on this table.</em></p>
 <table>
 <colgroup>
 <col width="25%" />
@@ -486,15 +531,52 @@ href="https://teams.microsoft.com/l/meetup-join/19%3aa38d75bbaf8b4093b78f4ff4b02
 </tr>
 </tbody>
 </table>
-<p><br></p>
 <hr />
+<p><br></p>
+</div>
+<div id="problem-space" class="section level2">
+<h2><strong>Problem Space</strong></h2>
+<p>In a typical observational study, the definition of the study
+population (cohort), exposures and outcomes are usually based on
+diagnostic codes in addition to drug exposures, procedure occurrences or
+lab measurements. For cancer studies, this information is typically not
+sufficient, as more details are required for the proper identification
+of the study population, treatment and subsequent outcomes.</p>
+<p>Appropriate characterization of cancer requires details such as
+anatomical site, morphology, local penetration, affected lymph nodes,
+metastatic spread, biomarkers, and disease staging and grading. In
+typical observational data sources, this necessary level of detail is
+not regularly present. Patient results from diagnostic procedures are
+collected but may not be available within the given data source or what
+is collected cannot appropriately serve as a surrogate for the above
+attributes. Correct identification of cancer treatment regimens also
+tends to be more complex compared to other disease modalities within
+observational data. Most cancer treatments are administered in
+chemotherapy regimens with complex dosing and scheduling in multiple
+cycles and are often combined with targeted therapies, immunotherapies,
+surgery or radiotherapy. None of these attributes follow standard
+definition to be applied to observational data, as most regimens are
+personalized to the individual patient need, making a priori
+standardized definitions more complex. Additionally, clinically relevant
+information on disease, treatment and outcomes that appropriately
+reflects a patient’s journey including information on the time of
+diagnosis, response to treatments, time to treatment failure, disease
+progression, recurrence and (disease-free and overall) survival requires
+data abstraction and is rarely available in the source data and has not
+been traditionally supported in OMOP CDM.</p>
+<p>The Oncology CDM Extension of the OMOP CDM aims to provide a
+foundation for representing cancer data at the levels of granularity and
+abstraction required to support observational cancer research.</p>
+<p>The extension has been tested in EHR and Cancer Registry data against
+a number of typical use cases.</p>
+<hr />
+<p><br></p>
 </div>
 <div id="site-map" class="section level2">
 <h2><strong>Site Map</strong></h2>
 <p>This site contains the following sections:</p>
-<p><br></p>
-<div id="background" class="section level4">
-<h4><strong><a href="background.html">Background</a></strong></h4>
+<div id="wg-home" class="section level4">
+<h4><strong><a href="index.html">WG Home</a></strong></h4>
 <table>
 <colgroup>
 <col width="40%" />
@@ -502,17 +584,8 @@ href="https://teams.microsoft.com/l/meetup-join/19%3aa38d75bbaf8b4093b78f4ff4b02
 </colgroup>
 <tbody>
 <tr class="odd">
-<td><a href="background.html#Problem_Space">Problem Space</a></td>
+<td><a href="index.html#Problem_Space">Problem Space</a></td>
 <td align="left">High level summary of working group mission</td>
-</tr>
-<tr class="even">
-<td><a href="background.html#Goals">Goals</a></td>
-<td align="left">Goals of working group</td>
-</tr>
-<tr class="odd">
-<td><a href="background.html#Notable_Challenges">Notable
-Challenges</a></td>
-<td align="left">Core challenges of effort</td>
 </tr>
 <tr class="even">
 <td><a
@@ -533,45 +606,56 @@ presentations</td>
 <tbody>
 <tr class="odd">
 <td><strong><a href="development.html">Development Overview</a></strong>
-<br> <a href="development.html#Purpose_and_Goals">Purpose and Goals</a>
-<br> <a href="development.html#Context">Context</a> <br> <a
+<br> <a href="development.html#Purpose">Purpose</a> <br> <a
+href="development.html#Goals">Goals</a> <br> <a
+href="development.html#Notable_Challenges">Notable Challenges</a> <br>
+<a href="development.html#Context">Context</a> <br> <a
 href="development.html#Scope">Scope</a> <br> <a
-href="development.html##What_we_need">What we need</a> <br> <a
+href="development.html#What_we_need">What we need</a> <br> <a
 href="development.html#Project_Management">Project Management</a></td>
 <td align="left">Overview of current development effort</td>
 </tr>
 <tr class="even">
+<td><strong><a href="strategy.html">Strategy</a></strong> <br> <a
+href="strategy.html#Delta_Vocabulary">Delta Vocabulary</a> <br> <a
+href="strategy.html#Validation_Framework">Validation Framework</a></td>
+<td align="left">Details regarding key components of the development
+strategy</td>
+</tr>
+<tr class="odd">
 <td><strong><a href="progressMap.html">Progress Map</a></strong> <br> <a
 href="progressMap.html#Miro_Map">Miro Map</a> <br> <a
 href="progressMap.html#Roadmap">Roadmap</a></td>
 <td align="left">Miro Map of completed and outstanding work within scope
 (with links)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong><a href="githubProject.html">Github Project
 Orientation</a></strong> <br> <a
-href="githubProject.html#Approach">Approach</a> <br> <a
 href="githubProject.html#Architecture">Architecture</a> <br> <a
-href="githubProject.html#Project_Views">Project Views</a> <br> <a
-href="githubProject.html#Approach">Example Walkthrough</a></td>
+href="githubProject.html#strategy">Strategy</a> <br> <a
+href="githubProject.html#Project_Navigation">Project Navigation</a> <br>
+<a href="githubProject.html#Approach">Example Walkthrough</a></td>
 <td align="left">Documentation about navigating and understanding the
 Github Project and approach</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><strong><a href="gettingInvolved.html">Getting Involved</a></strong>
-<br> <a
-href="gettingInvolved.html#join_collaboration_channels">Collaboration
-Channels</a> <br> <a
+<br> <a href="gettingInvolved.html#join_collaboration_channels">Join
+Collaboration Channels</a> <br> <a
+href="gettingInvolved.html#Submit_a_new_collaborator_form">Submit
+Collaborator Form</a> <br> <a
 href="gettingInvolved.html#Review_Project_Documentation">Review Project
-Documentation</a></td>
+Documentation</a> <br> <a
+href="gettingInvolved.html#Contributing">Contributing</a></td>
 <td align="left">Suggestions and links for getting started in the
 effort!</td>
 </tr>
 </tbody>
 </table>
 </div>
-<div id="conventions" class="section level4">
-<h4><strong><a href="conventions.html">Conventions</a></strong></h4>
+<div id="specifications" class="section level4">
+<h4><strong>Specifications</strong></h4>
 <table>
 <colgroup>
 <col width="40%" />
@@ -579,24 +663,63 @@ effort!</td>
 </colgroup>
 <tbody>
 <tr class="odd">
-<td><a href="conventions.html#Diagnostic">Diagnostic</a></td>
+<td><strong><a href="conventions.html">Conventions</a></strong> <br> <a
+href="conventions.html#Diagnostic">Diagnostic</a> <br> <a
+href="conventions.html#Treatment">Treatment</a></td>
 <td align="left">Overview of current development effort</td>
 </tr>
 <tr class="even">
-<td><a href="conventions.html#Treatment">Treatment</a></td>
-<td align="left">Overview of current development effort</td>
+<td><strong><a href="model.html">Model</a></strong></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td><strong><a href="genomics.html">Genomics</a></strong></td>
+<td align="left"></td>
 </tr>
 </tbody>
 </table>
 <hr />
 </div>
-<div id="model" class="section level4">
-<h4><strong><a href="model.html">Model</a></strong></h4>
+<div id="implementation" class="section level4">
+<h4><strong>Implementation</strong></h4>
+<table>
+<tbody>
+<tr class="odd">
+<td><strong><a href="installation.html">Installation</a></strong></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td><strong><a href="tooling.html">Tooling</a></strong></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td><strong>ETLs</strong> <br> <strong><a href="naaccr.html">NAACCR
+ETL</a></strong></td>
+<td align="left"></td>
+</tr>
+</tbody>
+</table>
 <hr />
+<p><br></p>
 </div>
-<div id="tools" class="section level4">
-<h4><strong><a href="tooling.html">Tools</a></strong></h4>
 </div>
+<div id="publicationspresentations" class="section level2">
+<h2><strong>Publications/Presentations</strong></h2>
+<ul>
+<li><p><a
+href="https://github.com/OHDSI/OncologyWG/wiki/Oncology-Tutorial">2020
+OHDSI Symposium - Oncology Tutorial</a></p></li>
+<li><p><a
+href="https://github.com/OHDSI/OncologyWG/wiki/Genomic-Variant-Harmonization">2020
+OHDSI Symposium - Genomic Variant Harmonization Poster
+Presentation</a></p></li>
+<li><p><a
+href="https://github.com/OHDSI/OncologyWG/wiki/Bladder-Cancer-Study">Bladder
+Cancer Study</a></p></li>
+<li><p><a href="https://ascopubs.org/doi/10.1200/CCI.20.00079">JCO
+Clinical Cancer Informatics</a></p></li>
+</ul>
+<p><br></p>
 </div>
 
 
