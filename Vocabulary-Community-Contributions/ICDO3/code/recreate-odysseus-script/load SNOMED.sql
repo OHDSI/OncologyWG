@@ -1,7 +1,11 @@
 -- See https://github.com/OHDSI/Vocabulary-v5.0/blob/44978ec6fd5cf8ad4d8e5cf1171d869c1767c2b5/SNOMED/readme.md?plain=1
 -- 1. Run create_source_tables.sql
--- See https://github.com/OHDSI/Vocabulary-v5.0/blob/master/SNOMED/create_source_tables.sql
+-- See also https://github.com/OHDSI/Vocabulary-v5.0/blob/master/SNOMED/create_source_tables.sql
 -- schema SOURCES -> snomed
+-- Drop schema and dependencies
+DROP SCHEMA IF EXISTS snomed CASCADE;
+CREATE SCHEMA IF NOT EXISTS snomed;
+
 DROP TABLE IF EXISTS snomed.SCT2_CONCEPT_FULL_MERGED;
 CREATE TABLE snomed.SCT2_CONCEPT_FULL_MERGED
 (
