@@ -11,6 +11,10 @@ output:
 
 <br>
 
+<div style="font-size: 18px; font-weight: bold; color: red;">
+  Disclaimer: This sprint is currently not active. Please consult with the <a href="mailto:golozar@ohdsi.org">Oncology Workgroup</a>.
+</div>
+
 ## **Mission** 
 
 The OHDSI Oncology Working Group aims to provide a foundation for representing cancer data within the OMOP CDM at the levels of granularity and abstraction required to support observational cancer research.
@@ -24,13 +28,11 @@ Oncology support in OMOP is a work in progress. We welcome your participation!
 
 ##   **Subgroups & Meeting Schedule**
 
-*TODO: update the following table with the new 2024 meeting links. Until then, and even after then, it is highly recommended that you add the meetings series to your own calendar, which are found within the oncology teams calendar, instead of reyling on this table.*
-
 subgroup|schedule|meeting details|Team Lead
-:------------------|:--------------------------|:------------|:--------------
-|CDM/Vocabulary & Development|First Thu 1PM EST<br>Third Thu 9AM EST|[link](https://teams.microsoft.com/l/meetup-join/19%3a239caede18574bc183f75a7a5eb9e826%40thread.tacv2/1608665830064?context=%7b%22Tid%22%3a%22a30f0094-9120-4aab-ba4c-e5509023b2d5%22%2c%22Oid%22%3a%22e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%22%7d)|Thomas Falconer, Michael Gurley, & Robert Miller
-|Outreach/Research|Second Tue 3PM EST<br>Fourth Wed 9AM EST|[link](https://nam04.safelinks.protection.outlook.com/ap/t-59584e83/?url=https%3A%2F%2Fteams.microsoft.com%2Fl%2Fmeetup-join%2F19%253a3d57479b0f804e26bcef0aa5b1465c12%2540thread.tacv2%2F1608669595080%3Fcontext%3D%257b%2522Tid%2522%253a%2522a30f0094-9120-4aab-ba4c-e5509023b2d5%2522%252c%2522Oid%2522%253a%2522e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%2522%257d&data=04%7C01%7Csratwani%40us.imshealth.com%7C30c5cbd8817c4cad042808d9193c1d32%7C5989ece0f90e40bf9c791a7beccdb861%7C0%7C0%7C637568569301832802%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0&sdata=AFANjWGwRVGHYHWKqJLMFZHvQ42t8TkPGERrmWyNjnc%3D&reserved=0)|Asieh Golozar & Christian Reich
-|Genomic|Second and Fourth Tue 9AM EST|[link](https://teams.microsoft.com/l/meetup-join/19%3aa38d75bbaf8b4093b78f4ff4b0201f11%40thread.tacv2/1608669187453?context=%7b%22Tid%22%3a%22a30f0094-9120-4aab-ba4c-e5509023b2d5%22%2c%22Oid%22%3a%22e1bfdbcb-c8d0-4744-bdf5-a26789ddd15b%22%7d)|Asieh Golozar
+:------------------|:--------------------------
+|CDM/Vocabulary & Development|First Thu 1PM EST<br>Third Thu 9AM EST
+|Outreach/Research|Second Tue 3PM EST<br>Fourth Wed 9AM EST
+|-Omics|Second and Fourth Tue 9AM EST
 
 
 
@@ -45,9 +47,9 @@ In a typical observational study, the definition of the study population (cohort
 
 Appropriate characterization of cancer requires details such as anatomical site, morphology, local penetration, affected lymph nodes, metastatic spread, biomarkers, and disease staging and grading. In typical observational data sources, this necessary level of detail is not regularly present. Patient results from diagnostic procedures are collected but may not be available within the given data source or what is collected cannot appropriately serve as a surrogate for the above attributes. Correct identification of cancer treatment regimens also tends to be more complex compared to other disease modalities within observational data. Most cancer treatments are administered in chemotherapy regimens with complex dosing and scheduling in multiple cycles and are often combined with targeted therapies, immunotherapies, surgery or radiotherapy. None of these attributes follow standard definition to be applied to observational data, as most regimens are personalized to the individual patient need, making a priori standardized definitions more complex. Additionally, clinically relevant information on disease, treatment and outcomes that appropriately reflects a patient's journey including information on the time of diagnosis, response to treatments, time to treatment failure, disease progression, recurrence and (disease-free and overall) survival requires data abstraction and is rarely available in the source data and has not been traditionally supported in OMOP CDM.
 
-The Oncology CDM Extension of the OMOP CDM aims to provide a foundation for representing cancer data at the levels of granularity and abstraction required to support observational cancer research.
+The Oncology convention of the OMOP CDM aims to provide a foundation for representing cancer data at the levels of granularity and abstraction required to support observational cancer research.
 
-The extension has been tested in EHR and Cancer Registry data against a number of typical use cases.
+These conventons have been tested in EHR and Cancer Registry data against a number of typical use cases.
 
 
 
