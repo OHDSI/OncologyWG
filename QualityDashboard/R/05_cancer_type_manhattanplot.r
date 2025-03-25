@@ -8,7 +8,6 @@ library(tidyr)
 #db_open(db_params)
 generate_overview2 <- function()
 {
-  
 # Step 1: Load your dataset (adjust the file path as needed)
 # select * from __schema__.rolled_up_tumor_types_for_each_partner;
 # Columns: partner, cancer_type, records, record_%
