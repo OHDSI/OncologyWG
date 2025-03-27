@@ -1,0 +1,728 @@
+---
+title: "OHDSI Oncology Data Partner Quality Report for `r params$partner`"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    keep_tex: false
+    latex_engine: xelatex
+    extra_dependencies: ["xcolor", "colortbl"]
+  bookdown::pdf_document2:
+    number_sections: true
+header-includes:
+  - \usepackage{pdflscape}
+  - \usepackage{floatrow}
+  - \floatsetup[figure]{capposition=bottom}
+  - \setlength{\abovecaptionskip}{10pt}  
+  - \setlength{\belowcaptionskip}{10pt} 
+  - \usepackage{attachfile}
+  - \usepackage{hyperref}
+  - \hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+params:
+  partner: "Default Partner"
+  total_patients: 0
+  general_records: 0
+  genomic_records: 0
+  episode_records: 0
+  issues_source_mapping: NULL
+  issues_source_other: NULL
+  issues_standard: NULL
+  all_issues_csv_path: "default.csv"
+  plot_data: NULL
+  plot_02_data: NULL
+  plot_04_data: NULL
+  plot_05_data: NULL
+  plot_06_data: NULL
+  plot_07_data: NULL
+  plot_08_data: NULL
+  plot_09_data: NULL
+---
+
+```{r r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+
+```
+
+------------------------------------------------------------------------
+
+Thanks for submitting your quality query results for your database **`r params$partner`**. This report will help understand how the data compare to other network participants and what issues there are requiring attention.
+
+## 1. The query
+
+The query retrieves statistics about the use of OMOP cancer-related concepts in your data. This list contains any concept that is related to the diagnosis, treatment or management of cancer, including genomic markers and disease and treatment episodes. It does not contain any information that is patient centric or points to the utilization of healthcare of the participating providers, obviating the need for data protection.
+
+![](Summary%20of%20the%20query.png){width="650"}
+
+**Fig 1. Summary of query.**
+
+## 2. Cancer-related concepts
+
+The list of concepts in the query is composed of all concepts from the purely cancer vocabularies "ICDO3", "CAP", "NAACCR", "Cancer Modifier", "OncoTree", "HemOnc", concepts from the ICD10 family of vocabs starting with the the concept code "C", as well as concepts from any vocabulary containing the terms "cancer", "metasta", "carcino", "malignant", "neoplas", "tumor", "onco", "biops", "debulk", "chemotherap", "radiotherap". It contains a list of concepts from the LOINC and SNOMED vocabularies denoting tumor stages and grades. It also contains all concepts that are descendants of the ATC drug classification concept "Antineoplastic agents". Finally, it contains all concepts that are mapped to the above through a valid "Maps to" relationship. Excluded are concepts from the "Indication", "Concept Class", "ISBT Attribute", "ETC", "ISBT", "SMQ", "SNOMED Veterinary", "Relationship", "Vocabulary", "CO-CONNECT MIABIS", "MeSH", "NDFRT", "Nebraska Lexicon", "EDI", "ICD10CN", "KCD7", "CO-CONNECT TWINS", "UB04 Pt dis status", "ATC", "VA Class", "GGR", "OMOP Extension", "Multilex", "EphMRA ATC", "AMIS", "Meas Type", "HES Specialty", "MDC", "VANDF", "Condition Type" vocabularies. The total number of cancer concepts is 284,958.
+
+\vspace{.5cm}
+
+The genomic marker concepts are a collection of concepts in the "CGI", "ClinVar", "OMOP Genomic", "JAX", "CIViC", "OncoKB", "COSMIC" vocabularies, concept from a list of NCIt, LOINC and SNOMED concepts containing genomic variants, but again excludes concepts from the above exclusion vocabularies. This list is 593,220 concepts long.
+
+\vspace{.5cm}
+
+The episode list contains concepts of the "Episode" domain, all concepts that have the exact same concept name as these from other vocabularies and all of the "HemOnc" concepts. This comprises of 8,052 concepts.
+
+## 3. Content of the query results
+
+The query result you returned contains records with the following information:
+
+1.  an abbreviated name of the source table
+
+2.  the combination of source and standard concept in that table
+
+3.  the count of that pair in the table.
+
+In addition, it also contains the number of Measurement Value concepts (no source concepts) and their count.
+
+Such statistics allows to infer some overall content of the database (again, without any patient or provider detail), as well as the correct use of concepts and their mapping from the source.
+
+## 4. General results
+
+`r if (params$total_patients > 1) { paste("You reported a total of", params$total_patients, "patients. ") }`The database query produced `r params$general_records` records for cancer concepts, `r params$genomic_records` records for genomic concepts and `r params$episode_records` records for episode concepts.
+
+## 5. Cancer type composition
+
+Rolling up the reported cancer condition concepts to cancer types results in the following distribution: \vspace{.5cm}
+
+```{r plot_02_data, echo=FALSE, results='asis'}
+
+if (!is.null(params$plot_02_data) && nrow(params$plot_02_data) > 0 ) {
+  cat("**Fig 2. Distribution of cancer types for**\\textbf{",params$partner,"}.\n\n")
+ 
+  ggplot(params$plot_02_data, aes(x = cancer_type, y = scaled_record, color = cancer_type)) +
+    geom_point(size = 3, alpha = 0.7) +
+    labs(
+      x = "Cancer Type",
+      y = "Scaled Record %"
+    ) +
+    scale_color_viridis_d(option = "C", name = NULL) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.title.x = element_blank(),
+      axis.text.y = element_text(size = 10, color = "black"),
+      axis.title.y = element_text(size = 14, color = "black"),
+      legend.position = "none",
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.border = element_rect(fill="transparent", color="gray75", linewidth=.5)
+    )
+} 
+
+```
+
+\newpage
+
+For comparison, the average distribution of cancer types is as follows:
+
+![](cancer_distribution_plot.png){width="650"} **Fig 3. Distribution of cancer types across the network**
+
+\vspace{1cm}
+
+The dots from left to right depict the total number of records for cancer types in the following order: Prostate – Lung and respiratory tract, Breast, Head and neck – Skin – Large intestine – Bladder – Multiple myeloma – Pancreas – Melanoma – Kidney – Ovary – Lymphoid hemopoietic – Uterus – Liver – Other Non-Hodgkin's – Lymphoid leukemia – Myeloid leukemia – Esophagus – Diffuse non-Hodgkin's – Stomach – Soft tissue – Male genital – Cervix – Female genital – Hodgkin's – Follicular non-Hodgkin's – Other Leukemia – Bone – Biliary tract – Small intestine – Urinary system – T-cell or NK-cell – Adrenal gland – Peritoneum – Mesothelioma – CNS – Thymus – Unknown origin – Mediastinum – Nervous system – Kaposi sarcoma – Immunoproliferative – Meninges – Endocrine – Placenta.
+
+\newpage
+
+The **`r params$partner`** database compares to the other data partners based on the composition of cancer types as follows: \vspace{.5cm}
+
+```{r plot_04_data/mds_plot, echo=FALSE, results='asis'}
+plot_04_data <- params$plot_04_data %>%
+mutate(
+    color_group4 = case_when(
+      partner %in% c("ERSCP", "Diamond", "Active", "Martini", "Dresden", 
+                     "Freiburg") ~ "Group 1",
+      partner %in% c("Maas NSCLC", "Lucas", "Belgium") ~ "Group 2",
+      TRUE ~ "Group 3" # All other partners
+    )
+  )
+custom_colors4 <- c(
+    "Group 1" = "#336B91",
+    "Group 2" = "#FBC511",
+    "Group 3" = "#E63946"
+)
+
+if (!is.null(params$plot_04_data) && nrow(params$plot_04_data) > 0) {
+    cat("**Fig 4. Cancer type distance plot between data partners with annotation.**\n\n")
+    
+    ggplot(plot_04_data, aes(x = V1, y = V2)) +
+        geom_point(aes(color = color_group4), 
+               alpha = ifelse(params$plot_04_data$partner == params$partner, 1, 0.5), 
+               size =ifelse(params$plot_04_data$partner == params$partner, 5, 3), 
+               show.legend = c(size = FALSE, alpha = FALSE)) +
+        geom_text_repel(aes(label = ifelse(partner == params$partner, partner, NA)), 
+                        size = 6, 
+                        fontface = "bold", 
+                        color = "black",    
+                        box.padding = unit(1.2, "lines"),
+                        point.padding = unit(0.5, "lines"),
+                        segment.color = "grey70",
+                        segment.size = 0.5,
+                        max.overlaps = Inf) +
+        scale_color_manual(
+            values = custom_colors4,
+            labels = c(
+                "Group 1" = "Mostly Prostate",
+                "Group 2" = "Mostly Lung",
+                "Group 3" = "All"
+            )
+       )+
+        theme_minimal() +
+        theme(
+            legend.position = "bottom",
+            legend.text = element_text(size = 12),   
+            legend.title=element_blank(),
+            panel.grid = element_blank(),
+            axis.text.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.y = element_blank(),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank()
+        )
+}
+
+```
+
+\newpage
+
+## 6. Domain composition
+
+The weight of each domain in the **`r params$partner`** database is as follows: \vspace{.5cm}
+
+```{r plot_05_data, echo=FALSE, results='asis'}
+if (!is.null(params$plot_05_data) && nrow(params$plot_05_data) > 0) {
+  cat("**Fig 5. Weight of each domain.**\n\n")
+
+  ggplot(params$plot_05_data, aes(x = domain, y = `record_%`, fill = domain)) +
+  geom_bar(stat = "identity", alpha = .6, width = .8) +
+  coord_flip() +
+  facet_wrap(~partner, ncol = 6) +
+  scale_fill_viridis(discrete = TRUE) +
+  theme_minimal() +
+  labs(
+    x="Domain",
+    y="Concept Frequency"
+  ) +
+  scale_y_continuous(breaks = c(0, 25, 50, 75, 100), limits = c(0, 100)) +
+  scale_color_identity() +
+  theme(
+    strip.text = element_blank(),
+    axis.text.y = element_blank(),
+    axis.text.x = element_text(size = 10, hjust = 1, vjust = 1),
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.text = element_text(color = "black", size = 12),
+    legend.key = element_blank(),
+    legend.background = element_rect(fill = NULL, color = NULL),
+    panel.border = element_rect(fill="transparent", color="gray50", linewidth=.5),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank()
+  )
+}
+```
+
+\newpage
+
+This compares to the other data partners: \vspace{.5cm}
+
+```{r plot_06_data, echo=FALSE, results='asis'}
+
+if (!is.null(params$plot_06_data) && nrow(params$plot_06_data) > 0) {
+  cat("**Fig 6. Domain weight distance plot of data partners with annotation.**\n\n")
+  
+  ggplot(params$plot_06_data, aes(x = V1, y = V2)) +
+    geom_point(aes(color = color_group), size = ifelse(params$plot_06_data$partner == params$partner, 5, 3)) +
+    geom_text_repel(
+      aes(label = partner), 
+      size = ifelse(params$plot_06_data$partner == params$partner,6 ,4),
+      fontface="bold",
+      color=ifelse(params$plot_06_data$partner==params$partner,"red","black"),
+      box.padding=unit(0.5,"lines"),
+      point.padding=unit(0.3,"lines"),
+      segment.color="grey80",
+      segment.size=.5,
+      max.overlaps=Inf
+    ) +
+    scale_color_manual(
+      values = custom_colors,
+      labels = c(
+        "Group 1" = "Conditions dominate",
+        "Group 2" = "Drugs dominate",
+        "Group 3" = "Measurements dominate",
+        "Group 4" = "Balanced"
+      )
+    ) +
+    theme_minimal() +
+     guides(color = guide_legend(nrow = 2, byrow = TRUE)) + 
+    theme(
+      legend.position="bottom",
+      legend.text = element_text(size = 12),   
+      panel.grid=element_blank(),
+      axis.text.x=element_blank(),
+      axis.ticks.x=element_blank(),
+      axis.text.y=element_blank(),
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),
+      legend.title = element_blank()
+    )
+} 
+
+```
+
+\newpage
+
+## 7. Findings in source concepts
+
+```{r, echo=FALSE, results='asis'}
+if (is.data.frame(params$plot_07_data) && nrow(params$plot_07_data) > 0) {
+     filtered <- params$plot_07_data %>% filter(critique %in% c("Concept 0 or NULL", "2-Billionaire"))
+     if (any(filtered$`record_%` > 0, na.rm = TRUE)) {
+       cat("When checking the concepts in the source concept fields, the following anomalies were detected:")
+     } else {
+       cat("When checking the concepts in the source concept fields, no issues were identified.")
+     }
+   } 
+```
+
+```{r, echo=FALSE, results='asis'}
+
+if (is.data.frame(params$plot_07_data) && nrow(params$plot_07_data) > 0) {
+  # Filter data for critique = "Concept 0 or NULL" or "2-Billionaire"
+  concept_data <- params$plot_07_data %>%
+    filter(critique %in% c("Concept 0 or NULL", "2-Billionaire"))
+  
+  # Check if there are records for these critiques
+  if (nrow(concept_data) > 0) {
+    # Loop over each record and apply conditional logic based on record_ value
+    for (i in 1:nrow(concept_data)) {
+      record_value <- concept_data$`record_%`[i]
+      critique_value <- concept_data$critique[i]
+      records_count <- concept_data$records[i]
+
+      
+      # Construct the sentence based on critique type and record_value
+      if (!is.na(record_value) && record_value > 0) {
+        if (critique_value == "Concept 0 or NULL") {
+          if (record_value > 0.5) {
+            sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are NULL or 0, ie. not provided (“Concept NULL” or “Concept 0”). This prevents the checking of mapping quality.")
+          } else if (record_value >= 0.25 & record_value <= 0.5) {
+            sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are NULL or 0, ie. not provided (“Concept NULL” or “Concept 0”). This prevents the checking of mapping quality.")
+          } else if (record_value < 0.25) {
+            sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are NULL or 0, ie. not provided (“Concept NULL” or “Concept 0”). This prevents the checking of mapping quality.")
+          }
+        } else if (critique_value == "2-Billionaire") {
+          if (record_value > 0.5) {
+            sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are so-called 2-billionaires, ie. have concept IDs above 2B (“2-Billionaire”). This is conformant with the OMOP CDM, but prevents the checking of mapping quality.")
+          } else if (record_value >= 0.25 & record_value <= 0.5) {
+            sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are so-called 2-billionaires, ie. have concept IDs above 2B (“2-Billionaire”). This is conformant with the OMOP CDM, but prevents the checking of mapping quality.")
+          } else if (record_value < 0.25) {
+            sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are so-called 2-billionaires, ie. have concept IDs above 2B (“2-Billionaire”). This is conformant with the OMOP CDM, but prevents the checking of mapping quality.")
+          }
+        }
+        
+        # Output the sentence
+        cat(sentence, "\n")
+      } 
+    }
+  } else {
+    cat("No data available for 'Concept 0 or NULL' or '2-Billionaire' critiques.\n")
+  }
+} else {
+  cat("When checking the concepts in the source concept fields, no issues were identified.\n")
+}
+
+```
+
+```{r plot_07_data, echo=FALSE, results='asis'}
+# Define custom colors
+custom_colors61 <- c("Great" = "white", "Concept 0 or NULL" = "#336B91", "2-Billionaire" = "#FBC511")
+
+# Create Plot_06 dynamically
+if (nrow(params$plot_07_data) > 0) {
+  cat("**Fig 7. Anomalies with source concepts.**\n\n")
+  
+ggplot(params$plot_07_data, aes(x = "", y = `record_%`, fill = critique, color = critique)) +  
+  geom_bar(stat = "identity", width = 1,color=NA) + 
+  coord_polar(theta = "y", start=0, direction=-1) + 
+  geom_label_repel(
+    aes(label = ifelse(critique %in% c("Concept 0 or NULL", "2-Billionaire") &  `record_%` > 0, 
+                       paste0(round(10000 * `record_%`, digits = 2) / 100, "%"), 
+                       "")), 
+    size = 3, color = "black", fill = "white", show.legend = FALSE,
+    force = 25,  
+    max.overlaps = Inf,  
+    box.padding = 0.01,  
+    point.padding = 0.01,  
+    segment.color = NA, 
+    segment.size = 0.5, 
+    min.segment.length = 0   
+    ) +
+  labs(x = NULL, y = NULL, fill ="", color="") +
+  scale_fill_manual(values = custom_colors61, breaks = names(custom_colors61)[names(custom_colors61) != "Great"]) +
+  scale_color_manual(values = custom_colors61, breaks = names(custom_colors61)[names(custom_colors61) != "Great"])+
+  theme_minimal() +
+  theme(
+    axis.text.x=element_blank(),
+    panel.grid.major.x = element_line(color = "grey80", size = 0.5) , 
+    panel.grid.major.y = element_blank(), 
+    axis.ticks = element_blank(),  
+    panel.grid=element_blank(),
+    strip.text=element_text(size=10),
+    legend.position="right",
+    legend.title=element_blank(),
+    legend.key=element_blank()
+   )
+} 
+```
+
+\newpage
+
+## 8. Findings in mapping of source concept
+
+```{r, echo=FALSE, results='asis'}
+
+if ( nrow(params$plot_08_data) > 0) {
+     filtered <- params$plot_08_data %>% filter(critique %in% c("Wrong mapping", "Needs mapping"))
+     if (any(filtered$`record_%` > 0, na.rm = TRUE)) {
+       cat("When checking the concepts in the source concept fields, the following anomalies were detected:")
+     } else {
+       cat("When checking the concepts in the source concept fields, no mapping issues were identified.")
+     }
+   } 
+```
+
+```{r, echo=FALSE, results='asis'}
+# Assuming params$plot_08_data is your data frame
+if (is.data.frame(params$plot_08_data) && nrow(params$plot_08_data) > 0) {
+  # Define the critiques to process
+  critiques <- c("Wrong mapping", "Needs mapping")
+  
+  # Loop over each critique
+  for (critique_value in critiques) {
+    # Filter data for the current critique
+    critique_data <- params$plot_08_data %>%
+      filter(critique == critique_value)
+    
+    # Check if there are records for this critique
+    if (nrow(critique_data) > 0) {
+      # Process each record for this critique
+      for (i in 1:nrow(critique_data)) {
+        record_value <- critique_data$`record_%`[i]
+        records_count <- critique_data$records[i]
+        
+        # Generate sentences based on record_value
+          if (critique_value == "Wrong mapping") {
+            if (record_value > 0.5) {
+              sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are mapped to a different standard concept than what the 'Maps to' relationship in the OHDSI Standardized Vocabularies suggest ('Wrong mapping').")
+            } else if (record_value >= 0.25 & record_value <= 0.5) {
+              sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are mapped to a different standard concept than what the 'Maps to' relationship in the OHDSI Standardized Vocabularies suggest ('Wrong mapping').")
+            } else if (record_value < 0.25) {
+              sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are mapped to a different standard concept than what the 'Maps to' relationship in the OHDSI Standardized Vocabularies suggest ('Wrong mapping').")
+            }
+          } else if (critique_value == "Needs mapping") {
+            if (record_value > 0.5) {
+              sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are not mapped to a standard concept, and no mappings are available in Vocabularies (“Needs mapping”).")
+            } else if (record_value >= 0.25 & record_value <= 0.5) {
+              sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are not mapped to a standard concept, and no mappings are available in Vocabularies (“Needs mapping”).")
+            } else if (record_value < 0.25 ) {
+              sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are not mapped to a standard concept, and no mappings are available in Vocabularies (“Needs mapping”).")
+            }
+          }
+          
+          # Output the sentence for this record
+          cat(sentence, "\n\n")
+        
+      }
+    } 
+  }
+} else {
+  cat("When checking the mapping of the source concepts, no mapping issues were identified.\n")
+}
+```
+
+```{r plot_08_data, echo=FALSE, results='asis'}
+# Define custom colors
+custom_colors8 <- c("Great" = "white", "Needs mapping" = "#336B91", "Wrong mapping" = "#FBC511")
+
+# Create Fig 8 dynamically
+if (nrow(params$plot_08_data) > 0) {
+  cat("**Fig 8. Mapping anomalies for source concepts.**\n\n")
+
+  ggplot(params$plot_08_data, aes(x = "", y = `record_%`, fill = critique, color = critique)) +  
+  geom_bar(stat = "identity", width = 1) + 
+  coord_polar(theta = "y", start=0, direction=1) + 
+  geom_label_repel(
+    aes(label = ifelse(critique %in% c("Needs mapping", "Wrong mapping") & `record_%` > 0, 
+                       paste0(round(10000 * `record_%`, digits = 2) / 100, "%"), 
+                       "")), 
+    size = 3, color = "black", fill = "white", show.legend = FALSE,
+    force = 25,  
+    max.overlaps = Inf, 
+    box.padding = 0.01, 
+    point.padding = 0.01,  
+    segment.color = NA, 
+    segment.size = 0.5,  
+    min.segment.length = 0   
+  ) +
+  labs(x = NULL, y = NULL, fill ="", color="") +
+  scale_fill_manual(values = custom_colors8, breaks = names(custom_colors8)[names(custom_colors61) != "Great"]) +
+  scale_color_manual(values = custom_colors8, breaks = names(custom_colors8)[names(custom_colors61) != "Great"])+
+  theme_minimal() +
+  theme(
+    axis.text.x=element_blank(),
+    panel.grid.major.x = element_line(color = "grey80", size = 0.5) , # Add subtle radial grid lines
+    axis.ticks=element_blank(),
+    panel.grid=element_blank(),
+    strip.text=element_text(size=10),
+    legend.position="right",
+    legend.title=element_blank(),
+    legend.key=element_blank()
+   )
+} 
+```
+
+\newpage
+
+## 9. Findings in standard concepts
+
+```{r, echo=FALSE, results='asis'}
+if (is.data.frame(params$plot_09_data) && nrow(params$plot_09_data) > 0) {
+    # List of critique categories to filter
+  critique_categories <- c(
+    "Concept 0", 
+    "Flavor of NULL", 
+    "Invalid grade", 
+    "Invalid met or node", 
+    "Invalid stage", 
+    "Meas Value overloaded", 
+    "Not standard concept", 
+    "Wrong domain table", 
+    "Wrong LOINC postcoordination", 
+    "Wrong vocab for domain"
+  )
+
+# Filter the data for any of the specified critique categories
+  filtered <- params$plot_09_data %>%
+    filter(critique %in% critique_categories)
+  if (any(filtered$`record_%` > 0, na.rm = TRUE)) {
+       cat("When checking the concepts in the standard concept fields, the following anomalies were detected:")
+     } else {
+       cat("When checking the concepts in the standard concept fields, no issues were identified.")
+     }
+   } 
+```
+
+```{r, echo=FALSE, results='asis'}
+# Assuming params$plot_09_data is your data frame
+if (!is.null(params$plot_09_data) && is.data.frame(params$plot_09_data)) {
+  # Define the critiques to process
+  critiques <- c("Concept 0","Flavor of NULL","Invalid grade", "Invalid met or node","Invalid stage", "Meas Value overloaded", "Not standard concept", "Wrong domain table", "Wrong LOINC postcoordination", "Wrong vocab for domain")
+  
+  # Loop over each critique
+  for (critique_value in critiques) {
+    # Filter data for the current critique
+    critique_data <- params$plot_09_data %>%
+      filter(critique == critique_value)
+    
+    # Check if there are records for this critique
+    if (nrow(critique_data) > 0) {
+      # Process each record for this critique
+      for (i in 1:nrow(critique_data)) {
+        record_value <- critique_data$`record_%`[i]
+        records_count <- critique_data$records[i]
+        
+        # Generate sentences based on record_value
+          if (critique_value == "Concept 0") {
+            if (record_value > 0.5) {
+              sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are NULL or 0. These records cannot participate in OMOP research and need to be filled with content. (“Concept NULL”, “Concept 0”).")
+            } else if (record_value >= 0.25 & record_value <= 0.5) {
+              sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records)  are NULL or 0. These records cannot participate in OMOP research and need to be filled with content. (“Concept NULL”, “Concept 0”).")
+            } else if (record_value < 0.25) {
+              sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records)  are NULL or 0. These records cannot participate in OMOP research and need to be filled with content. (“Concept NULL”, “Concept 0”).")
+            }
+          } else if (critique_value == "Flavor of NULL") {
+            if (record_value > 0.5) {
+              sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are so-called flavors of NULL and should therefore not have a record in the data (“Flavor of NULL”).")
+            } else if (record_value >= 0.25 & record_value <= 0.5) {
+              sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are so-called flavors of NULL and should therefore not have a record in the data (“Flavor of NULL”).")
+            } else if (record_value < 0.25 ) {
+              sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are so-called flavors of NULL and should therefore not have a record in the data (“Flavor of NULL”).")
+            }
+          } else if (critique_value == "Invalid grade") {
+            if (record_value > 0.5) {
+              sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) define a tumor grade, but are not using a Cancer Modifier concept for this (“Invalid grade”).")
+            } else if (record_value >= 0.25 & record_value <= 0.5) {
+              sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records) define a tumor grade, but are not using a Cancer Modifier concept for this (“Invalid grade”).")
+            } else if (record_value < 0.25 ) {
+              sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) define a tumor grade, but are not using a Cancer Modifier concept for this (“Invalid grade”).")
+            }
+          } else if (critique_value == "Invalid stage") {
+            if (record_value > 0.5) {
+              sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) define a stage, but are not using a Cancer Modifier concept for this (“Invalid stage”).")
+            } else if (record_value >= 0.25 & record_value <= 0.5) {
+              sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records) define a stage, but are not using a Cancer Modifier concept for this (“Invalid stage”).")
+            } else if (record_value < 0.25 ) {
+              sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) define a stage, but are not using a Cancer Modifier concept for this (“Invalid stage”).")
+            }
+          } else if (critique_value == "Invalid met or node") {
+            if (record_value > 0.5) {
+              sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) define a metastasis or affected lymph node, but are not using a Cancer Modifier concept for this (“Invalid met or node”).")
+            } else if (record_value >= 0.25 & record_value <= 0.5) {
+              sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records) define a metastasis or affected lymph node, but are not using a Cancer Modifier concept for this (“Invalid met or node”).")
+            } else if (record_value < 0.25 ) {
+              sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) define a metastasis or affected lymph node, but are not using a Cancer Modifier concept for this (“Invalid met or node”).")
+            }
+          } else if (critique_value == "Meas Value overloaded") {
+            if (record_value > 0.5) {
+              sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are valid standard concepts, but should not be recorded as Measurement Values but as Measurement concepts and often as Cancer Modifier concepts instead (“Meas Value overloaded”).")
+            } else if (record_value >= 0.25 & record_value <= 0.5) {
+              sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are valid standard concepts, but should not be recorded as Measurement Values but as Measurement concepts and often as Cancer Modifier concepts instead (“Meas Value overloaded”).")
+            } else if (record_value < 0.25 ) {
+              sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are valid standard concepts, but should not be recorded as Measurement Values but as Measurement concepts and often as Cancer Modifier concepts instead (“Meas Value overloaded”).")
+            }
+          } else if (critique_value == "Not standard concept") {
+            if (record_value > 0.5) {
+              sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are not standard concepts (“Not standard concept”).")
+            } else if (record_value >= 0.25 & record_value <= 0.5) {
+              sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are not standard concepts (“Not standard concept”).")
+            } else if (record_value < 0.25 ) {
+              sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are not standard concepts (“Not standard concept”).")
+            }
+          } else if (critique_value == "Wrong domain table") {
+            if (record_value > 0.5) {
+              sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are valid standard concepts, but are recorded in the wrong domain table (“Wrong domain table”).")
+            } else if (record_value >= 0.25 & record_value <= 0.5) {
+              sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are valid standard concepts, but are recorded in the wrong domain table (“Wrong domain table”).")
+            } else if (record_value < 0.25 ) {
+              sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are valid standard concepts, but are recorded in the wrong domain table (“Wrong domain table”).")
+            }
+          } else if (critique_value == "Wrong LOINC postcoordination") {
+            if (record_value > 0.5) {
+              sentence <- paste0("- Most LOINC concepts (", round(record_value * 100, 2), "%, ", records_count, " records)  need pre-coordination with their corresponding variable (“Wrong postcoordination”).")
+            } else if (record_value >= 0.25 & record_value <= 0.5) {
+              sentence <- paste0("- Many LOINC concepts (", round(record_value * 100, 2), "%, ", records_count, " records)  need pre-coordination with their corresponding variable (“Wrong postcoordination”).")
+            } else if (record_value < 0.25 ) {
+              sentence <- paste0("- Some LOINC concepts (", round(record_value * 100, 2), "%, ", records_count, " records)  need pre-coordination with their corresponding variable (“Wrong postcoordination”).")
+            }
+          } else if (critique_value == "Wrong vocab for domain") {
+            if (record_value > 0.5) {
+              sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are nominally valid standard concepts, but their vocabulary should not be used for this domain (“Wrong vocab for domain”).")
+            } else if (record_value >= 0.25 & record_value <= 0.5) {
+              sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are nominally valid standard concepts, but their vocabulary should not be used for this domain (“Wrong vocab for domain”).")
+            } else if (record_value < 0.25 ) {
+              sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are nominally valid standard concepts, but their vocabulary should not be used for this domain (“Wrong vocab for domain”).")
+            }
+          }
+          
+          # Output the sentence for this record
+          cat(sentence, "\n\n")
+        
+      }
+    } 
+  }
+} else {
+  cat("When checking the mapping of the standard concepts, no issues were identified.\n")
+}
+```
+
+```{r plot_09_data, echo=FALSE, results='asis'}
+# Define common colors
+common_colors <- c(
+  "Concept 0" = "#9590FF",
+  "Invalid grade" = "#A3A500",
+  "Invalid met or node" = "#e38826",
+  "Invalid stage" = "#39B600",
+  "Not standard concept" = "#0063a6",
+  "Wrong domain table" = "#F8766D",
+  "Wrong vocab for domain"="#00BFC4",
+  "Flavor of NULL"="#FF3300",
+  "Meas Value overloaded"="#FFDC91FF",
+  "Wrong LOINC postcoordination"="#6F99ADFF",
+  "Great"="white"
+)
+
+# Filter colors for critiques present in the data
+common_colors <- common_colors[names(common_colors) %in% unique(params$plot_09_data$critique)]
+
+# Exclude "Great" from legend
+legend_breaks <- names(common_colors)[names(common_colors) != "Great"]
+
+# Create Plot_125 dynamically
+if (!is.null(params$plot_09_data) && nrow(params$plot_09_data) > 0) {
+  cat("**Fig 9. Anomalies with standard concepts.**\n\n")
+  
+ggplot(params$plot_09_data, aes(x = "", y = `record_%`, fill = critique, color = critique)) +  
+  geom_bar(stat = "identity", width = 1.5) + 
+  coord_polar(theta = "y", start=0, direction=1) + 
+  labs(x = NULL, y = NULL, fill="", color="") +
+  scale_fill_manual(values=common_colors, breaks=legend_breaks) +
+  scale_color_manual(values=common_colors, breaks=legend_breaks) +
+  theme_void() +
+  theme(
+    panel.grid.major.x = element_line(color = "grey80", size = 0.5) , # Add subtle radial grid lines
+    axis.ticks = element_blank(),  # Remove x-axis ticks
+    panel.grid=element_blank(),
+    strip.text=element_text(size=10),
+    legend.position="right",
+    legend.title=element_blank(),
+    legend.key=element_blank()
+   )
+  
+} 
+```
+
+## 10. Detailed report
+
+The full list of issues is available here: \href{`r params$all_issues_csv_path`}{\textcolor{blue}{\underline{Download Full List of Issues}}}
+
+
+\newpage
+\landscape
+
+### 10.1. Issues with Source (Other issues)
+
+```{r , echo=FALSE, results='asis'}
+if (!is.null(params$issues_source_other) && nrow(params$issues_source_other) > 0) {
+  
+  # Render table in report
+  knitr::kable(params$issues_source_other, caption = "Issues with Source (Other)")
+}else {
+  cat("No other issues were identified with the source concepts.\n")
+}
+```
+
+\newpage
+
+### 10.2. Issues with Source (Mapping issues)
+
+```{r , echo=FALSE, results='asis'}
+if (!is.null(params$issues_source_mapping) && nrow(params$issues_source_mapping) > 0) {
+  
+  # Render table in report
+  knitr::kable(params$issues_source_mapping, caption = "Issues with Source (Mapping issues)")
+} else {
+  cat("No mapping issues were identified with the source concepts.\n")
+}
+```
+
+\newpage
+
+### 10.3. Issues with Standard
+
+```{r , echo=FALSE, results='asis'}
+if (!is.null(params$issues_standard) && nrow(params$issues_standard) > 0) {
+  
+  # Render table in report
+  knitr::kable(params$issues_standard, caption = "Issues with Standard")
+}else {
+  cat("No mapping issues were identified with the standard concepts.\n")
+}
+```

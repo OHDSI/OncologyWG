@@ -198,7 +198,7 @@ generate_partner_output <- function(partner_name)
     guides(color=guide_legend(ncol=9), byrow=TRUE)
   
   # Save the plot as an image file
-  
+
   plot_path <- file.path(output_dir, "cancer_distribution_plot.png")
   ggsave(plot_path, plot=cancer_distribution_plot, width = 5, height = 3)
   ######## 
@@ -347,10 +347,16 @@ generate_partner_output <- function(partner_name)
   # Path to the R Markdown template
   template_path <- "report_template_pdf.Rmd"
   
-  if (!file.exists(template_path)) {
-    stop("Template file does not exist: ", template_path)
+  # Markdown cannot deal with files not in the current directory,
+  # so we need to copy them once
+  if (!file.exists(template_path)) 
+  {
+    file.copy(paste0("R/", template_path), template_path)
+    file.copy("R/Summary of the query.png", "Summary of the query.png")
+    file.copy("R/cancer_distribution_plot.png", "cancer_distribution_plot.png")
   }
   
+
   # Render reports for each partner
 
   # Prepare data for Fig 6
@@ -446,8 +452,9 @@ generate_partner_output <- function(partner_name)
     
     issues_standard <- issues %>% filter(`Concept Type` == "Standard")
     issues_standard <- issues_standard %>% select(-c(`Concept Type`, `Domain ID`, `Is Domain`))
+
+    log_message("450")
     
-  
     # Prevent log file
     Sys.setenv(R_PANDOC_LATEX_ARGS="--pdf-engine-opt=-interaction=batchmode")
     #library(knitr)
@@ -460,7 +467,7 @@ generate_partner_output <- function(partner_name)
       #clean = TRUE,
       #quiet = TRUE,
       input = template_path,
-      output_file = paste0(output_dir, partner, "_report.pdf"),
+      output_file = paste0(partner, "_report.pdf"),
       params = list(
         partner = partner,
         total_patients = total_patients,
@@ -481,10 +488,12 @@ generate_partner_output <- function(partner_name)
       ),
       envir = new.env() # Use a clean environment for rendering
     )
+    
+    file.rename(paste0(partner, "_report.pdf"), paste0(output_dir, partner, "_report.pdf"))
     mk_log_file <- paste0(partner, "_report.log")
     if (file.exists(mk_log_file))
       file.remove(mk_log_file)
-    
+
     cat("Generated report for", partner, "\n")
   }
   
