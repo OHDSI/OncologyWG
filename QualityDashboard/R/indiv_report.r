@@ -453,8 +453,6 @@ generate_partner_output <- function(partner_name)
     issues_standard <- issues %>% filter(`Concept Type` == "Standard")
     issues_standard <- issues_standard %>% select(-c(`Concept Type`, `Domain ID`, `Is Domain`))
 
-    log_message("450")
-    
     # Prevent log file
     Sys.setenv(R_PANDOC_LATEX_ARGS="--pdf-engine-opt=-interaction=batchmode")
     #library(knitr)
