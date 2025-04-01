@@ -1,0 +1,276 @@
+Goal:
+* Replicate the current vocabulary:
+	- same concepts, at least valid and upgraded ones (deprecated cannot be used anyway and don't have a relationship with a valid concept, but upgraded ones do)
+	- same relationships, except where relationship is with deprecated or upgraded concept (in that case there should be a new relationship)
+	
+**************** STEP 0
+
+**** Action: update r_to_c_all.csv so that all SNOMED concepts that are not valid anymore are replaced by valid concepts (or line removed)
+
+**************** STEP 1
+
+**** Action: Check created concepts and difference with current ICDO3 vocab
+
+new: 
+61261 valid concepts
+321 deprecated concepts
+1879 upgraded concepts
+
+current:
+61479 valid concepts
+1110 deprecated concepts
+1882 upgraded concepts
+
+difference in valid concepts:
+219 in current and not in new:
+?? - 6 deprecated in new (9752/1-C34.9,9530/1-C70.9,8462/3-C56.9,8950/1-C56.9,8153/1-NULL,9150/1-NULL): all these should be deprecated because their histologies are deprecated, except for 8153/1-NULL and 9150/1-NULL, they should be upgraded to 8153/3-NULL and 8815/1-NULL respectively
+ok - 213 don't exist in new because they are not in icdo3_valid_combination
+1 in new and not in current: 
+?? - 8453/1-C25.9 is D in current: it should be deprecated in new as well because 8453/1 is not a valid morphology according to morph_source_who; it is in icdo3_valid_combination, it is also in r_to_c_all
+
+difference in upgraded concepts:
+3 in current and not in new:
+ok - 3 don't exist in new because they are not in icdo3_valid_combination (8680/1-C49.9,8936/1-C26.9,8150/1-C25.9)
+0 in new and not in current: 
+
+difference in deprecated concepts:
+795 in current and not in new:
+ok - XXXX/X-CXX: 716 (= all)
+ok - NULL-CXX: 70 (= all) 
+ok - 1 weird code that should not be there (C57.9-8746/3)
+ok - 6 9999/9 codes (9999/9-C34.9,9999/9-C50.9,9999/9-C34.1,9999/9-C18.9,9999/9-C42.1,9999/9-C80.9): these are the only 9999/9 codes in current (new has none)
+ok - 1 missing histology (9342/3): deprecated in current because it has a space in the concept code, a version without the space is valid (in new and current)
+?? - 1 valid in new and D in current (8453/1-C25.9)
+6 in new and not in current: 
+?? - valid in current (see earlier: 9752/1-C34.9,9530/1-C70.9,8462/3-C56.9,8950/1-C56.9,8153/1-NULL,9150/1-NULL)
+
+Remarks:
+* Extra deprecated concepts in current are fine: since the concepts are not in new they remain (see devv5.GenericUpdate()). They are probably from older versions of the ICDO3 vocab.
+
+**** Conclusion: 216 (213 valid + 3 upgraded) concepts are missing from input file
+
+Analysis of these 213 concepts:
+- 125 of these are /6 concepts (but there are still 235 ____/6-C__._ concepts in new) most are 8000/6 but not all
+- 63 of these are /3: 
+	- 4 are used > 100 times in NCR
+	- 2 are used 6 times in NCR
+	- 8 are use 1 or 2 times in NCR
+	- 50 are not used in NCR
+- 12 are /0
+- 12 are /1
+- 1 is /2
+
+Questions:
+- icdo3_valid_combination.csv seems to be missing 216 concepts so it cannot be the input file used to create the current ICDO3 vocabulary. It could be older, so these 216 concepts were added in a later version of the ICDO3 vocabulary. Or it could be newer and it has not been used to create a released ICDO3 vocabulary. If we use the original input file the 213 concepts will be deprecated.
+
+**************** STEP 2
+
+**** Action: 
+	- Add 213 missing valid combinations
+	- Add 3 missing upgraded combinations
+
+new: 
+61474 valid concepts
+321 deprecated concepts
+1882 upgraded concepts
+
+current:
+61479 valid concepts
+1110 deprecated concepts
+1882 upgraded concepts
+
+difference in valid concepts:
+6 in current and not in new:
+?? - 6 valid in current and deprecated in new (9752/1-C34.9,9530/1-C70.9,8462/3-C56.9,8950/1-C56.9,8153/1-NULL,9150/1-NULL): all these should be deprecated because their histologies are deprecated, except for 8153/1-NULL and 9150/1-NULL, they should be upgraded to 8153/3-NULL and 8815/1-NULL respectively
+1 in new and not in current: 
+?? - 8453/1-C25.9 (deprecated in current): it should be deprecated in new as well because 8453/1 is not a valid morphology according to morph_source_who; it is in icdo3_valid_combination, it is also in r_to_c_all
+
+difference in upgraded concepts:
+0 in current and not in new:
+0 in new and not in current: 
+
+difference in deprecated concepts:
+795 in current and not in new:
+ok - XXXX/X-CXX: 716 (= all)
+ok - NULL-CXX: 70 (= all) 
+ok - 1 weird code that should not be there (C57.9-8746/3)
+ok - 6 9999/9 codes (9999/9-C34.9,9999/9-C50.9,9999/9-C34.1,9999/9-C18.9,9999/9-C42.1,9999/9-C80.9): these are the only 9999/9 codes in current (new has none)
+ok - 1 missing histology (9342/3): deprecated in current because it has a space in the concept code, a version without the space is valid (in new and current)
+?? - 1 valid in new and D in current (8453/1-C25.9)
+6 in new and not in current: 
+?? - valid in current (see earlier: 9752/1-C34.9,9530/1-C70.9,8462/3-C56.9,8950/1-C56.9,8153/1-NULL,9150/1-NULL)
+
+**** Result: icdo3_valid_combination_plus_missing.csv
+**** Conclusion: Continue with these 216 added concepts. 
+
+**************** STEP 3: WE DON'T DO THIS STEP RIGHT NOW; WE COULD DO THIS AGAIN IN THE FUTURE BUT MAKE SURE YOU DON'T REMOVE CONCEPTS THAT WILL BE UPGRADED!!!
+
+**** Action: Remove content from input files that will end up being deprecated
+
+This results in 60896 concepts of which 60894 are valid concepts 
+The only invalid concepts are:
+9999/9
+9999/9-NULL
+585 valid conditions are missing (wrt current ICDO3 vocab) but these all actually have invalid morphologies so they should be deprecated
+
+**** Result: icdo3_valid_combination_plus_missing_minus_invalid.csv, concept_manual_minus_invalid.csv, r_to_c_all_minus_invalid.csv
+**** Conclusion: additional 585 conditions should be removed from input files
+
+**************** STEP 4: WE DON'T DO THIS STEP RIGHT NOW; WE COULD DO THIS AGAIN IN THE FUTURE BUT MAKE SURE YOU DON'T REMOVE CONCEPTS THAT WILL BE UPGRADED!!!
+
+**** Action: Remove content from input files that will lead to conditions with invalid morphologies
+
+This results in the same number of valid and invalid concepts as in STEP 3
+
+**** Result: icdo3_valid_combination_plus_missing_minus_invalid_minus_invalid_morph.csv
+
+**** Conclusion: additional 585 conditions were removed from input files
+
+**************** STEP 5
+
+**** Action: Check synonyms
+
+current: 
+- valid ICDO3 concepts have 1191 synonyms, all of these are for concepts that are also valid in STEP 4 (so not the 585 that need to be deprecated
+
+new: 
+- concept_synonym_stage contains 2393 synonyms, all for concepts that are valid in STEP 4
+- the 1191 synonyms in current are all present in new, the remaining 1202 are equal to concept_name of that particular concept (these are removed in devv5.GenericUpdate()), see step 25)
+
+**** Result: The script generates the same synonyms for the valid concepts as are already present in the current vocabulary
+
+**** Conclusion: the correct synonyms are created
+
+**************** STEP 6
+
+**** Action: Check relationships
+
+only compare new valid relationships and old valid relationships
+
+559190 relationships
+concept 1 is always ICDO3
+concept 2 is ICDO3 (123844), SNOMED (434970), or Cancer Modifier (376)
+
+423595 valid relationships
+135595 invalid relationships
+
+551006 relations where concept_1 is valid new concept (544 'D' and 7634 'U')
+122613 relations where concept_2 is valid new concept (1177 'D' and 54 'U')
+424848 relations where concept_2 is valid SNOMED concept (1732 'D' and 8390 'U')
+351 relations where concept_2 is valid Cancer Modifier concept (1 'D' and 24 'U')
+118906 relations where concept_1 and concept_2 are valid new concepts
+
+relationships:
+
+"Concept replaced by":	1882	(0 deprecated)
+"Has asso morph":		67143	(7336 deprecated)
+"Has finding site":		61262	(1859 deprecated)
+"Has Histology ICDO":	59914	(0 deprecated)
+"Has Topography ICDO":	58438	(0 deprecated)
+"Is a":					301856	(125230 deprecated)
+"Mapped from":			1		(1 deprecated)
+"Maps to":				6894	(1169 deprecated)
+"Subsumes":				1800	(0 deprecated)
+
+current vocabulary (only contains valid relationships):
+773264 relationships where concept 1 is ICDO3
+463529 of these have relationship_id in ('Concept replaced by','Has asso morph','Has finding site','Has Histology ICDO','Has Topography ICDO','Is a','Maps to','Subsumes')
+
+Split the analysis up by type:
+
+"Concept replaced by":
+
+- in current: 1882
+- in new: 1882
+- current and new contain the same 1882 relationships
+
+CONCLUSION: the script generates the same relationships
+
+NOTE: make sure you do not delete conditions from the input file that end up becoming 'U' in concept_stage because then (some of) the 1882 relationships become deprecated!
+
+"Has asso morph":
+
+Info:
+
+- the new vocabulary contains 59872 valid ICDO Condition concepts (+ 1828 upgraded ones and 42 deprecated one)
+- concept_1 is always from concept class ICDO Condition
+- concept 2 is always from SNOMED
+- current contains 59025 relationships
+- new contains 67143 relationships:
+	- 59807 valid:
+		- 57993 with a valid new concept as concept 1, 1814 with an upgraded one
+		- 58711 ICDO Conditions have a single relationship, 548 have 2, and 2427 have none (at least not a valid one)
+	- 7336 deprecated
+		- 7207 with a valid new concept as concept 1
+			- 263 have a deprecated concept 2
+			- 6034 have an upgraded concept 2 
+			- 910 have a valid concept 2
+		- 123 with an upgraded new concept as concept 1
+			- 123 have an upgraded concept 2 
+		- 6 with an deprecated new concept as concept 1
+			- 2 have an upgraded concept 2 
+			- 4 have a valid concept 2
+	- the 67143 relationships are divided over 59562 ICDO Conditions as follows (in brackets the number for 57740 valid ICDO Conditions in new)
+		- 0V 1D: 303 (295)
+		- 1V 2D: 96 (96)
+		- 1V 1D: 6554 (6433)
+		- 1V 0D: 52061 (50368)
+		- 2V 1D: 287 (287)
+		- 2V 0D: 261 (261)
+	- for the valid ICDO conditions in new, we see the following situation for concept 2 in the deprecated relationship:
+		- 0V 1D: 7 'D', 80 'U', 208 valid (295)
+		- 1V 2D: 94 'U'+valid, 2 2'U' (96)
+		- 1V 1D: 256 'D', 5847 'U', 330 valid (6433)
+		- 2V 1D: 9 'U', 278 valid (287)
+
+Analysis of difference:
+
+1) the overlap is 59025 (everything is that is in current is also in new, some of it is deprecated):
+	1a) 51689 valid in new
+		1a1) 51187 ICDO Conditions have a single relationship that is valid in new, 
+			- 49494 are valid concepts
+			- 1693 are upgraded concepts
+		1a2) 251 have 2 relationships that are valid in new
+			- 251 are valid concepts
+	1b) 7336 deprecated in new
+		1b1) 7207 with a valid new concept as concept 1
+			- 263 have a deprecated concept 2
+			- 6034 have an upgraded concept 2 (IS THERE A VALID RELATIONSHIP WITH THIS UPGRADED CONCEPT?)
+			- 910 have a valid concept 2 (WHY ARE THESE DEPRECATED?)
+		1b2)  with an upgraded new concept as concept 1
+			- 123 have an upgraded concept 2
+		1b3) 6 with a deprecated new concept as concept 1
+			- 2 have an upgraded concept 2
+			- 4 have a valid concept 2
+2) 8118 in new and not in current:
+	2a) 7997 with a valid concept 1, 121 with an upgraded concept 1
+	2b) all 8118 relations are valid in new:	
+		- 256 have a relationship in the 263 deprecated relationships with a deprecated concept 2 and a valid concept 1
+			-> 7 don't have a new relationship, almost all sarcomas: FIX IN INPUT FILE (r_to_c_all.csv)?
+			-> (256 'D' in 1V 1D)
+		- 5952 have a relationship in the 6034 deprecated relationships with an upgraded concept 2 and a valid concept 1
+			-> so 82 don't have a new relationship? (WHY NOT?)
+			-> 5599 are consistent with the upgrade of concept 2 (353 ARE NOT?)
+			-> (5847 'U' in 1V 1D + 94 'U'+valid in 1V 2D + 2 2'U' in 1V 2D + 9 'U' in 2V 1D (5847+94+2+9=5952))
+		- 121 have a relationship in the 123 deprecated relationships with an upgraded concept 2 and an upgraded concept 1
+			-> so 2 don't have a new relationship?
+			-> 80 are consistent with the upgrade of concept 2 (41 ARE NOT?)
+		- 980 have a relationship in the 910 deprecated relationships with a valid concept 2 and a valid concept 1 (702 unique concept 1, 424 single, 278 duplicates)
+			-> (424 = 330 valid in 1V 1D + 94 'U'+valid in 1V 2D)
+			-> (278 = 278 valid in 2V 1D)
+		- remaining 903 relationships (8118-256-5952-121-980+94 (otherwise double counted)) are relationships where concept 1 did not have such a relationship before
+			-> for most of these (816) the valid_start_date of the ICDO3 concept is before the valid_start_date of the SNOMED concept (so the relationship could not have been created when the vocabulary was created?)
+3) Of the 59872 valid ICDO Condition concepts:
+	- 56897 have 1 valid relationship
+	- 548 have 2 valid relationships
+	- 2427 have no valid relationship
+
+Fixes:
+- Fix r_to_c_all.csv:
+	- all invalid codes were removed but actually all invalid histologies should be removed and all deprecated SNOMED concepts for valid morphologies should be updated
+
+Other improvements:
+- All ICDO Conditions should have one (and only one?) "Has asso morph" relationship?
+
+General checks and improvements:
+- Are all ICDO3 histologies in the vocabulary, with correct upgrade and deprecation of 'old' histologies (v3.0 and v3.1)?
