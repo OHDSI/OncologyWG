@@ -5,7 +5,8 @@ library(viridis)
 library(dplyr)
 library(tidyr)
 
-#db_open(db_params)
+source("R/db_utilities.r")
+
 generate_overview2 <- function()
 {
 # Step 1: Load your dataset (adjust the file path as needed)

@@ -18,6 +18,9 @@ library(paletteer)
 library(ggbreak)
 
 
+source("R/db_utilities.r")
+
+
 generate_overview <- function()
 {
 

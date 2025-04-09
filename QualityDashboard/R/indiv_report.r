@@ -8,6 +8,8 @@ library(ggrepel)
 library(viridis)
 library("tinytex")
 
+source("R/db_utilities.r")
+
 # Set output directory
 #output_dir <- "/Users/asiehgolozar/Library/CloudStorage/OneDrive-SharedLibraries-OncoNemesis/Nemesis - Documents/Oncology/Onc data readiness/Reports/CSV"
 #dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)

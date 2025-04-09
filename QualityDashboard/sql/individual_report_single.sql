@@ -55,7 +55,9 @@ order by 1, 4 desc;
 delete from __schema__.rolled_up_tumor_types
 where partner = '__partner_name__';
 
-insert into __schema__.rolled_up_tumor_types
+drop table if exists temp_tumor_types;
+
+create temp table temp_tumor_types as
 with cancer_type(p, t_name, concept_id) as ( -- ancestors with tumor types, roughly at the level of ICD10, but in SNOMED
 values -- the field "p" indicates the priority in case a tumor rolls up to more than one category
 (1, 'Esophagus', 4181343),
@@ -389,3 +391,6 @@ where critique is not null
 and partner = '__partner_name__'
 order by 1, 2;
 
+insert into __schema__.rolled_up_tumor_types
+select *
+from temp_tumor_types;
