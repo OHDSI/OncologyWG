@@ -460,8 +460,8 @@ generate_partner_output <- function(partner_name)
     #library(knitr)
     #opts_knit$set(tidy = TRUE)
     # Render the R Markdown report for the current partner
-    rmarkdown::render(
-      output_format = pdf_document(latex_engine = "xelatex"
+    bookdown::render_book(
+      output_format = bookdown::pdf_document2(latex_engine = "xelatex"
                                    #, pandoc_args = "--pdf-engine-opt=-interaction=batchmode"
         ),
       #clean = TRUE,
@@ -489,7 +489,8 @@ generate_partner_output <- function(partner_name)
       envir = new.env() # Use a clean environment for rendering
     )
     
-    file.rename(paste0(partner, "_report.pdf"), paste0(output_dir, partner, "_report.pdf"))
+	# bookdown::render_book() always writes into directory _book
+    file.rename(paste0("_book/", partner, "_report.pdf"), paste0(output_dir, partner, "_report.pdf"))
     mk_log_file <- paste0(partner, "_report.log")
     if (file.exists(mk_log_file))
       file.remove(mk_log_file)

@@ -2,13 +2,13 @@
 title: "OHDSI Oncology Data Partner Quality Report for `r params$partner`"
 output:
   pdf_document:
-    toc: true
-    toc_depth: 3
     keep_tex: false
-    latex_engine: xelatex
     extra_dependencies: ["xcolor", "colortbl"]
   bookdown::pdf_document2:
+    toc: true
+    toc_depth: 2
     number_sections: true
+    latex_engine: xelatex
 header-includes:
   - \usepackage{pdflscape}
   - \usepackage{floatrow}
@@ -50,7 +50,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 Thanks for submitting your quality query results for your database **`r params$partner`**. This report will help understand how the data compare to other network participants and what issues there are requiring attention.
 
-## 1. The query
+# The query
 
 The query retrieves statistics about the use of OMOP cancer-related concepts in your data. This list contains any concept that is related to the diagnosis, treatment or management of cancer, including genomic markers and disease and treatment episodes. It does not contain any information that is patient centric or points to the utilization of healthcare of the participating providers, obviating the need for data protection.
 
@@ -58,7 +58,7 @@ The query retrieves statistics about the use of OMOP cancer-related concepts in 
 
 **Fig 1. Summary of query.**
 
-## 2. Cancer-related concepts
+# Cancer-related concepts
 
 The list of concepts in the query is composed of all concepts from the purely cancer vocabularies "ICDO3", "CAP", "NAACCR", "Cancer Modifier", "OncoTree", "HemOnc", concepts from the ICD10 family of vocabs starting with the the concept code "C", as well as concepts from any vocabulary containing the terms "cancer", "metasta", "carcino", "malignant", "neoplas", "tumor", "onco", "biops", "debulk", "chemotherap", "radiotherap". It contains a list of concepts from the LOINC and SNOMED vocabularies denoting tumor stages and grades. It also contains all concepts that are descendants of the ATC drug classification concept "Antineoplastic agents". Finally, it contains all concepts that are mapped to the above through a valid "Maps to" relationship. Excluded are concepts from the "Indication", "Concept Class", "ISBT Attribute", "ETC", "ISBT", "SMQ", "SNOMED Veterinary", "Relationship", "Vocabulary", "CO-CONNECT MIABIS", "MeSH", "NDFRT", "Nebraska Lexicon", "EDI", "ICD10CN", "KCD7", "CO-CONNECT TWINS", "UB04 Pt dis status", "ATC", "VA Class", "GGR", "OMOP Extension", "Multilex", "EphMRA ATC", "AMIS", "Meas Type", "HES Specialty", "MDC", "VANDF", "Condition Type" vocabularies. The total number of cancer concepts is 284,958.
 
@@ -70,7 +70,7 @@ The genomic marker concepts are a collection of concepts in the "CGI", "ClinVar"
 
 The episode list contains concepts of the "Episode" domain, all concepts that have the exact same concept name as these from other vocabularies and all of the "HemOnc" concepts. This comprises of 8,052 concepts.
 
-## 3. Content of the query results
+# Content of the query results
 
 The query result you returned contains records with the following information:
 
@@ -84,11 +84,11 @@ In addition, it also contains the number of Measurement Value concepts (no sourc
 
 Such statistics allows to infer some overall content of the database (again, without any patient or provider detail), as well as the correct use of concepts and their mapping from the source.
 
-## 4. General results
+# General results
 
 `r if (params$total_patients > 1) { paste("You reported a total of", params$total_patients, "patients. ") }`The database query produced `r params$general_records` records for cancer concepts, `r params$genomic_records` records for genomic concepts and `r params$episode_records` records for episode concepts.
 
-## 5. Cancer type composition
+# Cancer type composition
 
 Rolling up the reported cancer condition concepts to cancer types results in the following distribution: \vspace{.5cm}
 
@@ -193,7 +193,7 @@ if (!is.null(params$plot_04_data) && nrow(params$plot_04_data) > 0) {
 
 \newpage
 
-## 6. Domain composition
+# Domain composition
 
 The weight of each domain in the **`r params$partner`** database is as follows: \vspace{.5cm}
 
@@ -279,7 +279,7 @@ if (!is.null(params$plot_06_data) && nrow(params$plot_06_data) > 0) {
 
 \newpage
 
-## 7. Findings in source concepts
+# Findings in source concepts
 
 ```{r, echo=FALSE, results='asis'}
 if (is.data.frame(params$plot_07_data) && nrow(params$plot_07_data) > 0) {
@@ -385,7 +385,7 @@ ggplot(params$plot_07_data, aes(x = "", y = `record_%`, fill = critique, color =
 
 \newpage
 
-## 8. Findings in mapping of source concept
+# Findings in mapping of source concept
 
 ```{r, echo=FALSE, results='asis'}
 
@@ -491,7 +491,7 @@ if (nrow(params$plot_08_data) > 0) {
 
 \newpage
 
-## 9. Findings in standard concepts
+# Findings in standard concepts
 
 ```{r, echo=FALSE, results='asis'}
 if (is.data.frame(params$plot_09_data) && nrow(params$plot_09_data) > 0) {
@@ -679,7 +679,7 @@ ggplot(params$plot_09_data, aes(x = "", y = `record_%`, fill = critique, color =
 } 
 ```
 
-## 10. Detailed report
+# Detailed report
 
 The full list of issues is available here: \href{`r params$all_issues_csv_path`}{\textcolor{blue}{\underline{Download Full List of Issues}}}
 
@@ -687,13 +687,13 @@ The full list of issues is available here: \href{`r params$all_issues_csv_path`}
 \newpage
 \landscape
 
-### 10.1. Issues with Source (Other issues)
+## Issues with Source (Other issues)
 
 ```{r , echo=FALSE, results='asis'}
 if (!is.null(params$issues_source_other) && nrow(params$issues_source_other) > 0) {
   
   # Render table in report
-  knitr::kable(params$issues_source_other, caption = "Issues with Source (Other)")
+  kableExtra::kable(params$issues_source_other, caption = "Issues with Source (Other)", booktabs = TRUE, longtable = TRUE) %>% kable_styling(latex_options = c("hold_position"))
 }else {
   cat("No other issues were identified with the source concepts.\n")
 }
@@ -701,13 +701,13 @@ if (!is.null(params$issues_source_other) && nrow(params$issues_source_other) > 0
 
 \newpage
 
-### 10.2. Issues with Source (Mapping issues)
+## Issues with Source (Mapping issues)
 
 ```{r , echo=FALSE, results='asis'}
 if (!is.null(params$issues_source_mapping) && nrow(params$issues_source_mapping) > 0) {
   
   # Render table in report
-  knitr::kable(params$issues_source_mapping, caption = "Issues with Source (Mapping issues)")
+  kableExtra::kable(params$issues_source_mapping, caption = "Issues with Source (Mapping issues)", booktabs = TRUE, longtable = TRUE) %>% kable_styling(latex_options = c("hold_position"))
 } else {
   cat("No mapping issues were identified with the source concepts.\n")
 }
@@ -715,13 +715,13 @@ if (!is.null(params$issues_source_mapping) && nrow(params$issues_source_mapping)
 
 \newpage
 
-### 10.3. Issues with Standard
+## Issues with Standard
 
 ```{r , echo=FALSE, results='asis'}
 if (!is.null(params$issues_standard) && nrow(params$issues_standard) > 0) {
   
   # Render table in report
-  knitr::kable(params$issues_standard, caption = "Issues with Standard")
+  kableExtra::kable(params$issues_standard, caption = "Issues with Standard", booktabs = TRUE, longtable = TRUE) %>% kable_styling(latex_options = c("hold_position"))
 }else {
   cat("No mapping issues were identified with the standard concepts.\n")
 }
