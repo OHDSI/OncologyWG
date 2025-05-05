@@ -343,7 +343,7 @@ if (is.data.frame(params$plot_07_data) && nrow(params$plot_07_data) > 0) {
 
 ```{r plot_07_data, echo=FALSE, results='asis'}
 # Define custom colors
-custom_colors61 <- c("Great" = "white", "Concept 0 or NULL" = "#336B91", "2-Billionaire" = "#FBC511")
+custom_colors61 <- c("Great" = "white", "Concept 0 or NULL" = "#336B91", "2-Billionaire" = "#FBC511", "Concept unknown" = "#7F7F7F")
 
 # Create Plot_06 dynamically
 if (nrow(params$plot_07_data) > 0) {
@@ -390,7 +390,7 @@ ggplot(params$plot_07_data, aes(x = "", y = `record_%`, fill = critique, color =
 ```{r, echo=FALSE, results='asis'}
 
 if ( nrow(params$plot_08_data) > 0) {
-     filtered <- params$plot_08_data %>% filter(critique %in% c("Wrong mapping", "Needs mapping"))
+     filtered <- params$plot_08_data %>% filter(critique %in% c("Wrong mapping", "Needs mapping", "Mapping available"))
      if (any(filtered$`record_%` > 0, na.rm = TRUE)) {
        cat("When checking the concepts in the source concept fields, the following anomalies were detected:")
      } else {
@@ -403,7 +403,7 @@ if ( nrow(params$plot_08_data) > 0) {
 # Assuming params$plot_08_data is your data frame
 if (is.data.frame(params$plot_08_data) && nrow(params$plot_08_data) > 0) {
   # Define the critiques to process
-  critiques <- c("Wrong mapping", "Needs mapping")
+  critiques <- c("Wrong mapping", "Needs mapping", "Mapping available")
   
   # Loop over each critique
   for (critique_value in critiques) {
@@ -435,6 +435,14 @@ if (is.data.frame(params$plot_08_data) && nrow(params$plot_08_data) > 0) {
             } else if (record_value < 0.25 ) {
               sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are not mapped to a standard concept, and no mappings are available in Vocabularies (“Needs mapping”).")
             }
+          } else if (critique_value == "Mapping available") {
+            if (record_value > 0.5) {
+              sentence <- paste0("- Most concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are not mapped to a standard concept, even though mappings are available (“Mapping available”).")
+            } else if (record_value >= 0.25 & record_value <= 0.5) {
+              sentence <- paste0("- Many concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are not mapped to a standard concept, even though mappings are available (“Mapping available”).")
+            } else if (record_value < 0.25 ) {
+              sentence <- paste0("- Some concepts (", round(record_value * 100, 2), "%, ", records_count, " records) are not mapped to a standard concept, even though mappings are available (“Mapping available”).")
+            }
           }
           
           # Output the sentence for this record
@@ -450,7 +458,7 @@ if (is.data.frame(params$plot_08_data) && nrow(params$plot_08_data) > 0) {
 
 ```{r plot_08_data, echo=FALSE, results='asis'}
 # Define custom colors
-custom_colors8 <- c("Great" = "white", "Needs mapping" = "#336B91", "Wrong mapping" = "#FBC511")
+custom_colors8 <- c("Great" = "white", "Needs mapping" = "#336B91", "Wrong mapping" = "#FBC511", "Mapping available" = "#7F7F7F")
 
 # Create Fig 8 dynamically
 if (nrow(params$plot_08_data) > 0) {
@@ -460,7 +468,7 @@ if (nrow(params$plot_08_data) > 0) {
   geom_bar(stat = "identity", width = 1) + 
   coord_polar(theta = "y", start=0, direction=1) + 
   geom_label_repel(
-    aes(label = ifelse(critique %in% c("Needs mapping", "Wrong mapping") & `record_%` > 0, 
+    aes(label = ifelse(critique %in% c("Needs mapping", "Wrong mapping", "Mapping available") & `record_%` > 0, 
                        paste0(round(10000 * `record_%`, digits = 2) / 100, "%"), 
                        "")), 
     size = 3, color = "black", fill = "white", show.legend = FALSE,
