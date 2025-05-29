@@ -14,15 +14,16 @@ order by partner;
 
 -- Readiness
 with sums as (
-  select partner, coalesce(sum("record_%"), 0) as perc
+  select partner, coalesce(sum("record_%"), 0) as rec_perc, coalesce(sum("concept_%"), 0) as con_perc
   from results.standard_summary_report_cleaned
   group by partner
 ),
 ready as (
-  select partner, round((1 - perc) * 100, 2) as readiness
+  select partner, round((1 - rec_perc) * 100, 2) as readiness_rec,
+  round((1 - con_perc) * 100, 2) as readiness_con
   from sums
 )
-select partner, coalesce(readiness, 100.00) as readiness
+select partner, coalesce(readiness_rec, 100.00) as readiness_rec, coalesce(readiness_con, 100.00) as readiness_con
 from results.patient
 left join ready using (partner)
 order by partner;

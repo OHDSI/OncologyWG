@@ -7,6 +7,14 @@ create table if not exists __schema__.general (
     standard int,
     cnt int
   );
+
+create table if not exists __schema__.general_cleaned (
+    partner varchar(20),
+    domain varchar(1),
+    source bigint,
+    standard int,
+    cnt int
+  );
   
 create table if not exists __schema__.genomic (
     partner varchar(20),
@@ -61,6 +69,15 @@ create table if not exists __schema__.standard_summary_report (
     critique varchar(255),
     records bigint,
     "record_%" numeric
+  );
+
+create table if not exists results.standard_summary_report_cleaned (
+    partner varchar(20),
+    critique varchar(255),
+    records bigint,
+    "record_%" numeric,
+    concepts int,
+    "concept_%" numeric
   );
 
 create table if not exists __schema__.source_summary_report (
@@ -195,4 +212,18 @@ create table if not exists __schema__.mapping_from_source_to_standard (
     "record_%" numeric,
     concepts bigint,
     "concepts_%" numeric
+);
+
+create table if not exists __schema__.histo_topo_percent (
+    partner varchar(20),
+    histo_only numeric,
+    topo_only numeric,
+    two_legged numeric
+);
+
+create table if not exists __schema__.met_grade_stage (
+    partner varchar(20),
+    met bigint,
+    grade bigint,
+    stage bigint
 );
