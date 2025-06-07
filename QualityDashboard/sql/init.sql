@@ -216,9 +216,9 @@ create table if not exists __schema__.mapping_from_source_to_standard (
 
 create table if not exists __schema__.histo_topo_percent (
     partner varchar(20),
-    histo_only numeric,
-    topo_only numeric,
-    two_legged numeric
+    onelegged_cancer numeric,
+    shallow_cancer numeric,
+    metastatic_cancer numeric
 );
 
 create table if not exists __schema__.met_grade_stage (
@@ -226,4 +226,18 @@ create table if not exists __schema__.met_grade_stage (
     met bigint,
     grade bigint,
     stage bigint
+);
+
+create table if not exists __schema__.measurement (
+    partner varchar(20),
+    measurement_concept_id int,
+    value_as_concept_id int,
+    unit_concept_id int,
+    range_low numeric,
+    range_high numeric,
+    p_03 numeric,
+    p_25 numeric,
+    median numeric,
+    p_75 numeric,
+    p_97 numeric
 );

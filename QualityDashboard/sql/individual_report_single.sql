@@ -477,42 +477,42 @@ delete from __schema__.histo_topo_percent
 where partner = '__partner_name__';
 
 insert into __schema__.histo_topo_percent
-with histos as (
-  select partner, sum(cnt) as histo
+with oneleggeds as (
+  select partner, sum(cnt) as onelegged
   from __schema__.general
-  join static.onelegged_histo on standard = concept_id
+  join static.onelegged_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
-topos as (
-  select partner, sum(cnt) as topo
+shallows as (
+  select partner, sum(cnt) as shallow
   from __schema__.general
-  join static.onelegged_topo on standard = concept_id
+  join static.shallow_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
-both_sides as (
-  select partner, sum(cnt) as histo_topo
+metastatics as (
+  select partner, sum(cnt) as metastatic
   from __schema__.general
-  join static.twolegged on standard = concept_id
+  join static.metastatic_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
 totals as (
   select partner, sum(cnt) as total
   from __schema__.general
-  join static.all_histo_topo on standard = concept_id
+  join static.all_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 )
-select partner, coalesce(round(histo * 100.0 / total, 2), 0.00) as histo_only, 
-coalesce(round(topo * 100.0 / total, 2), 0.00) as topo_only,
-coalesce(round(histo_topo * 100.0 / total, 2), 0.00) as two_legged
+select partner, coalesce(round(onelegged * 100.0 / total, 2), 0.00) as onelegged_cancer, 
+coalesce(round(shallow * 100.0 / total, 2), 0.00) as shallow_cancer,
+coalesce(round(metastatic * 100.0 / total, 2), 0.00) as metastatic_cancer
 from __schema__.patient
 left join totals using(partner)
-left join histos using(partner)
-left join topos using(partner)
-left join both_sides using(partner)
+left join oneleggeds using(partner)
+left join shallows using(partner)
+left join metastatics using(partner)
 where partner = '__partner_name__';
 
 delete from __schema__.met_grade_stage

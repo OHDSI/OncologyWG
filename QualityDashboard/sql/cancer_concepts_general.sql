@@ -54,4 +54,6 @@ cc as ( -- add all concepts mapping into the above
   where vocabulary_id not in -- kick out vocabularies we are not wrestling with
     ('Indication', 'Concept Class', 'ISBT Attribute', 'ETC', 'ISBT', 'SMQ', 'SNOMED Veterinary', 'Relationship', 'Vocabulary', 'CO-CONNECT MIABIS', 'MeSH', 'NDFRT', 'Nebraska Lexicon', 'EDI', 'ICD10CN', 'KCD7', 'CO-CONNECT TWINS', 'UB04 Pt dis status', 'ATC', 'VA Class', 'GGR', 'OMOP Extension', 'Multilex', 'EphMRA ATC', 'AMIS', 'Meas Type', 'HES Specialty', 'MDC', 'VANDF', 'Condition Type'))
 select * from cc
+union 
+select * from static.all_cancer
 order by concept_id;
