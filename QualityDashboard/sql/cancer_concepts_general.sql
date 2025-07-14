@@ -56,4 +56,6 @@ cc as ( -- add all concepts mapping into the above
 select * from cc
 union 
 select * from static.all_cancer
+union 
+select * from static.additional_conditions
 order by concept_id;

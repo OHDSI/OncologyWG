@@ -216,17 +216,19 @@ create table if not exists __schema__.mapping_from_source_to_standard (
 
 create table if not exists __schema__.histo_topo_percent (
     partner varchar(20),
-    onelegged_cancer numeric,
-    shallow_cancer numeric,
-    metastatic_cancer numeric
+	onelegged_records bigint,
+    onelegged_perc numeric,
+	shallow_records bigint,
+    shallow_perc numeric
 );
 
-create table if not exists __schema__.met_grade_stage (
+create table if not exists __schema__.histo_topo_individual (
     partner varchar(20),
-    met bigint,
-    grade bigint,
-    stage bigint
-);
+    concept_id bigint,
+    concept_name varchar(255),
+    critique varchar(255),
+    records bigint
+  );
 
 create table if not exists __schema__.measurement (
     partner varchar(20),
@@ -239,5 +241,69 @@ create table if not exists __schema__.measurement (
     p_25 numeric,
     median numeric,
     p_75 numeric,
-    p_97 numeric
+    p_97 numeric,
+	cnt int
+);
+
+create table if not exists __schema__.stages (
+    partner varchar(20),
+	bad_cnt bigint,
+    all_cnt bigint,
+    bad_from_all numeric,
+    all_from_total numeric,
+	bad_from_total numeric
+);
+
+create table if not exists __schema__.grades (
+    partner varchar(20),
+	bad_cnt bigint,
+    all_cnt bigint,
+    bad_from_all numeric,
+    all_from_total numeric,
+	bad_from_total numeric
+);
+
+create table if not exists __schema__.mets (
+    partner varchar(20),
+	bad_cnt bigint,
+    all_cnt bigint,
+    bad_from_all numeric,
+    all_from_total numeric,
+	bad_from_total numeric
+);
+
+create table if not exists __schema__.lab_long_report (
+	partner varchar(20),
+	cat varchar(60),
+	m_id int,
+	m_name varchar(255),
+	v_id int,
+	v_name varchar(255),
+	u_id int,
+	u_name varchar(255),
+    range_low numeric,
+    range_high numeric,
+	range varchar(10),
+	values varchar(10),
+	spread varchar(10),
+	unit varchar(10),
+	outliers varchar(10),
+	value_concept varchar(20)
+);
+
+create table if not exists __schema__.lab_summary (
+	partner varchar(20),
+	cat varchar(60),
+	total_combos int,
+	number numeric,
+	flavor_null numeric,
+	precoordinated numeric,
+	measurement numeric,
+	not_value numeric,
+	bad_unit numeric,
+	bad_range numeric,
+	missing_values numeric,
+	no_spread numeric,
+	outliers numeric,
+	pot_usable numeric
 );

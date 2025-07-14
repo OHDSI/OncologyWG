@@ -88,11 +88,13 @@ lab_values as (
     range_high, value_as_concept_id, value_as_number
     from @cdm_schema.measurement
     join test using(measurement_concept_id)
-    union
+	where value_as_number!=0 and value_as_number is not null
+    union all
     select observation_concept_id, unit_concept_id, null as range_low, 
     null as range_high, value_as_concept_id, value_as_number
     from @cdm_schema.observation
     join test on observation_concept_id=measurement_concept_id
+	where value_as_number!=0 and value_as_number is not null
   ) c
   group by measurement_concept_id, unit_concept_id, range_low,
   range_high, value_as_concept_id
@@ -209,11 +211,11 @@ union
 select 'l' as domain, measurement_concept_id, unit_concept_id, value_as_concept_id,
 coalesce(cast(range_low as text), '') || '~' || 
 coalesce(cast(range_high as text), '') || '~' ||
-coalesce(cast(round(cast(p_03 as numeric), 4) as text), '') || '~' ||
-coalesce(cast(round(cast(p_25 as numeric), 4) as text), '') || '~' ||
-coalesce(cast(round(cast(median as numeric), 4) as text), '') || '~' ||
-coalesce(cast(round(cast(p_75 as numeric), 4) as text), '') || '~' ||
-coalesce(cast(round(cast(p_97 as numeric), 4) as text), '') || '~' ||
+coalesce(cast(p_03 as text), '') || '~' ||
+coalesce(cast(p_25 as text), '') || '~' ||
+coalesce(cast(median as text), '') || '~' ||
+coalesce(cast(p_75 as text), '') || '~' ||
+coalesce(cast(p_97 as text), '') || '~' ||
 coalesce(cast(cnt as text), '')
 as measurement
 from lab_values

@@ -75,7 +75,7 @@ b as (
 -- Distribution of lab test results as 3rd, 25th, median, 75th and 97th percentile
 -- Max and min values are often outliers, 3rd and 97th is used instead
 lab_values as (
-  select measurement_concept_id, unit_concept_id, range_low,
+  select distinct measurement_concept_id, unit_concept_id, range_low,
   range_high, value_as_concept_id,
   percentile_cont(0.03) within group (order by value_as_number) over (partition by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id) as p_03, 
   percentile_cont(0.25) within group (order by value_as_number) over (partition by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id) as p_25, 
@@ -88,11 +88,13 @@ lab_values as (
     range_high, value_as_concept_id, value_as_number
     from @cdm_schema.measurement m
     join test t on t.measurement_concept_id = m.measurement_concept_id
-    union
+    where value_as_number!=0 and value_as_number is not null
+    union all
     select observation_concept_id, unit_concept_id, null as range_low, 
     null as range_high, value_as_concept_id, value_as_number
     from @cdm_schema.observation
     join test on observation_concept_id=measurement_concept_id
+    where value_as_number!=0 and value_as_number is not null
   ) as c
 )
 -- Total patient count in the database
@@ -207,11 +209,11 @@ union
 select 'l' as domain, measurement_concept_id, unit_concept_id, value_as_concept_id,
 coalesce(cast(range_low as varchar), '') + '~' + 
 coalesce(cast(range_high as varchar), '') + '~' +
-coalesce(cast(round(cast(p_03 as numeric), 4) as varchar), '') + '~' +
-coalesce(cast(round(cast(p_25 as numeric), 4) as varchar), '') + '~' +
-coalesce(cast(round(cast(median as numeric), 4) as varchar), '') + '~' +
-coalesce(cast(round(cast(p_75 as numeric), 4) as varchar), '') + '~' +
-coalesce(cast(round(cast(p_97 as numeric), 4) as varchar), '') + '~' +
+coalesce(cast(p_03 as varchar), '') + '~' +
+coalesce(cast(p_25 as varchar), '') + '~' +
+coalesce(cast(median as varchar), '') + '~' +
+coalesce(cast(p_75 as varchar), '') + '~' +
+coalesce(cast(p_97 as varchar), '') + '~' +
 coalesce(cast(cnt as varchar), '')
 as measurement
 from lab_values
