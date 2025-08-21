@@ -49,7 +49,9 @@ create table if not exists __schema__.database_summary (
     size int,
     general bigint,
     genomic bigint,
-    episodes bigint
+    episodes bigint,
+	lab_tests bigint,
+	non_cancer bigint
   );
 
 create table if not exists __schema__.individual_concept_report (
@@ -219,7 +221,9 @@ create table if not exists __schema__.histo_topo_percent (
 	onelegged_records bigint,
     onelegged_perc numeric,
 	shallow_records bigint,
-    shallow_perc numeric
+    shallow_perc numeric,
+	both_records bigint,
+	both_perc numeric
 );
 
 create table if not exists __schema__.histo_topo_individual (
@@ -275,12 +279,16 @@ create table if not exists __schema__.mets (
 create table if not exists __schema__.lab_long_report (
 	partner varchar(20),
 	cat varchar(60),
-	m_id int,
-	m_name varchar(255),
-	v_id int,
-	v_name varchar(255),
-	u_id int,
-	u_name varchar(255),
+	measurement_id int,
+	measurement_name varchar(255),
+	records int,
+	percent numeric,
+	value_id int,
+	value_name varchar(255),
+	concept_critique varchar(20),
+	pct_of_concept_recs numeric,
+	unit_id int,
+	unit_name varchar(255),
     range_low numeric,
     range_high numeric,
 	range varchar(10),
@@ -288,22 +296,31 @@ create table if not exists __schema__.lab_long_report (
 	spread varchar(10),
 	unit varchar(10),
 	outliers varchar(10),
-	value_concept varchar(20)
+	pct_of_value_recs numeric
 );
 
 create table if not exists __schema__.lab_summary (
 	partner varchar(20),
 	cat varchar(60),
-	total_combos int,
-	number numeric,
-	flavor_null numeric,
-	precoordinated numeric,
-	measurement numeric,
-	not_value numeric,
-	bad_unit numeric,
-	bad_range numeric,
-	missing_values numeric,
-	no_spread numeric,
-	outliers numeric,
-	pot_usable numeric
+	concept_records int,
+	number int,
+	flavor_null int,
+	precoordinated int,
+	measurement int,
+	not_value int,
+	pct_usable_consets numeric,
+	value_records int,
+	bad_unit int,
+	bad_range int,
+	missing_values int,
+	no_spread int,
+	outliers int,
+	pct_usable_valsets numeric
+);
+
+create table if not exists __schema__.special_conditions (
+	partner varchar(20),
+	critique varchar(10),
+	records int,
+	record_perc numeric
 );

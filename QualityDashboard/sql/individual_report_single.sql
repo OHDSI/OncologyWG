@@ -4,19 +4,49 @@
    __partner_name__ - the name of the data partner to calculate results for
 */
 
+drop table if exists general_no_extra;
+create temp table general_no_extra as
+with exclusions as (
+  select concept_id
+  from static.additional_conditions
+  union
+  select concept_id
+  from static.lab_category
+  union
+  select concept_id
+  from static.excluded_concepts -- These are concepts that appeared in the extract for inexplicable reasons.
+)
+select * from __schema__.general
+where (standard is null
+  or standard not in (
+    select * from exclusions
+  ))
+and (source is null
+  or source not in (
+    select * from exclusions
+  ));
+
 -- update database_summary for this partner
 -- used to be "Database summary.txt"
 delete from __schema__.database_summary
 where partner = '__partner_name__';
 
 insert into __schema__.database_summary
-select partner, cnt as size, general, genomic, episodes 
+with non_canc as (
+  select partner, count(*) as non_cancer
+  from __schema__.general
+  join static.additional_conditions on standard = concept_id
+  group by partner
+)
+select partner, cnt as size, general, genomic, episodes, lab_tests, non_cancer
 from __schema__.patient
-join (select partner, count(*) as general from __schema__.general group by partner) using(partner) 
+join (select partner, count(*) as general from general_no_extra group by partner) using(partner)
 left join (select partner, count(*) as genomic from __schema__.genomic group by partner) using(partner) 
 left join (select partner, count(*) as episodes from __schema__.episodes group by partner) using(partner) 
+left join (select partner, count(*) as lab_tests from __schema__.measurement group by partner) using(partner) 
+left join non_canc using(partner)
 where partner = '__partner_name__'
-group by partner, cnt, general, genomic, episodes;
+group by partner, cnt, general, genomic, episodes, lab_tests, non_cancer;
 
 delete from __schema__.general_cleaned
 where partner = '__partner_name__';
@@ -25,7 +55,7 @@ insert into __schema__.general_cleaned
 with replace_null as (
   -- This makes sure null in standard is joined as 0 (which is in white_list).
   select partner, domain, source, coalesce(standard, 0) as standard, cnt
-  from __schema__.general
+  from general_no_extra
 )
 select g.*
 from replace_null g
@@ -39,7 +69,7 @@ where partner = '__partner_name__';
 
 insert into __schema__.domain_weights
 with cnts as ( -- total number of records per partner
-  select partner, sum(cnt) as t_records from __schema__.general 
+  select partner, sum(cnt) as t_records from general_no_extra 
   where partner = '__partner_name__'
   group by partner
 )
@@ -57,7 +87,7 @@ from (
       else ''
     end as domain, 
     sum(cnt) as records
-  from __schema__.general
+  from general_no_extra
   where partner = '__partner_name__'
   group by partner, domain
 ) a join cnts using(partner)
@@ -145,7 +175,7 @@ values -- the field "p" indicates the priority in case a tumor rolls up to more 
 ),
 c_types as (
   select distinct partner, standard, first_value(t_name) over (partition by standard order by p) as cancer_type, cnt
-  from __schema__.general
+  from general_no_extra
   join (select descendant_concept_id as standard, t_name, p from __cdm_schema__.concept_ancestor join cancer_type on concept_id=ancestor_concept_id) ancestor using(standard)
   where domain='c'
   and partner = '__partner_name__'
@@ -160,7 +190,7 @@ cst_summed as ( -- sum up records and force into report all partners and tumor t
 ),
 conditions as ( -- instead of total number of records per partner only those in the Condition table
   select partner, sum(cnt) as t_records
-  from __schema__.general 
+  from general_no_extra 
   where domain='c'
   group by partner
 )
@@ -230,7 +260,7 @@ drop table if exists should;
 create temp table should as 
 with should as (
   select distinct source
-  from __schema__.general
+  from general_no_extra
   join __cdm_schema__.concept_relationship on concept_id_1=source and invalid_reason is null and relationship_id in ('Maps to', 'Maps to value') and concept_id_1!=concept_id_2
 )
 select * from should;
@@ -240,7 +270,7 @@ drop table if exists ismap;
 create temp table ismap as 
 with ismap as (
   select distinct source, standard
-  from __schema__.general
+  from general_no_extra
   join __cdm_schema__.concept_relationship on concept_id_1=source and concept_id_2=standard and invalid_reason is null and relationship_id='Maps to'
     and concept_id_1!=concept_id_2
 )
@@ -271,7 +301,7 @@ with crit_sta as (
       else null 
     end as critique, 
     records
-  from (select partner, standard, is_domain, sum(cnt) as records from __schema__.general join d using(domain) group by partner, standard, is_domain) as general
+  from (select partner, standard, is_domain, sum(cnt) as records from general_no_extra join d using(domain) group by partner, standard, is_domain) as general
   join __cdm_schema__.concept on concept_id=standard
 -- see if LOINC value, which needs to be pre-coordinated
   left join (select distinct concept_id_1, 1 as loincvar from __cdm_schema__.concept_relationship join __cdm_schema__.concept on concept_id=concept_id_2 and vocabulary_id='LOINC' where relationship_id='Answer of') pc on concept_id_1=standard
@@ -306,7 +336,7 @@ with crit_so as(
       else null
     end as critique,
     cnt
-  from __schema__.general
+  from general_no_extra
   join d using(domain) 
   left join __cdm_schema__.concept on concept_id=source
   left join should using(source)
@@ -331,11 +361,20 @@ delete from __schema__.individual_concept_report
 where partner = '__partner_name__';
 
 insert into __schema__.individual_concept_report
-select * from sta
-where partner = '__partner_name__'
-union
-select * from so
-where partner = '__partner_name__';
+with the_union as (
+  select * from sta
+  where partner = '__partner_name__'
+  union
+  select * from so
+  where partner = '__partner_name__'
+)
+select * from the_union
+where concept_id is null
+  or concept_id not in (
+    select concept_id
+    from static.additional_conditions
+  )
+;
 
 -- Summary for standard concepts
 -- used to be "Standard summary report.txt"
@@ -344,7 +383,7 @@ where partner = '__partner_name__';
 
 insert into __schema__.standard_summary_report
 with cnts as (
-  select partner, sum(cnt) as t_records from __schema__.general group by partner
+  select partner, sum(cnt) as t_records from general_no_extra group by partner
 ),
 cst_summed as ( -- sum up records per critique
   select partner, critique, sum(records) as records
@@ -363,7 +402,7 @@ where partner = '__partner_name__';
 
 insert into __schema__.source_summary_report
 with cnts as (
-  select partner, sum(cnt) as t_records from __schema__.general group by partner
+  select partner, sum(cnt) as t_records from general_no_extra group by partner
 ),
 cst_summed as ( -- sum up records per critique, combine concept=NULL and concept=0
   select partner, critique, sum(records) as records
@@ -391,7 +430,7 @@ where partner = '__partner_name__';
 
 insert into __schema__.mapping_summary_report
 with cnts as (
-  select partner, sum(cnt) as t_records from __schema__.general group by partner
+  select partner, sum(cnt) as t_records from general_no_extra group by partner
 ),
 cst_summed as ( -- sum up records per ciritque
   select partner, critique, sum(records) as records
@@ -479,33 +518,42 @@ where partner = '__partner_name__';
 insert into __schema__.histo_topo_percent
 with oneleggeds as (
   select partner, sum(cnt) as onelegged
-  from __schema__.general
+  from general_no_extra
   join static.onelegged_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
 shallows as (
   select partner, sum(cnt) as shallow
-  from __schema__.general
+  from general_no_extra
   join static.shallow_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
 totals as (
   select partner, sum(cnt) as total
-  from __schema__.general
+  from general_no_extra
   join static.all_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner
+),
+both_sides as (
+  select partner, total - coalesce(onelegged, 0) - coalesce(shallow, 0) as both_r
+  from totals
+  left join oneleggeds using(partner)
+  left join shallows using(partner)
 )
 select partner, coalesce(onelegged, 0) as onelegged_records,
 coalesce(round(onelegged * 100.0 / total, 2), 0.00) as onelegged_perc, 
 coalesce(shallow, 0) as shallow_records,
-coalesce(round(shallow * 100.0 / total, 2), 0.00) as shallow_perc
+coalesce(round(shallow * 100.0 / total, 2), 0.00) as shallow_perc,
+coalesce(both_r, 0) as both_records,
+coalesce(round(both_r * 100.0 / total, 2), 0.00) as both_perc
 from __schema__.patient
 left join totals using(partner)
 left join oneleggeds using(partner)
 left join shallows using(partner)
+left join both_sides using(partner)
 where partner = '__partner_name__';
 
 delete from __schema__.histo_topo_individual
@@ -514,13 +562,13 @@ where partner = '__partner_name__';
 insert into __schema__.histo_topo_individual
 with concepts as (
   select partner, standard as concept_id, 'One-legged cancer' as critique, sum(cnt) as records
-  from __schema__.general
+  from general_no_extra
   join static.onelegged_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner, standard
   union
   select partner, standard, 'Shallow cancer' as critique, sum(cnt)
-  from __schema__.general
+  from general_no_extra
   join static.shallow_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner, standard
@@ -540,21 +588,21 @@ where partner = '__partner_name__';
 insert into __schema__.stages
 with bads as ( -- bad records of the category
   select partner, sum(cnt) as bad
-  from __schema__.general
+  from general_no_extra
   join static.invalid_stage on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
 wholes as ( -- all records of the category, regardless of correctness
   select partner, sum(cnt) as whole_cat
-  from __schema__.general
+  from general_no_extra
   join static.all_stage on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
 totals as ( -- all records of the partner, regardless of category
   select partner, sum(cnt) as total
-  from __schema__.general
+  from general_no_extra
   where partner = '__partner_name__'
   group by partner
 )
@@ -580,21 +628,21 @@ where partner = '__partner_name__';
 insert into __schema__.grades
 with bads as ( -- bad records of the category
   select partner, sum(cnt) as bad
-  from __schema__.general
+  from general_no_extra
   join static.invalid_grade on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
 wholes as ( -- all records of the category, regardless of correctness
   select partner, sum(cnt) as whole_cat
-  from __schema__.general
+  from general_no_extra
   join static.all_grade on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
 totals as ( -- all records of the partner, regardless of category
   select partner, sum(cnt) as total
-  from __schema__.general
+  from general_no_extra
   where partner = '__partner_name__'
   group by partner
 )
@@ -620,21 +668,21 @@ where partner = '__partner_name__';
 insert into __schema__.mets
 with bads as ( -- bad records of the category
   select partner, sum(cnt) as bad
-  from __schema__.general
+  from general_no_extra
   join static.invalid_met on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
 wholes as ( -- all records of the category, regardless of correctness
   select partner, sum(cnt) as whole_cat
-  from __schema__.general
+  from general_no_extra
   join static.all_met on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
 totals as ( -- all records of the partner, regardless of category
   select partner, sum(cnt) as total
-  from __schema__.general
+  from general_no_extra
   where partner = '__partner_name__'
   group by partner
 )
@@ -651,21 +699,41 @@ where partner = '__partner_name__'
 ;
 
 -- intermediate tables for long and summary lab report
+
+-- create denominators for concepts and values
+drop table if exists general_counts;
+create temp table general_counts as
+select partner, category as cat, sum(cnt) as denom
+from static.lab_category
+join __schema__.general on standard=concept_id
+where partner = '__partner_name__'
+group by partner, cat;
+
+-- detailed report on wrong value as concept
 drop table if exists concept_long_report;
 create temp table concept_long_report as
-with cv as (
-  select distinct partner, category as cat, prec, m.concept_id as m_id, m.concept_name as m_name, value_as_concept_id as v_id, v.concept_name as v_name, v.concept_class_id
+-- categorized value concepts if not null or not 0
+with concept_cat as (
+  select partner, category as cat, prec, m.concept_id as m_id, m.concept_name as m_name, value_as_concept_id as v_id, v.concept_name as v_name, v.concept_class_id, v.domain_id,
+    sum(coalesce(cnt, 1)) as records
   from __schema__.measurement r
   join static.lab_category c on c.concept_id=r.measurement_concept_id
-  join __cdm_schema__.concept m on m.concept_id=r.measurement_concept_id
-  join __cdm_schema__.concept v on v.concept_id=r.value_as_concept_id
-  where partner = '__partner_name__'
+  join prodv5.concept m on m.concept_id=r.measurement_concept_id
+  join prodv5.concept v on v.concept_id=r.value_as_concept_id
+  where value_as_concept_id is not null and value_as_concept_id!=0
+  and partner = '__partner_name__'
+  group by partner, category, prec, m.concept_id, m.concept_name, value_as_concept_id, v.concept_name, v.concept_class_id, v.domain_id
+),
+concept_tot as (
+  select partner, sum(records) as total
+  from concept_cat
+  group by partner
 )
 select partner, cat, m_id, m_name, v_id, v_name, case
-  when v_id=0 then null -- not a countable record
-  when v_id is null then null -- not a countable record
+  when concept_class_id='Lab Test' then 'Measurement concept'
   when prec is not null then 'Precoordinated'
   when pg_input_is_valid(replace(replace(replace(v_name, '%', ''), '>', ''), '<', ''), 'numeric') then 'Number' 
+  when domain_id='Meas Value' and (v_name like '%or greater%' or v_name like '%or less%') then 'Number'
   when v_name='Above reference range' then 'Good' -- valid value_as_concept
   when v_name='Below reference range' then 'Good' -- valid value_as_conceptv
   when v_name='Normal' then 'Good' -- valid value_as_concept
@@ -685,6 +753,7 @@ select partner, cat, m_id, m_name, v_id, v_name, case
   when v_name='Null' then 'Flavor of Null'
   when v_name='Quantity insufficient' then 'Flavor of Null'
   when v_name='Not done' then 'Flavor of Null'
+  when v_name='Test not done' then 'Flavor of Null'
   when v_name='Not performed' then 'Flavor of Null'
   when v_name='Pending' then 'Flavor of Null'
   when v_name='Service comment' then 'Flavor of Null'
@@ -692,30 +761,46 @@ select partner, cat, m_id, m_name, v_id, v_name, case
   when v_name='Unable to do' then 'Flavor of Null'	
   when v_name='Unavailable' then 'Flavor of Null'	
   when v_name='Unknown/No answer' then 'Flavor of Null'	
-  when concept_class_id='Lab Test' then 'Measurement concept'
   when v_name like '%Grade %' then 'Good'
   when v_name like 'KPS %' then 'Good' -- Karnofsky
   when v_name like 'Karnofsky Performance Scale (KPS)%' then 'Good'
   when v_name like 'Class %' then 'Good' -- NYHA class
   when v_name like 'ECOG performance status%' then 'Good'
-  else 'Not value concept'
-  end as value_concept
-from cv;
+  else 'Not valid value'
+  end as critique, records, 100.0*records/total as pct_con_rcs
+from concept_cat
+join general_counts using(partner, cat)
+join concept_tot using(partner);
 
-drop table if exists v;
-create temp table v as
-select distinct partner, category as cat, m.concept_id as m_id, m.concept_name as m_name, u.concept_id as u_id, u.concept_name as u_name, range_low, 
-  case range_high when 0 then null else range_high end as range_high, 
-  p_03, p_25, median, p_75, p_97
-from __schema__.measurement r
-join static.lab_category c on c.concept_id=r.measurement_concept_id
-join __cdm_schema__.concept m on m.concept_id=r.measurement_concept_id
-join __cdm_schema__.concept u on u.concept_id=r.unit_concept_id
-where partner = '__partner_name__';
-
+-- detailed report on wrong value distributions
 drop table if exists value_long_report;
 create temp table value_long_report as
-with normals (cat, unit, range_low, range_high, matching) as (values
+-- categorized values
+with value_cat as (
+  select partner, cat, m_id, m_name, u_id, u_name, range_low, range_high, p_03, p_25, median, p_75, p_97, sum(cnt) as records from (
+    select partner, category as cat, m.concept_id as m_id, m.concept_name as m_name, u.concept_id as u_id, u.concept_name as u_name, 
+      range_low, range_high, 
+      case p_03 when 0 then null else p_03 end as p_03,
+      case p_25 when 0 then null else p_25 end as p_25,
+      case median when 0 then null else median end as median,
+      case p_75 when 0 then null else p_75 end as p_75,
+      case p_97 when 0 then null else p_97 end as p_97,
+      coalesce(cnt, 1) as cnt
+    from __schema__.measurement r
+    join static.lab_category c on c.concept_id=r.measurement_concept_id
+    join prodv5.concept m on m.concept_id=r.measurement_concept_id
+    left join prodv5.concept u on u.concept_id=r.unit_concept_id
+    where partner = '__partner_name__'
+  )
+  where u_id!=0 or range_high!=0 or coalesce(u_id, range_low, range_high, p_03, p_25, median, p_75, p_97) is not null
+  group by partner, cat, m_id, m_name, u_id, u_name, range_low, range_high, p_03, p_25, median, p_75, p_97
+),
+value_tot as (
+  select partner, sum(records) as total
+  from value_cat
+  group by partner
+),
+normals (cat, unit, range_low, range_high, matching) as (values
   ('Hemoglobin', 'gram per deciliter', 12.0, 17.5, 'both'),
   ('Hemoglobin', 'gram per liter', 120.0, 170.5, 'both'),
   ('Hemoglobin', 'millimole per liter', 7.4, 10.8, 'both'),
@@ -724,9 +809,9 @@ with normals (cat, unit, range_low, range_high, matching) as (values
   ('Platelets', 'ten thousand per microliter', 15, 45, 'both'),
   ('Platelets', 'thousand per liter', 150000, 450000, 'both'),
   ('ANC', 'thousand per microliter', 1.5, 8.0, 'both'),
-  ('Hemoglobin A1c (HbA1c)', 'percent', 4, 5.7, 'upper'),
-  ('Hemoglobin A1c (HbA1c)', 'millimole per mole', 25, 39, 'uppper'),
-  ('Measured or calculated creatinine clearance (CrCl)', 'mL/min', 88, 137, 'both'),
+  ('HbA1c', 'percent', 4, 5.7, 'upper'),
+  ('HbA1c', 'millimole per mole', 25, 39, 'upper'),
+  ('CrCl', 'mL/min', 88, 137, 'both'),
   ('Creatinine', 'milligram per deciliter', 0.6, 1.3, 'both'),
   ('Creatinine', 'milligram per liter', 6, 13, 'both'),
   ('Creatinine', 'milligram per milliliter', 0.006, 0.013, 'both'),
@@ -738,14 +823,14 @@ with normals (cat, unit, range_low, range_high, matching) as (values
   ('GFR', 'milliliter per minute per 1.73 square meter', 90, 90, 'lower'),
   ('GFR', 'liter per minute per square meter', 0.052, 0.052, 'lower'),
   ('PTT', 'second', 25, 35, 'both'),
-  ('Activated partial thromboplastin (aPTT)', 'second', 25, 35, 'both'),
-  ('International normalized ratio (INR)', 'ratio', 0.8, 1.2, 'both'),
+  ('aPTT', 'second', 25, 35, 'both'),
+  ('INR', 'ratio', 0.8, 1.2, 'both'),
   ('Direct bilirubin', 'milligram per deciliter', 0, 0.3, 'both'),
   ('Direct bilirubin', 'micromole/liter', 0, 5, 'both'),
   ('Total bilirubin', 'milligram per deciliter', 0.3, 1.2, 'both'),
   ('Total bilirubin', 'micromole/liter', 5, 21, 'both'),
-  ('AST (SGOT)', 'unit per liter', 10, 40, 'both'),
-  ('ALT (SGPT)', 'unit per liter', 7, 56, 'both'),
+  ('AST', 'unit per liter', 10, 40, 'both'),
+  ('ALT', 'unit per liter', 7, 56, 'both'),
   ('Karnofsky', '', 0, 100, 'both'),
   ('ECOG', '', 0, 5, 'both'),
   ('NYHA', '', 1, 4, 'both')
@@ -758,94 +843,158 @@ p (a_name, u_name) as (values
   ('microgram per milliliter', 'milligram per liter'),
   ('international unit per liter', 'unit per liter')
 )
-select partner, v.cat, m_id, m_name, u_id, u_name, v.range_low, v.range_high, -- , n.unit as u, n.range_low, n.range_high,
-  case when n.cat is null then 'Unusable' else null end as range,
-  case when p_97 is null or p_97=0 then 'Missing' else null end as values, 
-  case when p_03=p_97 then 'Small' else null end as spread,
-  case when n.cat is not null and v.u_name!=unit and v.u_name not in (select a_name from p where p.u_name=unit) then 'Bad unit' else null end as unit,
--- Outliers measured as the spread > 1000x or if there are 9999 in the values
-  case when cast(p_97 as text) like '9999%' or p_25>0 and p_97/coalesce(v.range_high, p_25)>1000.0 then 'Present' else null end as outliers
-from v
-left join normals n on v.cat=n.cat and (
-  matching='both' and coalesce((v.range_low+v.range_high), p_25*2.0)/(n.range_low+n.range_high) between 0.78 and 1.27 or 
-  matching='upper' and coalesce(v.range_high, median)/n.range_high between 0.78 and 1.27 or
-  matching='lower' and coalesce(v.range_low, median)/n.range_low between 0.78 and 1.27
-);
+select * from (
+  select partner, v.cat, m_id, m_name, u_id, u_name, v.range_low, v.range_high, -- , n.unit as u, n.range_low, n.range_high,
+    case when n.cat is null then 'Unusable' else null end as range,
+    case when p_97 is null or p_97=0 then 'Missing' else null end as values, 
+    case when p_03=p_97 then 'Small' else null end as spread,
+  -- If unit or list of alternative units doesn't existing
+    case when n.cat is not null and coalesce(v.u_name, '')!=unit and coalesce(v.u_name, '') not in (select a_name from p where p.u_name=unit) then 'Bad' else null end as unit,
+  -- Outliers measured as the spread > 1000x or if there are 9999 in the values
+    case when cast(p_97 as text) like '9999%' or p_25>0 and 
+      p_97/coalesce(case v.range_high when 0 then null else v.range_high end, p_25)>1000.0 then 'Present' else null end as outliers,
+    records, 100.0*records/total as pct_val_rcs
+  from value_cat v
+  join value_tot using(partner)
+  -- this is where the existing ranges or percentiles are matched to the expected ones 
+  left join normals n on v.cat=n.cat and (
+    matching='both' and coalesce((v.range_low+v.range_high), p_25*2.0)/(n.range_low+n.range_high) between 0.62 and 1.62 or 
+    matching='upper' and coalesce(v.range_high, median)/n.range_high between 0.62 and 1.62 or
+    matching='lower' and coalesce(v.range_low, median)/n.range_low between 0.62 and 1.62
+  )
+)
+where coalesce(range, values, spread, unit, outliers) is not null;
 
 -- long lab report
 delete from __schema__.lab_long_report
 where partner = '__partner_name__';
 
 insert into __schema__.lab_long_report
-select partner, cat, m_id, m_name, null as v_id, null as v_name, u_id, u_name, range_low, range_high, range, values, spread, unit, outliers, null as value_concept
-from value_long_report
-union
-select partner, cat, m_id, m_name, v_id, v_name, null, null, null, null, null, null, null, null, null, value_concept
-from concept_long_report where value_concept!='Good'
-order by partner, cat, m_name, v_name, u_name;
+with long_report as (
+  -- report on value distribution
+  select partner, cat, m_id as measurement_id, m_name as measurement_name, records, 100.0*records/denom as percent, 
+  -- critique on value_as_concept_id
+  null as value_id, null as value_name, null as concept_critique, null as pct_of_concept_recs,
+  -- critique on distribution of values
+  u_id as unit_id, u_name as unit_name, range_low, range_high, range, values, spread, unit, outliers, pct_val_rcs as pct_of_value_recs
+  from value_long_report
+  join general_counts using(partner, cat)
+  union
+  -- add report from value as concepts
+  select partner, cat, m_id, m_name, records, 100.0*records/denom as percent, 
+  v_id, v_name, critique, pct_con_rcs, 
+  null, null, null, null, null, null, null, null, null, null
+  from concept_long_report
+  join general_counts using(partner, cat)
+  where critique!='Good' and critique is not null
+)
+select * from long_report
+order by partner, cat, measurement_name, value_name, unit_name, range_low, range_high;
 
 -- summary lab report
 delete from __schema__.lab_summary
 where partner = '__partner_name__';
 
-insert into results.lab_summary
+insert into __schema__.lab_summary
 with all_cat as (
   select distinct '__partner_name__' as partner, category as cat
   from static.lab_category
 ),
-c as (
-  select partner, cat, coalesce(cnt_v, 0) as cnt_v, coalesce(cnt_c, 0) as cnt_c, coalesce(cnt_v, 0)+coalesce(cnt_c, 0) as cnt 
-  from all_cat
-  left join (
-    select partner, cat, count(*) as cnt_v
-    from v 
-    group by partner, cat
-  )  using(partner, cat)
-  left join (
-    select partner, cat, count(value_concept) as cnt_c -- call how many of them are not 0 or null
-    from concept_long_report -- make sure to count all, even when empty
-	where partner = '__partner_name__'
-    group by partner, cat
-  ) using(partner, cat)
-),
 concept_summary as (
-  select distinct partner, cat, 
-    count(case value_concept when 'Number' then 1 else null end) as number,
-    count(case value_concept when 'Flavor of Null' then 1 else null end) as flavor_null,
-    count(case value_concept when 'Precoordinated' then 1 else null end) as precoordinated,
-    count(case value_concept when 'Measurement concept' then 1 else null end) as measurement,
-    count(case value_concept when 'Not value concept' then 1 else null end) as not_value,
-    count(case value_concept when 'Good' then 1 else null end) as good
+  select partner, cat, 
+    sum(case critique when 'Number' then records else 0 end) as number,
+    sum(case critique when 'Flavor of Null' then records else 0 end) as flavor_null,
+    sum(case critique when 'Precoordinated' then records else 0 end) as precoordinated,
+    sum(case critique when 'Measurement concept' then records else 0 end) as measurement,
+    sum(case critique when 'Not valid value' then records else 0 end) as not_value,
+    sum(case critique when 'Good' then records else 0 end) as good,
+    sum(records) as concept_records
   from concept_long_report
   where partner = '__partner_name__'
   group by partner, cat
 ),      
 value_summary as (
   select partner, cat,
-    count(unit) as bad_unit,
-    count(range) as bad_range,
-    count(values) as missing_values,
-    count(spread) as no_spread,
-    count(outliers) as outliers,
-    count(coalesce(values, range)) as hopeless
+    sum(case when unit is null then 0 else records end) as bad_unit,
+    sum(case when range is null then 0 else records end) as bad_range,
+    sum(case when values is null then 0 else records end) as missing_values,
+    sum(case when spread is null then 0 else records end) as no_spread,
+    sum(case when outliers is null then 0 else records end) as outliers,
+    sum(case when coalesce(values, range) is null then 0 else records end) as hopeless,
+    sum(records) as value_records
   from value_long_report
   where partner = '__partner_name__'
   group by partner, cat
 )
-select partner, cat,
-  cnt as total_combos,
-  case number when 0 then null else round(number*100.0/cnt, 2) end as number,
-  case flavor_null when 0 then null else round(flavor_null*100.0/cnt, 2) end as flavor_null,
-  case precoordinated when 0 then null else round(precoordinated*100.0/cnt, 2) end as precoordinated,
-  case measurement when 0 then null else round(measurement*100.0/cnt, 2) end as measurement,
-  case not_value when 0 then null else round(not_value*100.0/cnt, 2) end as not_value,
-  case bad_unit when 0 then null else round(bad_unit*100.0/cnt, 2) end as bad_unit,
-  case bad_range when 0 then null else round(bad_range*100.0/cnt, 2) end as bad_range,
-  case missing_values when 0 then null else round(missing_values*100.0/cnt, 2) end as missing_values,
-  case no_spread when 0 then null else round(no_spread*100.0/cnt, 2) end as no_spread,
-  case outliers when 0 then null else round(outliers*100.0/cnt, 2) end as outliers,
-  case cnt when 0 then null else round((good+cnt_v-coalesce(hopeless, 0))*100.0/cnt, 2) end as pot_usable
-from c 
+select partner, cat, concept_records,
+  case number when 0 then null else number end as number,
+  case flavor_null when 0 then null else flavor_null end as flavor_null,
+  case precoordinated when 0 then null else precoordinated end as precoordinated,
+  case measurement when 0 then null else measurement end as measurement,
+  case not_value when 0 then null else not_value end as not_value,
+  100.0*case good when 0 then null else good end/concept_records as pct_usable_consets,  
+  value_records,
+  case bad_unit when 0 then null else bad_unit end as bad_unit,
+  case bad_range when 0 then null else bad_range end as bad_range,
+  case missing_values when 0 then null else missing_values end as missing_values,
+  case no_spread when 0 then null else no_spread end as no_spread,
+  case outliers when 0 then null else outliers end as outliers,
+  100.0*(value_records-coalesce(hopeless, 0))/value_records as pct_usable_valsets
+from all_cat
 left join concept_summary using(partner, cat)
-left join value_summary v using(partner, cat)
+left join value_summary using(partner, cat)
 order by partner, cat;
+
+
+delete from __schema__.special_conditions
+where partner = '__partner_name__';
+
+insert into __schema__.special_conditions
+with ecogs as (
+  select partner, 'ECOG' as critique, sum(cnt) as records
+  from __schema__.measurement
+  join static.lab_category on concept_id = measurement_concept_id
+  where partner = '__partner_name__'
+  and category = 'ECOG'
+  group by partner
+),
+karnofskys as (
+  select partner, 'Karnofsky' as critique, sum(cnt) as records
+  from __schema__.measurement
+  join static.lab_category on concept_id = measurement_concept_id
+  where partner = '__partner_name__'
+  and category = 'Karnofsky'
+  group by partner
+),
+pd_l1s as (
+  select partner, 'PD-L1' as critique, sum(cnt) as records
+  from __schema__.measurement
+  join static.lab_category on concept_id = measurement_concept_id
+  where partner = '__partner_name__'
+  and category = 'PD-L1'
+  group by partner
+),
+totals as (
+  select partner, sum(cnt) as total
+  from __schema__.measurement
+  where partner = '__partner_name__'
+  group by partner
+)
+select partner, critique, coalesce(records, 0) as records, 
+coalesce(round(records * 100.0 / total, 2), 0.00) as record_perc
+from ecogs
+join totals using(partner)
+where records > 0
+union
+select partner, critique, coalesce(records, 0) as records, 
+coalesce(round(records * 100.0 / total, 2), 0.00) as record_perc
+from karnofskys
+join totals using(partner)
+where records > 0
+union
+select partner, critique, coalesce(records, 0) as records, 
+coalesce(round(records * 100.0 / total, 2), 0.00) as record_perc
+from pd_l1s
+join totals using(partner)
+where records > 0
+;
