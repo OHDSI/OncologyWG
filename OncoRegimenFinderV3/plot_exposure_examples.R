@@ -6,32 +6,33 @@ source("R/plot_fn.R")
 ##################################################
 ##### SETUP
 ##################################################
-connectionDetails <-  DatabaseConnector::createConnectionDetails(dbms = "redshift", 
-                                                                 server = "", 
+connectionDetails <-  DatabaseConnector::createConnectionDetails(dbms = "postgresql", 
+                                                                 server = "dlvidhiomop1.mskcc.org/omop_raw", 
                                                                  user = "", 
                                                                  password = "", 
-                                                                 port = 5439)
+                                                                 port = 5432)
 
-cdmDatabaseSchema <- "full_201904_omop_v5"
+cdmDatabaseSchema <- "omop_cdm_2"
 drug_classification_id_input <- 21601387
 condition_id_input <- 197508
-regimenIngredientTable <- "cancer_regimen_ingredients"
-writeDatabaseSchema <- "study_reference"
+regimenIngredientTable <- "test_regimen_ingredient"
+writeDatabaseSchema <- "onco_regimen_finder_test"
 
 ##################################################
 ##### PULL DATA
 ##################################################
-sql <- SqlRender::render(SqlRender::readSql("SQL/RawEvents.sql"), cdmDatabaseSchema = cdmDatabaseSchema, drug_classification_id_input = drug_classification_id_input, condition_id_input = condition_id_input) 
+sql <- SqlRender::render(SqlRender::readSql("SQL/RawEvents.sql"), cdmDatabaseSchema = cdmDatabaseSchema, writeDatabaseSchema = writeDatabaseSchema, drug_classification_id_input = drug_classification_id_input, condition_id_input = condition_id_input) 
 sql <- SqlRender::translate(sql,targetDialect = connectionDetails$dbms)
 
 connection <-  DatabaseConnector::connect(connectionDetails)
 
 executeSql(connection, sql)
-rawEvents <- dbGetQuery(connection, "SELECT * FROM #rawevents order by person_id, ingredient_start_date, days_supply")
+sql <- SqlRender::render("SELECT * FROM @writeDatabaseSchema.@rawEvents order by person_id, ingredient_start_date, days_supply", writeDatabaseSchema = writeDatabaseSchema, rawEvents = "raw_events")
+rawEvents <- dbGetQuery(connection, sql)
 
 sql <- SqlRender::render("SELECT * FROM @writeDatabaseSchema.@regimenIngredientTable",
-                         writeDatabaseSchema = "study_reference",
-                         regimenIngredientTable = "cancer_regimen_ingredients")
+                         writeDatabaseSchema = writeDatabaseSchema,
+                         regimenIngredientTable = regimenIngredientTable)
 
 regimens <- dbGetQuery(connection, sql)
 
