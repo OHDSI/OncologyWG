@@ -34,7 +34,8 @@ create table if not exists static.all_met (
   concept_id int
 );
 
-insert into static.invalid_grade (concept_id) values
+insert into static.invalid_grade
+with dedup(concept_id) as (values
 (439386),
 (602269),
 (602272),
@@ -645,9 +646,12 @@ insert into static.invalid_grade (concept_id) values
 (45884263),
 (45884439),
 (45885239),
-(45885240);
+(45885240)
+)
+select distinct * from dedup;
 
-insert into static.invalid_stage (concept_id) values
+insert into static.invalid_stage
+with dedup(concept_id) as (values
 (718590),
 (3188117),
 (4106768),
@@ -832,9 +836,12 @@ insert into static.invalid_stage (concept_id) values
 (46238000),
 (46238004),
 (46238005),
-(46238005);
+(46238005)
+)
+select distinct * from dedup;
 
-insert into static.invalid_met (concept_id) values
+insert into static.invalid_met
+with dedup(concept_id) as (values
 (40320642),
 (40352613),
 (40385299),
@@ -2529,7 +2536,9 @@ insert into static.invalid_met (concept_id) values
 (4240923),
 (4241434),
 (4241806),
-(4241807);
+(4241807)
+)
+select distinct * from dedup;
 
 insert into static.correct_met
 select concept_id
