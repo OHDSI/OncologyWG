@@ -12,7 +12,7 @@ output:
 <br>
 
 <div style="font-size: 18px; font-weight: bold; color: red;">
-  Disclaimer: This sprint is currently not active. Please consult with the <a href="mailto:golozar@ohdsi.org">Oncology Workgroup</a>.
+  Disclaimer: This specific sprint is currently not active. The Oncology WG’s work is ongoing and new onboarding “onramps” are being prepared. Treat this page as read-only; don’t implement from it. Please consult with the <a href="mailto:oncology@ohdsi.org">Oncology Workgroup</a>.
 </div>
 
 ## **Mission** 
