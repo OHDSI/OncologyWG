@@ -55,6 +55,56 @@ lab_values as (
   ) c
   group by measurement_concept_id, unit_concept_id, range_low,
   range_high, value_as_concept_id
+),
+-- combination of measurement concept, value as concept and numeric value from measurement table
+measurement_combi as (
+  select measurement_concept_id, value_as_concept_id, 
+  case when value_as_number is not null and cast(value_as_number as int) <> value_as_number then 99999 else value_as_number end as value_as_number,
+  count(*) as cnt
+  from (
+    select measurement_id 
+	from @cdm_schema.measurement
+	join concepts on concept_id=measurement_concept_id
+	union
+    select measurement_id 
+	from @cdm_schema.measurement
+	join concepts on concept_id=value_as_concept_id
+  ) a
+  join @cdm_schema.measurement using(measurement_id)
+  where (value_as_concept_id is not null and value_as_concept_id <> 0)
+  or value_as_number is not null
+  group by measurement_concept_id, value_as_concept_id, 3
+),
+-- combination of observation concept, value as concept and numeric value from observation table
+observation_combi as (
+  select observation_concept_id, value_as_concept_id, 
+  case when value_as_number is not null and cast(value_as_number as int) <> value_as_number then 99999 else value_as_number end as value_as_number,
+  count(*) as cnt
+  from (
+    select observation_id 
+	from @cdm_schema.observation
+	join concepts on concept_id=observation_concept_id
+	union
+    select observation_id 
+	from @cdm_schema.observation
+	join concepts on concept_id=value_as_concept_id
+  ) a
+  join @cdm_schema.observation using(observation_id)
+  where (value_as_concept_id is not null and value_as_concept_id <> 0)
+  or value_as_number is not null
+  group by observation_concept_id, value_as_concept_id, 3
+),
+-- union of the measurement and observation combinations
+question_answer as (
+  select measurement_concept_id, value_as_concept_id, value_as_number, sum(cnt) as cnt
+  from (
+    select measurement_concept_id, value_as_concept_id, value_as_number, cnt
+	from measurement_combi
+	union all
+	select observation_concept_id, value_as_concept_id, value_as_number, cnt
+	from observation_combi
+  ) a
+  group by measurement_concept_id, value_as_concept_id, value_as_number
 )
 -- Total patient count in the database
 select 't' as domain, null as source, null as standard, count(*) as cnt, null as measurement
@@ -163,6 +213,24 @@ select 'v' as domain, null, value_as_concept_id, count(*) as cnt, null as measur
 from @cdm_schema.measurement
 join concepts on concept_id=value_as_concept_id
 group by value_as_concept_id
+union
+-- Standard specimen concept counts
+select 's' as domain, null, specimen_concept_id, count(*) as cnt, null as measurement
+from @cdm_schema.specimen
+join concepts on concept_id=specimen_concept_id
+group by specimen_concept_id
+union
+-- combination of measurement concept and value concept
+select 'q' as domain, measurement_concept_id, value_as_concept_id, sum(cnt) as cnt, null as measurement
+from question_answer
+where value_as_concept_id is not null and value_as_concept_id <> 0
+group by measurement_concept_id, value_as_concept_id
+union
+-- combination of measurement concept and numeric value
+select 'a' as domain, measurement_concept_id, value_as_number, sum(cnt) as cnt, null as measurement
+from question_answer
+where value_as_concept_id is null or value_as_concept_id = 0
+group by measurement_concept_id, value_as_number
 union
 -- Lab value distribution as string for transport purposes
 select 'l' as domain, measurement_concept_id, unit_concept_id, value_as_concept_id,

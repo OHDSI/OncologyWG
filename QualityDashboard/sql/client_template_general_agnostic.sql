@@ -34,11 +34,11 @@ b as (
 lab_values as (
   select {@dialect == 'sql server'} ? {distinct} measurement_concept_id, unit_concept_id, range_low,
   range_high, value_as_concept_id,
-  percentile_cont(0.03) within group (order by value_as_number) {@dialect == 'sql server'} ? {over (partition by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id)} as p_03, 
-  percentile_cont(0.25) within group (order by value_as_number) {@dialect == 'sql server'} ? {over (partition by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id)} as p_25, 
-  percentile_cont(0.5) within group (order by value_as_number) {@dialect == 'sql server'} ? {over (partition by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id)} as median,
-  percentile_cont(0.75) within group (order by value_as_number) {@dialect == 'sql server'} ? {over (partition by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id)} as p_75,
-  percentile_cont(0.97) within group (order by value_as_number) {@dialect == 'sql server'} ? {over (partition by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id)} as p_97,
+  percentile_cont({@dialect == 'bigquery'} ? {value_as_number,} 0.03) {@dialect != 'bigquery'} ? {within group (order by value_as_number)} {@dialect == 'sql server'} ? {over (partition by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id)} as p_03, 
+  percentile_cont({@dialect == 'bigquery'} ? {value_as_number,} 0.25) {@dialect != 'bigquery'} ? {within group (order by value_as_number)} {@dialect == 'sql server'} ? {over (partition by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id)} as p_25, 
+  percentile_cont({@dialect == 'bigquery'} ? {value_as_number,} 0.5) {@dialect != 'bigquery'} ? {within group (order by value_as_number)} {@dialect == 'sql server'} ? {over (partition by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id)} as median,
+  percentile_cont({@dialect == 'bigquery'} ? {value_as_number,} 0.75) {@dialect != 'bigquery'} ? {within group (order by value_as_number)} {@dialect == 'sql server'} ? {over (partition by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id)} as p_75,
+  percentile_cont({@dialect == 'bigquery'} ? {value_as_number,} 0.97) {@dialect != 'bigquery'} ? {within group (order by value_as_number)} {@dialect == 'sql server'} ? {over (partition by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id)} as p_97,
   count(value_as_number) {@dialect == 'sql server'} ? {over (partition by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id)} as cnt
   from (
     select m.measurement_concept_id, unit_concept_id, range_low,
@@ -54,6 +54,52 @@ lab_values as (
     where value_as_number!=0 and value_as_number is not null
   ) as c
   {@dialect != 'sql server'} ? {group by measurement_concept_id, unit_concept_id, range_low, range_high, value_as_concept_id}
+),
+-- combination of measurement concept, value as concept and numeric value from measurement table
+measurement_combi as (
+  select measurement_concept_id, value_as_concept_id, 
+  case when value_as_number is not null and cast(value_as_number as int) <> value_as_number then 99999 else value_as_number end as value_as_number
+  from (
+    select measurement_id 
+	from @cdm_schema.measurement
+	join concepts on concept_id=measurement_concept_id
+	union
+    select measurement_id 
+	from @cdm_schema.measurement
+	join concepts on concept_id=value_as_concept_id
+  ) as a
+  join @cdm_schema.measurement m on m.measurement_id = a.measurement_id
+  where (value_as_concept_id is not null and value_as_concept_id <> 0)
+  or value_as_number is not null
+),
+-- combination of observation concept, value as concept and numeric value from observation table
+observation_combi as (
+  select observation_concept_id, value_as_concept_id, 
+  case when value_as_number is not null and cast(value_as_number as int) <> value_as_number then 99999 else value_as_number end as value_as_number
+  from (
+    select observation_id 
+	from @cdm_schema.observation
+	join concepts on concept_id=observation_concept_id
+	union
+    select observation_id 
+	from @cdm_schema.observation
+	join concepts on concept_id=value_as_concept_id
+  ) as a
+  join @cdm_schema.observation o on o.observation_id = a.observation_id
+  where (value_as_concept_id is not null and value_as_concept_id <> 0)
+  or value_as_number is not null
+),
+-- union of the measurement and observation combinations
+question_answer as (
+  select measurement_concept_id, value_as_concept_id, value_as_number, count(*) as cnt
+  from (
+    select measurement_concept_id, value_as_concept_id, value_as_number
+	from measurement_combi
+	union all
+	select observation_concept_id, value_as_concept_id, value_as_number
+	from observation_combi
+  ) as a
+  group by measurement_concept_id, value_as_concept_id, value_as_number
 )
 -- Total patient count in the database
 select 't' as domain, null as source, null as standard, count(*) as cnt, null as measurement
@@ -162,6 +208,24 @@ select 'v' as domain, null, value_as_concept_id, count(*) as cnt, null as measur
 from @cdm_schema.measurement
 join concepts on concept_id=value_as_concept_id
 group by value_as_concept_id
+union
+-- Standard specimen concept counts
+select 's' as domain, null, specimen_concept_id, count(*) as cnt, null as measurement
+from @cdm_schema.specimen
+join concepts on concept_id=specimen_concept_id
+group by specimen_concept_id
+union
+-- combination of measurement concept and value concept
+select 'q' as domain, measurement_concept_id, value_as_concept_id, sum(cnt) as cnt, null as measurement
+from question_answer
+where value_as_concept_id is not null and value_as_concept_id <> 0
+group by measurement_concept_id, value_as_concept_id
+union
+-- combination of measurement concept and numeric value
+select 'a' as domain, measurement_concept_id, value_as_number, sum(cnt) as cnt, null as measurement
+from question_answer
+where value_as_concept_id is null or value_as_concept_id = 0
+group by measurement_concept_id, value_as_number
 union
 -- Lab value distribution as string for transport purposes
 select 'l' as domain, measurement_concept_id, unit_concept_id, value_as_concept_id,

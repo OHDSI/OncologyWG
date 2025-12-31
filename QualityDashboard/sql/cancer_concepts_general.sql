@@ -52,10 +52,22 @@ cc as ( -- add all concepts mapping into the above
     select concept_id_2 from __cdm_schema__.concept_relationship join co on concept_id=concept_id_1 where invalid_reason is null and relationship_id='Mapped from' and concept_id_1!=concept_id_2
   ) a join __cdm_schema__.concept using(concept_id)
   where vocabulary_id not in -- kick out vocabularies we are not wrestling with
-    ('Indication', 'Concept Class', 'ISBT Attribute', 'ETC', 'ISBT', 'SMQ', 'SNOMED Veterinary', 'Relationship', 'Vocabulary', 'CO-CONNECT MIABIS', 'MeSH', 'NDFRT', 'Nebraska Lexicon', 'EDI', 'ICD10CN', 'KCD7', 'CO-CONNECT TWINS', 'UB04 Pt dis status', 'ATC', 'VA Class', 'GGR', 'OMOP Extension', 'Multilex', 'EphMRA ATC', 'AMIS', 'Meas Type', 'HES Specialty', 'MDC', 'VANDF', 'Condition Type'))
-select * from cc
-union 
-select * from static.all_cancer
-union 
-select * from static.additional_conditions
+    ('Indication', 'Concept Class', 'ISBT Attribute', 'ETC', 'ISBT', 'SMQ', 'SNOMED Veterinary', 'Relationship', 'Vocabulary', 'CO-CONNECT MIABIS', 'MeSH', 'NDFRT', 'Nebraska Lexicon', 'EDI', 'ICD10CN', 'KCD7', 'CO-CONNECT TWINS', 'UB04 Pt dis status', 'ATC', 'VA Class', 'GGR', 'OMOP Extension', 'Multilex', 'EphMRA ATC', 'AMIS', 'Meas Type', 'HES Specialty', 'MDC', 'VANDF', 'Condition Type')
+),
+cancers as (
+  select * from cc
+  union 
+  select * from static.all_cancer
+  union 
+  select * from static.additional_conditions
+),
+q_a as ( -- add question and answers that don't seem cancer-related just by their description
+  select concept_id_2 as concept_id
+  from cancers
+  join __cdm_schema__.concept_relationship on concept_id = concept_id_1
+  where relationship_id in ('Has Answer', 'Answer of')
+)
+select concept_id from cancers
+union
+select concept_id from q_a
 order by concept_id;
