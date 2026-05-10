@@ -1,3 +1,5 @@
+drop table if exists @writeDatabaseSchema.raw_events;
+
 with CTE as (
 select c.person_id,
 	   min(c.condition_start_date) as start_date
@@ -36,5 +38,5 @@ inner join @cdmDatabaseSchema.concept c on c.concept_id = ca.ancestor_concept_id
 and c.concept_class_id = 'Ingredient'
 )
 select lower(concept_name) as concept_name, person_id, drug_exposure_start_date as ingredient_start_date, days_supply, start_date
-into #rawevents
+into @writeDatabaseSchema.raw_events
 from CTE_second
