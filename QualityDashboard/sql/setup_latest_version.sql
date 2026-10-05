@@ -1,4 +1,8 @@
-/* uses placeholders
+/* 
+   This script sets up the tables for calculating the latest data version.
+   The script individual_report_single.sql does the actual calculation.
+
+   uses placeholders
    __schema__ - the schema containing the results from the user
    __partner_name__ - the name of the data partner to calculate results for
 */

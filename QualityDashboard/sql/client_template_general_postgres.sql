@@ -59,7 +59,13 @@ lab_values as (
 -- combination of measurement concept, value as concept and numeric value from measurement table
 measurement_combi as (
   select measurement_concept_id, value_as_concept_id, 
-  case when value_as_number is not null and cast(value_as_number as int) <> value_as_number then 99999 else value_as_number end as value_as_number,
+  case 
+    when value_as_number is null then null
+    when value_as_number <> floor(value_as_number) then 99999
+    -- Values outside of int range can't be concepts.
+    when value_as_number > 2147483647 or value_as_number < -2147483648 then 99999
+    else value_as_number 
+  end as value_as_number,
   count(*) as cnt
   from (
     select measurement_id 
@@ -78,7 +84,13 @@ measurement_combi as (
 -- combination of observation concept, value as concept and numeric value from observation table
 observation_combi as (
   select observation_concept_id, value_as_concept_id, 
-  case when value_as_number is not null and cast(value_as_number as int) <> value_as_number then 99999 else value_as_number end as value_as_number,
+  case 
+    when value_as_number is null then null
+    when value_as_number <> floor(value_as_number) then 99999
+    -- Values outside of int range can't be concepts.
+    when value_as_number > 2147483647 or value_as_number < -2147483648 then 99999
+    else value_as_number 
+  end as value_as_number,
   count(*) as cnt
   from (
     select observation_id 

@@ -10,6 +10,16 @@ union
     person_id, observation_date as start_date, observation_datetime, cast(null as date), cast(null as timestamp), observation_type_concept_id, provider_id, visit_occurrence_id, visit_detail_id, cast(null as integer),
     combo.*
   from @cdm_schema.observation join @patch_schema.combo on topo_id=observation_concept_id
+union
+  select -- from the measurements
+    person_id, measurement_date as start_date, measurement_datetime, cast(null as date), cast(null as timestamp), measurement_type_concept_id, provider_id, visit_occurrence_id, visit_detail_id, cast(null as integer),
+    combo.*
+  from @cdm_schema.measurement join @patch_schema.combo on topo_id=measurement_concept_id
+union
+  select -- from the specimens
+    person_id, specimen_date as start_date, specimen_datetime, cast(null as date), cast(null as timestamp), specimen_type_concept_id, cast(null as integer), cast(null as integer), cast(null as integer), disease_status_concept_id,
+    combo.*
+  from @cdm_schema.specimen join @patch_schema.combo on topo_id=specimen_concept_id
 ),
 histo as (  -- find all records with histology concepts or pseudo-histology concepts disguised as disease concepts with no finding site
   select person_id, condition_start_date as start_date, combo.*
@@ -17,12 +27,22 @@ histo as (  -- find all records with histology concepts or pseudo-histology conc
 union
   select person_id, observation_date as start_date, combo.*
   from @cdm_schema.observation join @patch_schema.combo on histo_id=observation_concept_id
+union
+  select -- from the measurements
+    person_id, measurement_date as start_date, combo.*
+  from @cdm_schema.measurement join @patch_schema.combo on histo_id=measurement_concept_id
+union
+  select -- from the specimens
+    person_id, specimen_date as start_date, combo.*
+  from @cdm_schema.specimen join @patch_schema.combo on histo_id=specimen_concept_id
 )
 select -- combine them as long as they occur in the same patient on the same day, and write them out as new conditions
   (select max(condition_occurrence_id) from @cdm_schema.condition_occurrence)+row_number() over (order by person_id) as condition_occurrence_id, combined.* 
   from (
-    select distinct person_id, cancer_id as condition_concept_id, start_date as condition_start_date, condition_start_datetime, condition_end_date, condition_end_datetime, condition_type_concept_id, provider_id, visit_occurrence_id, visit_detail_id, condition_status_concept_id
+    select distinct person_id, cancer_id as condition_concept_id, topo.start_date as condition_start_date, condition_start_datetime, condition_end_date, condition_end_datetime, condition_type_concept_id, provider_id, visit_occurrence_id, visit_detail_id, condition_status_concept_id
     from topo
-    join histo using(person_id, start_date, cancer_id) -- histo and topo have to be in combo and occur on the same date for the same patient
+    join histo using(person_id, cancer_id)
+	-- Change the corridor from +-7 in the following row if needed.
+	where topo.start_date > histo.start_date - 7  and topo.start_date < histo.start_date + 7
 ) combined
 ;

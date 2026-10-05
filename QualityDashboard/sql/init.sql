@@ -49,6 +49,11 @@ create table if not exists __schema__.patient (
 	hash varchar(64)
   );
 
+create table if not exists __schema__.long_partner_names (
+	partner varchar(20),
+	long_name varchar(250)
+);
+
 create table if not exists __schema__.database_summary (
     partner varchar(20),
     size int,
@@ -70,7 +75,8 @@ create table if not exists __schema__.individual_concept_report (
     is_domain varchar(20),
     critique varchar(255),
     records bigint,
-	version int
+	version int,
+	notes varchar(50)
   );
 
 create table if not exists __schema__.standard_summary_report (
@@ -341,7 +347,8 @@ create table if not exists __schema__.lab_long_report (
 	unit varchar(10),
 	outliers varchar(10),
 	pct_of_value_recs numeric,
-	version int
+	version int,
+	distribution varchar(10)
 );
 
 create table if not exists __schema__.lab_summary (
@@ -361,7 +368,8 @@ create table if not exists __schema__.lab_summary (
 	no_spread int,
 	outliers int,
 	pct_usable_valsets numeric,
-	version int
+	version int,
+	bad_dist int
 );
 
 create table if not exists __schema__.special_conditions (
@@ -403,4 +411,22 @@ create table if not exists __schema__.patch_combi (
 	cancer_id int,
 	histo_id int,
 	topo_id int
+);
+
+create table if not exists __schema__.shit_list (
+	concept_id int,
+	target_concept_id int
+);
+
+create table if not exists __schema__.cancer_modifiers (
+	partner varchar(20),
+	cat varchar(40),
+	vocabulary_id varchar(20),
+	total_count bigint,
+	total_perc numeric,
+	valid_count bigint,
+	valid_perc numeric,
+	correct_count bigint,
+	correct_perc numeric,
+	version int
 );
