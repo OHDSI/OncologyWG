@@ -1,28 +1,28 @@
 /* uses placeholders
-   __schema__ - the schema containing the results from the user
+   @__results__ - the schema containing the results from the user
    __partner_name__ - the name of the data partner to calculate results for
 */
 
-delete from __schema__.max_versions;
-insert into __schema__.max_versions
+delete from @__results__.max_versions;
+insert into @__results__.max_versions
 with max_pat as (
   select partner, max(version) as max_patient
-  from __schema__.patient
+  from @__results__.patient
   group by partner
 ),
 max_gene as ( -- general and measurement have the same version, because the come from the same input file.
   select partner, max(version) as max_general
-  from __schema__.general
+  from @__results__.general
   group by partner
 ),
 max_geno as (
   select partner, max(version) as max_genomic
-  from __schema__.genomic
+  from @__results__.genomic
   group by partner
 ),
 max_epi as (
   select partner, max(version) as max_episodes
-  from __schema__.episodes
+  from @__results__.episodes
   group by partner
 )
 select partner, max_patient, max_general, max_genomic, max_episodes

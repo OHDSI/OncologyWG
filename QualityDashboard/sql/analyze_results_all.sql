@@ -1,6 +1,6 @@
 /* uses placeholders
-   __schema__ - the schema containing the results from the user
-   __cdm_schema__ - the schema containing the vocabulary tables (concept, etc.)
+   @__results__ - the schema containing the results from the user
+   @__vocab__ - the schema containing the vocabulary tables (concept, etc.)
 */
 
 /*****************************************************
@@ -77,20 +77,20 @@ Analysis General
 -- overall counts
 -- used to be "01 Records and concepts in source and standard.csv"
 -- was also in temp table general_t_cnts
-delete from __schema__.records_and_concepts_in_source_and_standard;
+delete from @__results__.records_and_concepts_in_source_and_standard;
 
-insert into __schema__.records_and_concepts_in_source_and_standard
+insert into @__results__.records_and_concepts_in_source_and_standard
 select partner, p.cnt as size, sum(g.cnt) as t_records, round(sum(g.cnt)*1.0/p.cnt, 4) as records_patient, count(distinct(source)) as t_source, 
   round(count(distinct(source))*1.0/p.cnt, 4) as source_patient, count(distinct(standard)) as t_standard, round(count(distinct(standard))*1.0/p.cnt, 4) as standard_patient
-from __schema__.general g
-join __schema__.patient p using(partner)
+from @__results__.general g
+join @__results__.patient p using(partner)
 group by partner, p.cnt;
 
 -- 2. Count number of records per domain
 -- used to be "02 Number of records per domain.csv"
-delete from __schema__.number_of_records_per_domain;
+delete from @__results__.number_of_records_per_domain;
 
-insert into __schema__.number_of_records_per_domain
+insert into @__results__.number_of_records_per_domain
 select partner, domain, records, round(records*1.0/t_records, 4) as "records_%", sources+standards as concepts, round((sources+standards)*1.0/(t_source+t_standard), 4) as "concept_%" 
 from (
   select partner, case domain 
@@ -105,16 +105,16 @@ from (
       else ''
     end as domain, 
     sum(cnt) as records, count(distinct(source)) as sources, count(distinct(standard)) as standards
-  from __schema__.general
+  from @__results__.general
   group by partner, domain
-) a join __schema__.records_and_concepts_in_source_and_standard using(partner)
+) a join @__results__.records_and_concepts_in_source_and_standard using(partner)
 order by 1, 4 desc;
 
 -- 3. Count number of records per vocabulary, domain
 -- used to be "03 Number of records per vocabulary.csv"
-delete from __schema__.number_of_records_per_vocabulary;
+delete from @__results__.number_of_records_per_vocabulary;
 
-insert into __schema__.number_of_records_per_vocabulary
+insert into @__results__.number_of_records_per_vocabulary
 select partner, domain, vocabulary, records, round(records*1.0/t_records, 4) as "records_%", sources+standards as concepts, round((sources+standards)*1.0/(t_source+t_standard), 4) as "concept_%" 
 from (
   select partner, vocabulary_id as vocabulary, case domain 
@@ -129,10 +129,10 @@ from (
       else ''
     end as domain,
     sum(cnt) as records, count(distinct(source)) as sources, count(distinct(standard)) as standards
-  from __schema__.general
-  join __cdm_schema__.concept on concept_id=standard
+  from @__results__.general
+  join @__vocab__.concept on concept_id=standard
   group by partner, domain, vocabulary_id
-) a join __schema__.records_and_concepts_in_source_and_standard using(partner) 
+) a join @__results__.records_and_concepts_in_source_and_standard using(partner) 
 order by 1, 2, 3;
 
 
@@ -143,13 +143,13 @@ order by 1, 2, 3;
    will have to be added this new tumor type.
 */
 -- used to be "05 Rolled-up tumor types for each partner.csv"
-delete from __schema__.rolled_up_tumor_types_for_each_partner;
+delete from @__results__.rolled_up_tumor_types_for_each_partner;
 
-insert into __schema__.rolled_up_tumor_types_for_each_partner
+insert into @__results__.rolled_up_tumor_types_for_each_partner
 with c_types as (
   select distinct partner, standard, first_value(t_name) over (partition by standard order by p) as cancer_type
-  from __schema__.general
-  join (select descendant_concept_id as standard, t_name, p from __cdm_schema__.concept_ancestor join cancer_type on concept_id=ancestor_concept_id) ancestor using(standard)
+  from @__results__.general
+  join (select descendant_concept_id as standard, t_name, p from @__vocab__.concept_ancestor join cancer_type on concept_id=ancestor_concept_id) ancestor using(standard)
   where domain='c'
 ),
 exist_types as (
@@ -159,7 +159,7 @@ cst as (
   select partner, standard, records, cancer_type
   from (
     select partner, standard, sum(cnt) as records 
-	from __schema__.general
+	from @__results__.general
 	group by partner, standard
   ) rs
   join c_types using(partner, standard)  
@@ -171,7 +171,7 @@ cst_summed as (
 ),
 conditions as (
   select partner, sum(cnt) as t_records
-  from __schema__.general where domain='c'
+  from @__results__.general where domain='c'
   group by partner
 )
 select partner, cancer_type, records, round(records*1.0/t_records, 4) as "record_%" 
@@ -185,13 +185,13 @@ Existence of source concepts
 ***************************/
 -- 6. Count up
 -- used to be "06 Count existing source concepts.csv"
-delete from __schema__.count_existing_source_concepts;
+delete from @__results__.count_existing_source_concepts;
 
-insert into __schema__.count_existing_source_concepts
+insert into @__results__.count_existing_source_concepts
 with cst as (
   select partner, source, case when source=0 then 'NULL' when source is null then 'NULL' when con.concept_id is null then 'Unknown' else 'Known' end as in_vocab, cnt 
-  from (select partner, source, sum(cnt) as cnt from __schema__.general group by partner, source) g 
-  left join __cdm_schema__.concept con on con.concept_id=source
+  from (select partner, source, sum(cnt) as cnt from @__results__.general group by partner, source) g 
+  left join @__vocab__.concept con on con.concept_id=source
 ), 
 cst_summed as (
   select partner, in_vocab, sum(cnt) as records, count(distinct source) as concepts
@@ -201,7 +201,7 @@ cst_summed as (
 select partner, in_vocab, 
   records, case t_records when 0 then 1 else round(records/t_records, 4) end as "record_%", 
   concepts, case t_source when 0 then 1 else round(concepts*1.0/t_source, 4) end as "concept_%"
-from cst_summed join __schema__.records_and_concepts_in_source_and_standard using(partner)
+from cst_summed join @__results__.records_and_concepts_in_source_and_standard using(partner)
 order by 1;
 
 /***********************************
@@ -209,12 +209,12 @@ Standard concepts in standard fields
 ***********************************/
 -- 10. count up
 -- used to be "10 Standard concepts in standard fields.csv"
-delete from __schema__.standard_concepts_in_standard_fields;
+delete from @__results__.standard_concepts_in_standard_fields;
 
-insert into __schema__.standard_concepts_in_standard_fields
+insert into @__results__.standard_concepts_in_standard_fields
 with cst as (
   select partner, standard, case standard_concept when 'S' then 'standard' else 'source' end as concept, cnt 
-  from __schema__.general join __cdm_schema__.concept on concept_id=standard
+  from @__results__.general join @__vocab__.concept on concept_id=standard
 ),
 cst_summed as (
   select partner, concept, sum(cnt) as records, count(distinct standard) as concepts
@@ -222,7 +222,7 @@ cst_summed as (
   group by partner, concept
 )
 select partner, concept, records, round(records*1.0/t_records, 4) as "record_%", concepts, round(concepts*1.0/t_standard, 4) as "concepts_%"
-from cst_summed join __schema__.records_and_concepts_in_source_and_standard using(partner)
+from cst_summed join @__results__.records_and_concepts_in_source_and_standard using(partner)
 order by 1;
 
 
@@ -232,9 +232,9 @@ Domain for standard concepts. Source records not relevant
 
 -- 12. count up
 -- used to be "12 Domain for standard concepts.csv"
-delete from __schema__.domain_for_standard_concepts;
+delete from @__results__.domain_for_standard_concepts;
 
-insert into __schema__.domain_for_standard_concepts
+insert into @__results__.domain_for_standard_concepts
 with cst as (
   select partner, standard, concept_name, vocabulary_id, c.domain_id as shouldbe_domain, is_domain, case c.domain_id=is_domain when true then 'Correct' else 'Wrong' end as domain, sum(cnt) as cnt
   from (
@@ -250,8 +250,8 @@ with cst as (
       else ''
     end as is_domain,
     cnt
-    from __schema__.general
-  ) g join __cdm_schema__.concept c on c.concept_id=g.standard
+    from @__results__.general
+  ) g join @__vocab__.concept c on c.concept_id=g.standard
   where standard != 0
   group by partner, standard, concept_name, vocabulary_id, c.domain_id, is_domain -- same standard can be more than once b/o different sources
 ),
@@ -261,15 +261,15 @@ cst_summed as (
   group by partner, domain
 )
 select partner, domain, records, round(records*1.0/t_records, 4) as "record_%", concepts, round(concepts*1.0/t_standard, 4) as "concepts_%"
-from cst_summed join __schema__.records_and_concepts_in_source_and_standard using(partner)
+from cst_summed join @__results__.records_and_concepts_in_source_and_standard using(partner)
 order by 1;
 
 
 -- 12.5 report "wrong" concepts
 -- used to be "12.5 Standard concept report.csv"
-delete from __schema__.standard_concept_report;
+delete from @__results__.standard_concept_report;
 
-insert into __schema__.standard_concept_report
+insert into @__results__.standard_concept_report
 with vocab_domain(vocabulary_id, domain_id) as (
   values
     ('Cancer Modifier', 'Measurement'),
@@ -328,8 +328,8 @@ cst as (
       else null 
     end as critique, 
     sum(cnt) as cnt
-  from __schema__.general 
-  join __cdm_schema__.concept c on c.concept_id=standard
+  from @__results__.general 
+  join @__vocab__.concept c on c.concept_id=standard
   join d using(domain)
   left join vocab_domain using(vocabulary_id, domain_id)
   where standard is not null
@@ -341,7 +341,7 @@ cst_summed as (
   group by partner, critique
 )
 select partner, critique, records, round(records*1.0/t_records, 4) as "record_%", concepts, round(concepts*1.0/t_standard, 4) as "concepts_%"
-from cst_summed join __schema__.records_and_concepts_in_source_and_standard using(partner)
+from cst_summed join @__results__.records_and_concepts_in_source_and_standard using(partner)
 where critique is not null
 order by 1, 2;
 
@@ -351,9 +351,9 @@ order by 1, 2;
    when it's not in the final select? Does it even make a difference 
    in the result? The same applies to cnt*/
 -- used to be "12.6 Top standard concept errors.csv"
-delete from __schema__.top_standard_concept_errors;
+delete from @__results__.top_standard_concept_errors;
 
-insert into __schema__.top_standard_concept_errors
+insert into @__results__.top_standard_concept_errors
 with stcm(source_id, standard_id) as (values
   (35919970, 1634371),
   (35929477, 1634371),
@@ -993,8 +993,8 @@ cst as (
       when standard_concept is null then 'Not standard concept'
       else null 
     end as critique
-  from __schema__.general 
-  join __cdm_schema__.concept c on c.concept_id=standard
+  from @__results__.general 
+  join @__vocab__.concept c on c.concept_id=standard
   join d using(domain)
   left join vocab_domain using(vocabulary_id, domain_id)
   where standard is not null
@@ -1016,11 +1016,11 @@ select distinct concept_id, concept_name, vocabulary_id, concept_code, concept_c
     when critique='Wrong vocab for domain' then 'Domain '||is_domain 
     else null 
   end as fix
-from cst join __cdm_schema__.concept using(concept_id)
-left join (select distinct concept_id_1, concept_id_2 as pc from __cdm_schema__.concept_relationship join __cdm_schema__.concept on concept_id=concept_id_2 and vocabulary_id in ('NAACCR', 'LOINC') where relationship_id in ('Has Answer', 'Answer of')) pc on pc.concept_id_1=concept_id  -- see if it needs to be pre-coordinated
-left join __cdm_schema__.concept_ancestor hist on hist.descendant_concept_id=concept_id and hist.ancestor_concept_id=4264604 -- histology
-left join (select distinct concept_id_1, concept_id_2 as map from __cdm_schema__.concept_relationship where relationship_id='Maps to' and concept_id_1!=concept_id_2) mp on mp.concept_id_1=concept_id  -- see if it needs to be pre-coordinated
-left join (select distinct concept_id_1, 1 as ss from __cdm_schema__.concept_relationship join __cdm_schema__.concept_ancestor on concept_id_2=descendant_concept_id and ancestor_concept_id in (4110275, 4297708, 432851) where relationship_id='Maps to' and concept_id_1!=concept_id_2) bs on bs.concept_id_1=concept_id
+from cst join @__vocab__.concept using(concept_id)
+left join (select distinct concept_id_1, concept_id_2 as pc from @__vocab__.concept_relationship join @__vocab__.concept on concept_id=concept_id_2 and vocabulary_id in ('NAACCR', 'LOINC') where relationship_id in ('Has Answer', 'Answer of')) pc on pc.concept_id_1=concept_id  -- see if it needs to be pre-coordinated
+left join @__vocab__.concept_ancestor hist on hist.descendant_concept_id=concept_id and hist.ancestor_concept_id=4264604 -- histology
+left join (select distinct concept_id_1, concept_id_2 as map from @__vocab__.concept_relationship where relationship_id='Maps to' and concept_id_1!=concept_id_2) mp on mp.concept_id_1=concept_id  -- see if it needs to be pre-coordinated
+left join (select distinct concept_id_1, 1 as ss from @__vocab__.concept_relationship join @__vocab__.concept_ancestor on concept_id_2=descendant_concept_id and ancestor_concept_id in (4110275, 4297708, 432851) where relationship_id='Maps to' and concept_id_1!=concept_id_2) bs on bs.concept_id_1=concept_id
 left join stcm on source_id=concept_id
 where critique is not null and concept_id!=0
 order by concept_name;
@@ -1029,9 +1029,9 @@ order by concept_name;
 
 -- 13. Top wrong domain concepts
 -- used to be "13 Top wrong domain concepts.csv"
-delete from __schema__.top_wrong_domain_concepts;
+delete from @__results__.top_wrong_domain_concepts;
 
-insert into __schema__.top_wrong_domain_concepts
+insert into @__results__.top_wrong_domain_concepts
 with cst as (
   select partner, standard, concept_name, vocabulary_id, is_domain, c.domain_id as shouldbe_domain, 
     sum(cnt) as records, round(sum(cnt)*1.0/t_records, 4) as "record_%", count(distinct standard) as concepts, round(count(distinct standard)*1.0/t_standard, 4) as "concepts_%"
@@ -1047,9 +1047,9 @@ with cst as (
       when 'v' then 'Meas Value'
       else ''
     end as is_domain
-    from __schema__.general
-  ) g join __cdm_schema__.concept c on c.concept_id=g.standard
-  join __schema__.records_and_concepts_in_source_and_standard using(partner)
+    from @__results__.general
+  ) g join @__vocab__.concept c on c.concept_id=g.standard
+  join @__results__.records_and_concepts_in_source_and_standard using(partner)
   where domain_id!=is_domain and standard!=0
   group by partner, standard, t_records, t_standard, concept_name, vocabulary_id, c.domain_id, is_domain -- same standard can be more than once b/o different sources
 )
@@ -1062,18 +1062,18 @@ Mapping from source to standard
 ******************************/
 -- 14. Count up
 -- used to be "14 Mapping from source to standard.csv"
-delete from __schema__.mapping_from_source_to_standard;
+delete from @__results__.mapping_from_source_to_standard;
 
-insert into __schema__.mapping_from_source_to_standard
+insert into @__results__.mapping_from_source_to_standard
 with should as ( -- source concepts and their correct mappings
   select distinct source
-  from __schema__.general
-  join __cdm_schema__.concept_relationship on concept_id_1=source and invalid_reason is null and relationship_id='Maps to'
+  from @__results__.general
+  join @__vocab__.concept_relationship on concept_id_1=source and invalid_reason is null and relationship_id='Maps to'
 ), 
 actual as ( -- source-standard pairs that also exist as "Maps to" relationships
   select distinct source, standard
-  from __schema__.general
-  join __cdm_schema__.concept_relationship on concept_id_1=source and concept_id_2=standard and invalid_reason is null and relationship_id='Maps to'
+  from @__results__.general
+  join @__vocab__.concept_relationship on concept_id_1=source and concept_id_2=standard and invalid_reason is null and relationship_id='Maps to'
     and concept_id_1!=concept_id_2
 ),
 cst as (
@@ -1091,14 +1091,14 @@ cst as (
       else 'No mapping'
     end as mapping,
     cnt 
-  from __schema__.general left join __cdm_schema__.concept on source=concept_id -- remove 2-billionaires
+  from @__results__.general left join @__vocab__.concept on source=concept_id -- remove 2-billionaires
   left join should using(source)
   left join actual using(source, standard)
 --   where source is not null or source!=0 or concept_id is not null
 ),
 cst_summed as (
   select partner, source, mapping, sum(cnt) as records, count(distinct source_id) as concepts
-  from (select distinct partner from __schema__.patient) p left join cst using(partner)
+  from (select distinct partner from @__results__.patient) p left join cst using(partner)
   group by partner, source, mapping
 ),
 t as (

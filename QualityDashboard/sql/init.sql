@@ -1,6 +1,6 @@
-create schema if not exists __schema__ Authorization postgres;
+create schema if not exists @__results__ Authorization postgres;
 
-create table if not exists __schema__.general (
+create table if not exists @__results__.general (
     partner varchar(20),
     domain varchar(1),
     source bigint,
@@ -9,7 +9,7 @@ create table if not exists __schema__.general (
 	version int
   );
 
-create table if not exists __schema__.general_cleaned (
+create table if not exists @__results__.general_cleaned (
     partner varchar(20),
     domain varchar(1),
     source bigint,
@@ -18,7 +18,7 @@ create table if not exists __schema__.general_cleaned (
 	version int
   );
   
-create table if not exists __schema__.genomic (
+create table if not exists @__results__.genomic (
     partner varchar(20),
     domain varchar(1),
     source bigint,
@@ -27,7 +27,7 @@ create table if not exists __schema__.genomic (
 	version int
   );
 
-create table if not exists __schema__.episodes (
+create table if not exists @__results__.episodes (
     partner varchar(20),
     domain varchar(1),
     source bigint,
@@ -36,7 +36,7 @@ create table if not exists __schema__.episodes (
 	version int
   );
 
-create table if not exists __schema__.patient (
+create table if not exists @__results__.patient (
     partner varchar(20),
     cnt int,
 	first_event date,
@@ -49,12 +49,12 @@ create table if not exists __schema__.patient (
 	hash varchar(64)
   );
 
-create table if not exists __schema__.long_partner_names (
+create table if not exists @__results__.long_partner_names (
 	partner varchar(20),
 	long_name varchar(250)
 );
 
-create table if not exists __schema__.database_summary (
+create table if not exists @__results__.database_summary (
     partner varchar(20),
     size int,
     general bigint,
@@ -65,7 +65,7 @@ create table if not exists __schema__.database_summary (
 	version int
   );
 
-create table if not exists __schema__.individual_concept_report (
+create table if not exists @__results__.individual_concept_report (
     partner varchar(20),
     concept varchar(10),
     concept_id bigint,
@@ -79,7 +79,7 @@ create table if not exists __schema__.individual_concept_report (
 	notes varchar(50)
   );
 
-create table if not exists __schema__.standard_summary_report (
+create table if not exists @__results__.standard_summary_report (
     partner varchar(20),
     critique varchar(255),
     records bigint,
@@ -87,7 +87,7 @@ create table if not exists __schema__.standard_summary_report (
 	version int
   );
 
-create table if not exists results.standard_summary_report_cleaned (
+create table if not exists @__results__.standard_summary_report_cleaned (
     partner varchar(20),
     critique varchar(255),
     records bigint,
@@ -97,7 +97,7 @@ create table if not exists results.standard_summary_report_cleaned (
 	version int
   );
 
-create table if not exists __schema__.source_summary_report (
+create table if not exists @__results__.source_summary_report (
     partner varchar(20),
     critique varchar(255),
     records bigint,
@@ -105,7 +105,7 @@ create table if not exists __schema__.source_summary_report (
 	version int
   );
 
-create table if not exists __schema__.mapping_summary_report (
+create table if not exists @__results__.mapping_summary_report (
     partner varchar(20),
     critique varchar(255),
     records bigint,
@@ -113,7 +113,7 @@ create table if not exists __schema__.mapping_summary_report (
 	version int
   );
 
-create table if not exists __schema__.domain_weights (
+create table if not exists @__results__.domain_weights (
     partner varchar(20),
     domain varchar(20),
     records bigint,
@@ -121,7 +121,7 @@ create table if not exists __schema__.domain_weights (
 	version int
   );
   
-create table if not exists __schema__.rolled_up_tumor_types (
+create table if not exists @__results__.rolled_up_tumor_types (
     partner varchar(20),
     cancer_type varchar(30),
     records bigint,
@@ -129,7 +129,7 @@ create table if not exists __schema__.rolled_up_tumor_types (
 	version int
   );  
 
-create table if not exists __schema__.records_and_concepts_in_source_and_standard (
+create table if not exists @__results__.records_and_concepts_in_source_and_standard (
     partner varchar(20),
     size int,
     t_records bigint,
@@ -141,7 +141,7 @@ create table if not exists __schema__.records_and_concepts_in_source_and_standar
 	version int
 );
 
-create table if not exists __schema__.number_of_records_per_domain (
+create table if not exists @__results__.number_of_records_per_domain (
     partner varchar(20),
     domain varchar(20),
     records bigint,
@@ -151,7 +151,7 @@ create table if not exists __schema__.number_of_records_per_domain (
 	version int
 );
 
-create table if not exists __schema__.number_of_records_per_vocabulary (
+create table if not exists @__results__.number_of_records_per_vocabulary (
     partner varchar(20),
     domain varchar(20),
     vocabulary varchar(20),
@@ -162,7 +162,7 @@ create table if not exists __schema__.number_of_records_per_vocabulary (
 	version int
 );
   
-create table if not exists __schema__.rolled_up_tumor_types_for_each_partner (
+create table if not exists @__results__.rolled_up_tumor_types_for_each_partner (
     partner varchar(20),
     cancer_type varchar(30),
     records bigint,
@@ -170,7 +170,7 @@ create table if not exists __schema__.rolled_up_tumor_types_for_each_partner (
 	version int
   );  
 
-create table if not exists __schema__.count_existing_source_concepts (
+create table if not exists @__results__.count_existing_source_concepts (
     partner varchar(20),
     in_vocab varchar(10),
     records bigint,
@@ -180,7 +180,7 @@ create table if not exists __schema__.count_existing_source_concepts (
 	version int
 );
 
-create table if not exists __schema__.standard_concepts_in_standard_fields (
+create table if not exists @__results__.standard_concepts_in_standard_fields (
     partner varchar(20),
     concept varchar(10),
     records bigint,
@@ -190,7 +190,7 @@ create table if not exists __schema__.standard_concepts_in_standard_fields (
 	version int
 );
 
-create table if not exists __schema__.domain_for_standard_concepts (
+create table if not exists @__results__.domain_for_standard_concepts (
     partner varchar(20),
     domain varchar(10),
     records bigint,
@@ -200,7 +200,7 @@ create table if not exists __schema__.domain_for_standard_concepts (
 	version int
 );
 
-create table if not exists __schema__.standard_concept_report (
+create table if not exists @__results__.standard_concept_report (
     partner varchar(20),
     critique varchar(30),
     records bigint,
@@ -210,7 +210,7 @@ create table if not exists __schema__.standard_concept_report (
 	version int
 );
 
-create table if not exists __schema__.top_standard_concept_errors (
+create table if not exists @__results__.top_standard_concept_errors (
     concept_id int,
     concept_name varchar(255),
     vocabulary_id varchar(20),
@@ -221,7 +221,7 @@ create table if not exists __schema__.top_standard_concept_errors (
 	version int
 );
 
-create table if not exists __schema__.top_wrong_domain_concepts (
+create table if not exists @__results__.top_wrong_domain_concepts (
     partner varchar(20),
     standard int,
     concept_name varchar(255),
@@ -235,7 +235,7 @@ create table if not exists __schema__.top_wrong_domain_concepts (
 	version int
 );
 
-create table if not exists __schema__.mapping_from_source_to_standard (
+create table if not exists @__results__.mapping_from_source_to_standard (
     partner varchar(20),
     source varchar(10),
     mapping varchar(20),
@@ -246,7 +246,7 @@ create table if not exists __schema__.mapping_from_source_to_standard (
 	version int
 );
 
-create table if not exists __schema__.histo_topo_percent (
+create table if not exists @__results__.histo_topo_percent (
     partner varchar(20),
 	onelegged_records bigint,
     onelegged_perc numeric,
@@ -257,7 +257,7 @@ create table if not exists __schema__.histo_topo_percent (
 	version int
 );
 
-create table if not exists __schema__.histo_topo_individual (
+create table if not exists @__results__.histo_topo_individual (
     partner varchar(20),
     concept_id bigint,
     concept_name varchar(255),
@@ -266,7 +266,7 @@ create table if not exists __schema__.histo_topo_individual (
 	version int
   );
 
-create table if not exists __schema__.measurement (
+create table if not exists @__results__.measurement (
     partner varchar(20),
     measurement_concept_id int,
     value_as_concept_id int,
@@ -282,7 +282,7 @@ create table if not exists __schema__.measurement (
 	version int
 );
 
-create table if not exists __schema__.measurement_combi (
+create table if not exists @__results__.measurement_combi (
     partner varchar(20),
     measurement_concept_id int,
     value_as_concept_id int,
@@ -291,7 +291,7 @@ create table if not exists __schema__.measurement_combi (
 	version int
 );
 
-create table if not exists __schema__.stages (
+create table if not exists @__results__.stages (
     partner varchar(20),
 	bad_cnt bigint,
     all_cnt bigint,
@@ -301,7 +301,7 @@ create table if not exists __schema__.stages (
 	version int
 );
 
-create table if not exists __schema__.grades (
+create table if not exists @__results__.grades (
     partner varchar(20),
 	bad_cnt bigint,
     all_cnt bigint,
@@ -311,7 +311,7 @@ create table if not exists __schema__.grades (
 	version int
 );
 
-create table if not exists __schema__.mets (
+create table if not exists @__results__.mets (
     partner varchar(20),
 	bad_cnt bigint,
     all_cnt bigint,
@@ -321,7 +321,7 @@ create table if not exists __schema__.mets (
 	version int
 );
 
-create table if not exists __schema__.lab_long_report (
+create table if not exists @__results__.lab_long_report (
 	partner varchar(20),
 	cat varchar(60),
 	measurement_id int,
@@ -351,7 +351,7 @@ create table if not exists __schema__.lab_long_report (
 	distribution varchar(10)
 );
 
-create table if not exists __schema__.lab_summary (
+create table if not exists @__results__.lab_summary (
 	partner varchar(20),
 	cat varchar(60),
 	concept_records int,
@@ -372,7 +372,7 @@ create table if not exists __schema__.lab_summary (
 	bad_dist int
 );
 
-create table if not exists __schema__.special_conditions (
+create table if not exists @__results__.special_conditions (
 	partner varchar(20),
 	critique varchar(10),
 	records int,
@@ -380,7 +380,7 @@ create table if not exists __schema__.special_conditions (
 	version int
 );
 
-create table if not exists __schema__.max_versions (
+create table if not exists @__results__.max_versions (
 	partner varchar(20),
 	max_patient int,
 	max_general int,
@@ -388,7 +388,7 @@ create table if not exists __schema__.max_versions (
 	max_episodes int
 );
 
-create table if not exists __schema__.cur_version (
+create table if not exists @__results__.cur_version (
 	partner varchar(20),
 	cur_patient int,
 	cur_general int,
@@ -396,29 +396,34 @@ create table if not exists __schema__.cur_version (
 	cur_episodes int
 );
 
-create table if not exists __schema__.patch_domain (
+create table if not exists @__results__.patch_domain (
 	concept_id int,
 	target_domain_id varchar(20)
 );
 
-create table if not exists __schema__.patch_mapping (
+create table if not exists @__results__.patch_mapping (
 	concept_id int,
 	target_concept_id int,
 	target_domain_id varchar(20)
 );
 
-create table if not exists __schema__.patch_combi (
+create table if not exists @__results__.patch_combi (
 	cancer_id int,
 	histo_id int,
 	topo_id int
 );
 
-create table if not exists __schema__.shit_list (
+create table if not exists @__results__.patch_to_value (
 	concept_id int,
 	target_concept_id int
 );
 
-create table if not exists __schema__.cancer_modifiers (
+create table if not exists @__results__.shit_list (
+	concept_id int,
+	target_concept_id int
+);
+
+create table if not exists @__results__.cancer_modifiers (
 	partner varchar(20),
 	cat varchar(40),
 	vocabulary_id varchar(20),

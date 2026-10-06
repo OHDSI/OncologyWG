@@ -4,8 +4,8 @@
    (automatic) and earlier data versions (on demand).
    
    uses placeholders
-   __schema__ - the schema containing the results from the user
-   __cdm_schema__ - the schema containing the vocabulary tables (concept, etc.)
+   @__results__ - the schema containing the results from the user
+   @__vocab__ - the schema containing the vocabulary tables (concept, etc.)
    __partner_name__ - the name of the data partner to calculate results for
 */
 
@@ -13,16 +13,16 @@ drop table if exists general_no_extra;
 create temp table general_no_extra as
 with exclusions as (
   select concept_id
-  from static.additional_conditions
+  from @__static__.additional_conditions
   union
   select concept_id
-  from static.lab_category
+  from @__static__.lab_category
   union
   select concept_id
-  from static.excluded_concepts -- These are concepts that appeared in the extract for inexplicable reasons.
+  from @__static__.excluded_concepts -- These are concepts that appeared in the extract for inexplicable reasons.
 )
 select g.* 
-from __schema__.general g
+from @__results__.general g
 left join exclusions e1
 on standard = e1.concept_id
 left join exclusions e2
@@ -33,57 +33,57 @@ and e2.concept_id is null;
 
 -- update database_summary for this partner
 -- used to be "Database summary.txt"
-delete from __schema__.database_summary s
-using __schema__.cur_version v
+delete from @__results__.database_summary s
+using @__results__.cur_version v
 where s.partner = v.partner
 and s.partner = '__partner_name__'
 and version = cur_patient;
 
-insert into __schema__.database_summary
+insert into @__results__.database_summary
 with non_canc as (
   select partner, count(*) as non_cancer
-  from __schema__.general
-  join static.additional_conditions on standard = concept_id
-  join __schema__.cur_version using(partner)
+  from @__results__.general
+  join @__static__.additional_conditions on standard = concept_id
+  join @__results__.cur_version using(partner)
   where partner = '__partner_name__'
   and version = cur_general
   group by partner
 ),
 patients as (
   select partner, cnt as size, version -- We use the patient version for the resulting table.
-  from __schema__.patient
-  join __schema__.cur_version using(partner)
+  from @__results__.patient
+  join @__results__.cur_version using(partner)
   where partner = '__partner_name__'
   and version = cur_patient
 ),
 generals as (
   select partner, count(*) as general
   from general_no_extra
-  join __schema__.cur_version using(partner)
+  join @__results__.cur_version using(partner)
   where partner = '__partner_name__'
   and version = cur_general
   group by partner
 ),
 genomics as (
   select partner, count(*) as genomic
-  from __schema__.genomic
-  join __schema__.cur_version using(partner)
+  from @__results__.genomic
+  join @__results__.cur_version using(partner)
   where partner = '__partner_name__'
   and version = cur_genomic
   group by partner
 ),
 episode as (
   select partner, count(*) as episodes
-  from __schema__.episodes
-  join __schema__.cur_version using(partner)
+  from @__results__.episodes
+  join @__results__.cur_version using(partner)
   where partner = '__partner_name__'
   and version = cur_episodes
   group by partner
 ),
 lab_test as (
   select partner, count(*) as lab_tests
-  from __schema__.measurement
-  join __schema__.cur_version using(partner)
+  from @__results__.measurement
+  join @__results__.cur_version using(partner)
   where partner = '__partner_name__'
   and version = cur_general
   group by partner
@@ -97,10 +97,10 @@ left join episode using(partner)
 left join lab_test using(partner)
 order by partner;
 
-delete from __schema__.general_cleaned
+delete from @__results__.general_cleaned
 where partner = '__partner_name__';
 
-insert into __schema__.general_cleaned
+insert into @__results__.general_cleaned
 with replace_null as (
   -- This makes sure null in standard is joined as 0 (which is in white_list).
   select partner, domain, source, coalesce(standard, 0) as standard, cnt, version
@@ -112,17 +112,17 @@ where partner = '__partner_name__';
 
 -- Domain weight (# records per domain) report.
 -- used to be "Domain weights.txt"
-delete from __schema__.domain_weights w
-using __schema__.cur_version v
+delete from @__results__.domain_weights w
+using @__results__.cur_version v
 where w.partner = v.partner
 and w.partner = '__partner_name__'
 and version = cur_general;
 
-insert into __schema__.domain_weights
+insert into @__results__.domain_weights
 with cnts as ( -- total number of records per partner
   select partner, sum(cnt) as t_records, version
   from general_no_extra 
-  join __schema__.cur_version using(partner)
+  join @__results__.cur_version using(partner)
   where partner = '__partner_name__'
   and version = cur_general
   group by partner, version
@@ -151,8 +151,8 @@ order by 1, 4 desc;
 
 -- Rolled-up tumor types report
 -- used to be "Rolled-up tumor types.txt"
-delete from __schema__.rolled_up_tumor_types t
-using __schema__.cur_version v
+delete from @__results__.rolled_up_tumor_types t
+using @__results__.cur_version v
 where t.partner = v.partner
 and t.partner = '__partner_name__'
 and version = cur_general;
@@ -162,7 +162,7 @@ drop table if exists general_last_version;
 create temp table general_last_version as
 select g.*
 from general_no_extra g
-join __schema__.cur_version using(partner)
+join @__results__.cur_version using(partner)
 where domain='c'
 and partner = '__partner_name__'
 and version = cur_general;
@@ -242,7 +242,7 @@ values -- the field "p" indicates the priority in case a tumor rolls up to more 
 --(52, 'Unknown origin', 433435)
 )
 select descendant_concept_id as standard, t_name, p 
-from __cdm_schema__.concept_ancestor 
+from @__vocab__.concept_ancestor 
 join cancer_type on concept_id=ancestor_concept_id;
 
 drop table if exists temp_tumor_types;
@@ -293,7 +293,7 @@ create temp table should as
 with should as (
   select distinct source
   from general_no_extra
-  join __cdm_schema__.concept_relationship on concept_id_1=source and invalid_reason is null and relationship_id in ('Maps to', 'Maps to value') and concept_id_1!=concept_id_2
+  join @__vocab__.concept_relationship on concept_id_1=source and invalid_reason is null and relationship_id in ('Maps to', 'Maps to value') and concept_id_1!=concept_id_2
 )
 select * from should;
 
@@ -302,7 +302,7 @@ drop table if exists standard_sources;
 create temp table standard_sources as
 select distinct source, 1 as source_is_standard
 from general_no_extra
-join __cdm_schema__.concept on source = concept_id
+join @__vocab__.concept on source = concept_id
 where standard_concept = 'S'
 and invalid_reason is null;
 
@@ -312,7 +312,7 @@ create temp table ismap as
 with ismap as (
   select distinct source, standard
   from general_no_extra
-  join __cdm_schema__.concept_relationship on concept_id_1=source and concept_id_2=standard and invalid_reason is null and relationship_id='Maps to'
+  join @__vocab__.concept_relationship on concept_id_1=source and concept_id_2=standard and invalid_reason is null and relationship_id='Maps to'
     and concept_id_1!=concept_id_2
 )
 select * from ismap;
@@ -321,7 +321,7 @@ drop table if exists general_last_version;
 create temp table general_last_version as
 select g.*
 from general_no_extra g
-join __schema__.cur_version using(partner)
+join @__results__.cur_version using(partner)
 where partner = '__partner_name__'
 and version = cur_general;
 
@@ -331,7 +331,7 @@ with all_data as (
   select partner, concept_id as standard, concept_name, vocabulary_id, domain_id, is_domain, standard_concept, sum(cnt) as records, version
   from general_last_version
   join d using(domain)
-  join __cdm_schema__.concept on concept_id=standard
+  join @__vocab__.concept on concept_id=standard
   group by partner, concept_id, concept_name, vocabulary_id, domain_id, is_domain, standard_concept, version
 ),
 valid_target as ( -- concepts belonging to a regular domain (that a table exists for)
@@ -355,14 +355,14 @@ drop table if exists crit_sta;
 create temp table crit_sta as
 with overloaded_concepts as (
   select concept_id_2 
-  from __cdm_schema__.concept_relationship 
+  from @__vocab__.concept_relationship 
   where relationship_id='Has Answer'
   and invalid_reason is null 
   and concept_id_1 in (3020133, 3010621, 3020306, 40769814, 3043806, 40758258, 36203250, 40769831, 21494849, 3042720, 42527705, 3015048, 46236987, 46236986, 46235142, 3001410, 1091494, 3028485, 36304519, 3045092, 42527788, 3046070, 3047311, 3043846, 3043017, 40769849, 42527700, 3045426, 3019341, 3021037, 3002943, 40770067, 3017327, 3006171, 3032860, 3032820, 3032529, 3046523, 44816728, 36203176, 1617409, 1616763, 3002377, 36203154, 36203137, 1617315, 3043693, 36203118, 36203117, 36203124, 21494733, 3014845, 21492981, 1616553, 36305168, 3046972, 3044365, 3046527, 3045602, 21494735, 1616306, 3044724, 3042773, 3047277, 42527790, 40769833, 21491882, 21491880, 21491879, 21491881, 36204404, 21493968, 21493970, 21493971, 36031181, 42529177, 36031552, 21493969, 42527723, 42527720, 36203139, 21494724, 40762606, 3046434, 3008250, 3006038, 3007073, 3016292, 3046598, 36203181, 3047346, 3046361, 37020347, 42527712, 42527711, 36203169, 1617504, 1616523, 21493980, 21493979, 21493974, 21493976, 21493977, 21493975, 21493981, 40765594, 21493978, 21491883, 21490957, 3000766, 21494730)
 ),
 value_needs_mapping as (
   select concept_id_2 
-  from __cdm_schema__.concept_relationship 
+  from @__vocab__.concept_relationship 
   where relationship_id='Has Answer'
   and invalid_reason is null 
   and concept_id_1 in (3040950, 36031424, 44786879, 36204549, 44786934, 46235351, 3050686, 40760326, 40770159, 40770163, 3015763, 3026214, 3023877, 40766660, 1617452, 1616716, 40769855, 3019275, 3022835, 3000608, 3019130, 40766623, 40766625, 3003037, 21494723, 36204558, 1001824, 36305514, 36306187, 21491888, 21491887, 3051348, 40766653, 42527886, 40769122, 3012604, 36203179, 40769857, 40769820, 3001285, 36203138, 36305408, 36305927, 21491872, 3046315, 40771030, 40770927, 40770932, 42529083, 44786707, 44786708, 1989065, 42870406, 3004250, 21491611, 40769265, 3009329, 3038982, 3033619, 3034828, 3014280, 3027596, 3021444, 21494722, 3016725, 46235213, 3051551, 44816596, 3008181, 36203126, 1617595, 3043591, 36660206, 3006575, 40769842, 40769838, 21493972, 40762591, 3007727, 42528924, 3022698, 3018082, 3008495, 3016308, 3008841, 3027109, 40769836, 40769840, 3020821, 3021034, 42527715)
@@ -375,14 +375,14 @@ crit_sta as (
       when vocabulary_id='NAACCR' and concept_name ilike '%unknown%' then 'Flavor of NULL'
       when vocabulary_id='NAACCR' and concept_name ilike '%not stated%' then 'Flavor of NULL'
       when domain_id='Meas Value' and concept_name in ('Unknown', 'Not staged', 'Other', 'Other, NOS', 'Unknown term', 'Does not apply', 'Not applicable', 'Not Applicable', 'Not detected', 'N/A', 'Refused', 'No', 'Not specified', 'No tumor', 'Invalid', 'Other cancer-directed therapy recommended, unknown if administered', 'Don''t know', 'None', 'Not asked', 'No information', 'Unable to determine', 'Don''t know/refused', 'Patient refused', 'Not tested', 'Resident refused', 'Asked but unknown', 'Refused to answer') then 'Flavor of NULL'
-      when standard in (select concept_id from static.split_conditions) then 'Condition needs splitting'
+      when standard in (select concept_id from @__static__.split_conditions) then 'Condition needs splitting'
       when coalesce(standard_concept, 'C')='C' then 'Not standard concept'
 -- list of invalid grade concepts, mostly from NAACCR
-      when standard in (select concept_id from static.invalid_grade) then 'Invalid grade'
+      when standard in (select concept_id from @__static__.invalid_grade) then 'Invalid grade'
 -- list of invalid stage concepts, mostly from NAACCR
-      when standard in (select concept_id from static.invalid_stage) then 'Invalid stage'
+      when standard in (select concept_id from @__static__.invalid_stage) then 'Invalid stage'
 -- list of invalid met or node concepts, mostly from NAACCR
-      when standard in (select concept_id from static.invalid_met) then 'Invalid met or node'
+      when standard in (select concept_id from @__static__.invalid_met) then 'Invalid met or node'
       when is_domain='Meas Value' and standard in (select concept_id_2 from value_needs_mapping) then 'Value needs mapping'
       when wrong_domain is not null then 'Wrong domain table'
       when is_domain='Meas Value' and standard in (select concept_id_2 from overloaded_concepts) then 'Value needs pre-coord mapping'
@@ -409,22 +409,22 @@ select * from sta;
 analyze sta;
 
 -- Invalid concepts will be added to the shit_list.
-insert into __schema__.shit_list(concept_id)
+insert into @__results__.shit_list(concept_id)
 with critiques as
 (
   select distinct concept_id
   from sta
-  join __schema__.max_versions using(partner)
+  join @__results__.max_versions using(partner)
   where critique in ('Invalid grade', 'Invalid stage', 'Invalid met or node', 'Value needs pre-coord mapping', 'Value needs mapping')
   and version = max_general -- Making sure we don't add this when recalculating old delivery versions.
 )
 select * from critiques
 except
-select concept_id from __schema__.shit_list;
+select concept_id from @__results__.shit_list;
 
 -- This table is for the partner-specific concept patch to fill the table new_concept.
-delete from __schema__.patch_domain;
-insert into __schema__.patch_domain
+delete from @__results__.patch_domain;
+insert into @__results__.patch_domain
 with inputs as (
   select distinct concept_id, domain_id as target_domain_id
   from sta
@@ -444,33 +444,33 @@ from inputs
 left join valid_target using(concept_id);
 
 -- This table is for the partner-specific concept patch to fill the table mapping.
-delete from __schema__.patch_mapping;
-insert into __schema__.patch_mapping
+delete from @__results__.patch_mapping;
+insert into @__results__.patch_mapping
 with non_standard as (
   select distinct concept_id
   from sta
-  join __cdm_schema__.concept using(concept_id)
+  join @__vocab__.concept using(concept_id)
   where coalesce(standard_concept, 'C')='C'
 ),
 sta_mapping as (
   select s.concept_id, concept_id_2 as target_concept_id, domain_id as target_domain_id
   from non_standard s
-  join __cdm_schema__.concept_relationship on s.concept_id = concept_id_1 
+  join @__vocab__.concept_relationship on s.concept_id = concept_id_1 
   and relationship_id = 'Maps to' and concept_id_1 <> concept_id_2
-  join __cdm_schema__.concept c on concept_id_2 = c.concept_id
+  join @__vocab__.concept c on concept_id_2 = c.concept_id
   where standard_concept is not null
 ),
 shitty as (
   select concept_id, target_concept_id
   from sta
-  join __schema__.shit_list using(concept_id)
+  join @__results__.shit_list using(concept_id)
   where critique in ('Invalid grade', 'Invalid stage', 'Invalid met or node', 'Value needs pre-coord mapping', 'Value needs mapping')
   and target_concept_id is not null
 ),
 shit_mapping as (
   select s.concept_id, target_concept_id, domain_id as target_domain_id
   from shitty s
-  join __cdm_schema__.concept c on target_concept_id = c.concept_id
+  join @__vocab__.concept c on target_concept_id = c.concept_id
 ),
 both_mapping as (
   select * from sta_mapping
@@ -496,8 +496,8 @@ left join to_keep using (concept_id, target_concept_id)
 order by 1;
 
 -- This table is for the partner-specific concept patch to fill the table to_value.
-delete from __schema__.patch_to_value;
-insert into __schema__.patch_to_value
+delete from @__results__.patch_to_value;
+insert into @__results__.patch_to_value
 with non_standard as (
   select concept_id
   from sta
@@ -507,9 +507,9 @@ with non_standard as (
 sta_mapping as (
   select s.concept_id, concept_id_2 as target_concept_id
   from non_standard s
-  join __cdm_schema__.concept_relationship on s.concept_id = concept_id_1 
+  join @__vocab__.concept_relationship on s.concept_id = concept_id_1 
   and relationship_id = 'Maps to value' and concept_id_1 <> concept_id_2
-  join __cdm_schema__.concept c on concept_id_2 = c.concept_id
+  join @__vocab__.concept c on concept_id_2 = c.concept_id
   where standard_concept is not null
 )
 select concept_id, target_concept_id
@@ -517,17 +517,17 @@ from sta_mapping
 order by 1;
 
 -- This is for the partner-specific combi patch.
-delete from __schema__.patch_combi;
-insert into __schema__.patch_combi
+delete from @__results__.patch_combi;
+insert into @__results__.patch_combi
 with last_version as (
   select g.* 
-  from __schema__.general g
-  join __schema__.cur_version using(partner)
+  from @__results__.general g
+  join @__results__.cur_version using(partner)
   where partner = '__partner_name__'
   and version = cur_general
 )
 select distinct cancer_id, histo_id, topo_id
-from static.cancer_histo_topo
+from @__static__.cancer_histo_topo
 join last_version h on histo_id = h.standard
 join last_version t on topo_id = t.standard
 order by cancer_id, topo_id, histo_id;
@@ -542,15 +542,15 @@ with non_standards as (
 linked_ones as (
   select n.concept_id
   from non_standards n
-  join __cdm_schema__.concept_relationship on n.concept_id = concept_id_1
+  join @__vocab__.concept_relationship on n.concept_id = concept_id_1
   and relationship_id = 'Maps to' and concept_id_1 <> concept_id_2
-  join __cdm_schema__.concept c on concept_id_2 = c.concept_id
+  join @__vocab__.concept c on concept_id_2 = c.concept_id
   where standard_concept is not null
 ),
 shitty as (
   select distinct concept_id
   from sta
-  join __schema__.shit_list using(concept_id)
+  join @__results__.shit_list using(concept_id)
   where target_concept_id is null
 )
 select concept_id, 'Pending vocabulary update' as notes
@@ -581,7 +581,7 @@ with crit_so as(
     cnt, version
   from general_last_version
   join d using(domain) 
-  left join __cdm_schema__.concept on concept_id=source
+  left join @__vocab__.concept on concept_id=source
   left join should using(source)
   left join ismap using(source, standard)
   left join standard_sources using(source)
@@ -601,13 +601,13 @@ select * from so;
 
 -- Individual report for all problematic concepts
 -- used to be "Individual concept report.txt"
-delete from __schema__.individual_concept_report i
-using __schema__.cur_version v
+delete from @__results__.individual_concept_report i
+using @__results__.cur_version v
 where i.partner = v.partner
 and i.partner = '__partner_name__'
 and version = cur_general;
 
-insert into __schema__.individual_concept_report
+insert into @__results__.individual_concept_report
 with the_union as (
   select sta.*, notes
   from sta
@@ -620,13 +620,13 @@ with the_union as (
 select * from the_union;
 
 -- Source mapping for grade, stage and metastasis
-delete from __schema__.cancer_modifiers c
-using __schema__.cur_version v
+delete from @__results__.cancer_modifiers c
+using @__results__.cur_version v
 where c.partner = v.partner
 and c.partner = '__partner_name__'
 and version = cur_general;
 
-insert into __schema__.cancer_modifiers
+insert into @__results__.cancer_modifiers
 with inputs as (
   select partner, coalesce(source, 0) as source, coalesce(standard, 0) as standard,
   case when cnt = 0 then 1 else cnt end as cnt,
@@ -641,8 +641,8 @@ totals as (
 critiques as (
   select partner, concept_id,
   case when records = 0 then 1 else records end as records
-  from __schema__.individual_concept_report
-  join __schema__.cur_version using(partner)
+  from @__results__.individual_concept_report
+  join @__results__.cur_version using(partner)
   where version = cur_general
   and concept = 'Source'
   and partner = '__partner_name__'
@@ -657,22 +657,22 @@ cats as (
 cat_records as (
   select partner, source, 'Stage' as cat, sum(cnt) as cnt, version
   from inputs
-  left join static.all_stage s1 on source = s1.concept_id
-  left join static.all_stage s2 on standard = s2.concept_id
+  left join @__static__.all_stage s1 on source = s1.concept_id
+  left join @__static__.all_stage s2 on standard = s2.concept_id
   where s1.concept_id is not null or s2.concept_id is not null
   group by partner, source, version
   union
   select partner, source, 'Grade' as cat, sum(cnt) as cnt, version
   from inputs
-  left join static.all_grade g1 on source = g1.concept_id
-  left join static.all_grade g2 on standard = g2.concept_id
+  left join @__static__.all_grade g1 on source = g1.concept_id
+  left join @__static__.all_grade g2 on standard = g2.concept_id
   where g1.concept_id is not null or g2.concept_id is not null
   group by partner, source, version
   union
   select partner, source, 'Metastasis or lymph node involvement' as cat, sum(cnt) as cnt, version
   from inputs
-  left join static.all_met m1 on source = m1.concept_id
-  left join static.all_met m2 on standard = m2.concept_id
+  left join @__static__.all_met m1 on source = m1.concept_id
+  left join @__static__.all_met m2 on standard = m2.concept_id
   where m1.concept_id is not null or m2.concept_id is not null
   group by partner, source, version
 ),
@@ -684,7 +684,7 @@ vocab_and_wrong as (
 	   end as r_count, 
   version
   from cat_records r
-  join __cdm_schema__.concept c on source = c.concept_id
+  join @__vocab__.concept c on source = c.concept_id
   left join critiques i on r.partner = i.partner and source = i.concept_id
 ),
 grouped as (
@@ -728,13 +728,13 @@ order by partner, cat, 3;
 
 -- Summary for standard concepts
 -- used to be "Standard summary report.txt"
-delete from __schema__.standard_summary_report s
-using __schema__.cur_version v
+delete from @__results__.standard_summary_report s
+using @__results__.cur_version v
 where s.partner = v.partner
 and s.partner = '__partner_name__'
 and version = cur_general;
 
-insert into __schema__.standard_summary_report
+insert into @__results__.standard_summary_report
 with cnts as (
   select partner, sum(cnt) as t_records from general_last_version group by partner
 ),
@@ -750,13 +750,13 @@ order by 1, 2;
 
 -- Summary for source concepts
 -- used to be "Source summary report.txt"
-delete from __schema__.source_summary_report s
-using __schema__.cur_version v
+delete from @__results__.source_summary_report s
+using @__results__.cur_version v
 where s.partner = v.partner
 and s.partner = '__partner_name__'
 and version = cur_general;
 
-insert into __schema__.source_summary_report
+insert into @__results__.source_summary_report
 with cnts as (
   select partner, sum(cnt) as t_records from general_last_version group by partner
 ),
@@ -781,13 +781,13 @@ order by 1, 2;
 
 -- Summary mapping report
 -- used to be "Mapping summary report.txt"
-delete from __schema__.mapping_summary_report s
-using __schema__.cur_version v
+delete from @__results__.mapping_summary_report s
+using @__results__.cur_version v
 where s.partner = v.partner
 and s.partner = '__partner_name__'
 and version = cur_general;
 
-insert into __schema__.mapping_summary_report
+insert into @__results__.mapping_summary_report
 with cnts as (
   select partner, sum(cnt) as t_records from general_last_version group by partner
 ),
@@ -803,7 +803,7 @@ where critique is not null
 and partner = '__partner_name__'
 order by 1, 2;
 
-insert into __schema__.rolled_up_tumor_types
+insert into @__results__.rolled_up_tumor_types
 select *
 from temp_tumor_types;
 
@@ -811,8 +811,8 @@ from temp_tumor_types;
 drop table if exists general_last_version;
 create temp table general_last_version as
 select g.*
-from __schema__.general_cleaned g
-join __schema__.cur_version using(partner)
+from @__results__.general_cleaned g
+join @__results__.cur_version using(partner)
 where partner = '__partner_name__'
 and version = cur_general;
 
@@ -822,7 +822,7 @@ with all_data as (
   select partner, concept_id as standard, concept_name, vocabulary_id, domain_id, is_domain, standard_concept, sum(cnt) as records, version
   from general_last_version
   join d using(domain)
-  join __cdm_schema__.concept on concept_id=standard
+  join @__vocab__.concept on concept_id=standard
   group by partner, concept_id, concept_name, vocabulary_id, domain_id, is_domain, standard_concept, version
 ),
 valid_target as ( -- concepts belonging to a regular domain (that a table exists for)
@@ -846,14 +846,14 @@ drop table if exists crit_sta;
 create temp table crit_sta as
 with overloaded_concepts as (
   select concept_id_2 
-  from __cdm_schema__.concept_relationship 
+  from @__vocab__.concept_relationship 
   where relationship_id='Has Answer'
   and invalid_reason is null 
   and concept_id_1 in (3020133, 3010621, 3020306, 40769814, 3043806, 40758258, 36203250, 40769831, 21494849, 3042720, 42527705, 3015048, 46236987, 46236986, 46235142, 3001410, 1091494, 3028485, 36304519, 3045092, 42527788, 3046070, 3047311, 3043846, 3043017, 40769849, 42527700, 3045426, 3019341, 3021037, 3002943, 40770067, 3017327, 3006171, 3032860, 3032820, 3032529, 3046523, 44816728, 36203176, 1617409, 1616763, 3002377, 36203154, 36203137, 1617315, 3043693, 36203118, 36203117, 36203124, 21494733, 3014845, 21492981, 1616553, 36305168, 3046972, 3044365, 3046527, 3045602, 21494735, 1616306, 3044724, 3042773, 3047277, 42527790, 40769833, 21491882, 21491880, 21491879, 21491881, 36204404, 21493968, 21493970, 21493971, 36031181, 42529177, 36031552, 21493969, 42527723, 42527720, 36203139, 21494724, 40762606, 3046434, 3008250, 3006038, 3007073, 3016292, 3046598, 36203181, 3047346, 3046361, 37020347, 42527712, 42527711, 36203169, 1617504, 1616523, 21493980, 21493979, 21493974, 21493976, 21493977, 21493975, 21493981, 40765594, 21493978, 21491883, 21490957, 3000766, 21494730)
 ),
 value_needs_mapping as (
   select concept_id_2 
-  from __cdm_schema__.concept_relationship 
+  from @__vocab__.concept_relationship 
   where relationship_id='Has Answer'
   and invalid_reason is null 
   and concept_id_1 in (3040950, 36031424, 44786879, 36204549, 44786934, 46235351, 3050686, 40760326, 40770159, 40770163, 3015763, 3026214, 3023877, 40766660, 1617452, 1616716, 40769855, 3019275, 3022835, 3000608, 3019130, 40766623, 40766625, 3003037, 21494723, 36204558, 1001824, 36305514, 36306187, 21491888, 21491887, 3051348, 40766653, 42527886, 40769122, 3012604, 36203179, 40769857, 40769820, 3001285, 36203138, 36305408, 36305927, 21491872, 3046315, 40771030, 40770927, 40770932, 42529083, 44786707, 44786708, 1989065, 42870406, 3004250, 21491611, 40769265, 3009329, 3038982, 3033619, 3034828, 3014280, 3027596, 3021444, 21494722, 3016725, 46235213, 3051551, 44816596, 3008181, 36203126, 1617595, 3043591, 36660206, 3006575, 40769842, 40769838, 21493972, 40762591, 3007727, 42528924, 3022698, 3018082, 3008495, 3016308, 3008841, 3027109, 40769836, 40769840, 3020821, 3021034, 42527715)
@@ -867,12 +867,12 @@ crit_sta as (
       when vocabulary_id='NAACCR' and concept_name ilike '%not stated%' then 'Flavor of NULL'
       when domain_id='Meas Value' and concept_name in ('Unknown', 'Not staged', 'Other', 'Other, NOS', 'Unknown term', 'Does not apply', 'Not applicable', 'Not Applicable', 'Not detected', 'N/A', 'Refused', 'No', 'Not specified', 'No tumor', 'Invalid', 'Other cancer-directed therapy recommended, unknown if administered', 'Don''t know', 'None', 'Not asked', 'No information', 'Unable to determine', 'Don''t know/refused', 'Patient refused', 'Not tested', 'Resident refused', 'Asked but unknown', 'Refused to answer') then 'Flavor of NULL'
 -- list of invalid grade concepts, mostly from NAACCR
-      when standard in (select concept_id from static.invalid_grade) then 'Invalid grade'
+      when standard in (select concept_id from @__static__.invalid_grade) then 'Invalid grade'
 -- list of invalid stage concepts, mostly from NAACCR
-      when standard in (select concept_id from static.invalid_stage) then 'Invalid stage'
+      when standard in (select concept_id from @__static__.invalid_stage) then 'Invalid stage'
 -- list of invalid met or node concepts, mostly from NAACCR
-      when standard in (select concept_id from static.invalid_met) then 'Invalid met or node'
-      when standard in (select concept_id from static.split_conditions) then 'Condition needs splitting'
+      when standard in (select concept_id from @__static__.invalid_met) then 'Invalid met or node'
+      when standard in (select concept_id from @__static__.split_conditions) then 'Condition needs splitting'
       when is_domain='Meas Value' and standard in (select concept_id_2 from value_needs_mapping) then 'Value needs mapping'
       when coalesce(standard_concept, 'C')='C' then 'Not standard concept'
       when wrong_domain is not null then 'Wrong domain table'
@@ -897,13 +897,13 @@ with sta as (
 )
 select * from sta;
 
-delete from __schema__.standard_summary_report_cleaned s
-using __schema__.cur_version v
+delete from @__results__.standard_summary_report_cleaned s
+using @__results__.cur_version v
 where s.partner = v.partner
 and s.partner = '__partner_name__'
 and version = cur_general;
 
-insert into __schema__.standard_summary_report_cleaned
+insert into @__results__.standard_summary_report_cleaned
 with cnts as (
   select partner, sum(cnt) as t_records, count(distinct(standard)) as t_concepts
   from general_last_version
@@ -924,35 +924,35 @@ drop table if exists general_last_version;
 create temp table general_last_version as
 select g.*
 from general_no_extra g
-join __schema__.cur_version using(partner)
+join @__results__.cur_version using(partner)
 where partner = '__partner_name__'
 and version = cur_general;
 
-delete from __schema__.histo_topo_percent h
-using __schema__.cur_version v
+delete from @__results__.histo_topo_percent h
+using @__results__.cur_version v
 where h.partner = v.partner
 and h.partner = '__partner_name__'
 and version = cur_general;
 
-insert into __schema__.histo_topo_percent
+insert into @__results__.histo_topo_percent
 with oneleggeds as (
   select partner, sum(cnt) as onelegged
   from general_last_version
-  join static.onelegged_cancer on standard = concept_id
+  join @__static__.onelegged_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
 shallows as (
   select partner, sum(cnt) as shallow
   from general_last_version
-  join static.shallow_cancer on standard = concept_id
+  join @__static__.shallow_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
 totals as (
   select partner, sum(cnt) as total
   from general_last_version
-  join static.all_cancer on standard = concept_id
+  join @__static__.all_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
@@ -968,8 +968,8 @@ coalesce(shallow, 0) as shallow_records,
 coalesce(round(shallow * 100.0 / total, 2), 0.00) as shallow_perc,
 coalesce(both_r, 0) as both_records,
 coalesce(round(both_r * 100.0 / total, 2), 0.00) as both_perc, version
-from __schema__.patient
-join __schema__.cur_version using(partner)
+from @__results__.patient
+join @__results__.cur_version using(partner)
 left join totals using(partner)
 left join oneleggeds using(partner)
 left join shallows using(partner)
@@ -977,46 +977,46 @@ left join both_sides using(partner)
 where partner = '__partner_name__'
 and version = cur_general;
 
-delete from __schema__.histo_topo_individual h
-using __schema__.cur_version v
+delete from @__results__.histo_topo_individual h
+using @__results__.cur_version v
 where h.partner = v.partner
 and h.partner = '__partner_name__'
 and version = cur_general;
 
-insert into __schema__.histo_topo_individual
+insert into @__results__.histo_topo_individual
 with concepts as (
   select partner, standard as concept_id, 'One-legged cancer' as critique, sum(cnt) as records, version
   from general_last_version
-  join static.onelegged_cancer on standard = concept_id
+  join @__static__.onelegged_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner, standard, version
   union
   select partner, standard, 'Shallow cancer' as critique, sum(cnt), version
   from general_last_version
-  join static.shallow_cancer on standard = concept_id
+  join @__static__.shallow_cancer on standard = concept_id
   where partner = '__partner_name__'
   group by partner, standard, version
 )
 select partner, concept_id, concept_name, critique, records, version
 from concepts
-join __cdm_schema__.concept using (concept_id)
+join @__vocab__.concept using (concept_id)
 order by partner, critique, concept_id;
 
 -- Stages
 
-delete from __schema__.stages s
-using __schema__.cur_version v
+delete from @__results__.stages s
+using @__results__.cur_version v
 where s.partner = v.partner
 and s.partner = '__partner_name__'
 and version = cur_general;
 
 -- This creates an overview of one record per partner.
 -- It contains the number of records and percentages. See below for details.
-insert into __schema__.stages
+insert into @__results__.stages
 with bads as ( -- bad records of the category
   select partner, sum(cnt) as bad
   from general_last_version
-  join static.invalid_stage on standard = concept_id
+  join @__static__.invalid_stage on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
@@ -1024,7 +1024,7 @@ wholes as ( -- all records of the category, regardless of correctness
   select partner, 
   case sum(cnt) when 0 then null else sum(cnt) end as whole_cat
   from general_last_version
-  join static.all_stage on standard = concept_id
+  join @__static__.all_stage on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
@@ -1041,8 +1041,8 @@ coalesce(round(bad * 100.0 / whole_cat, 2), 0.00) as bad_from_all, -- percentage
 coalesce(round(whole_cat * 100.0 / total, 2), 0.00) as all_from_total, -- percentage of all_cnt from all db records
 coalesce(round(bad * 100.0 / total, 2), 0.00) as bad_from_total, -- percentage of bad records from all db records,
 version
-from __schema__.patient
-join __schema__.cur_version using(partner)
+from @__results__.patient
+join @__results__.cur_version using(partner)
 left join bads using (partner)
 left join wholes using (partner)
 left join totals using (partner)
@@ -1052,19 +1052,19 @@ and version = cur_general
 
 -- Grades
 
-delete from __schema__.grades g
-using __schema__.cur_version v
+delete from @__results__.grades g
+using @__results__.cur_version v
 where g.partner = v.partner
 and g.partner = '__partner_name__'
 and version = cur_general;
 
 -- This creates an overview of one record per partner.
 -- It contains the number of records and percentages. See below for details.
-insert into __schema__.grades
+insert into @__results__.grades
 with bads as ( -- bad records of the category
   select partner, sum(cnt) as bad
   from general_last_version
-  join static.invalid_grade on standard = concept_id
+  join @__static__.invalid_grade on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
@@ -1072,7 +1072,7 @@ wholes as ( -- all records of the category, regardless of correctness
   select partner, 
   case sum(cnt) when 0 then null else sum(cnt) end as whole_cat
   from general_last_version
-  join static.all_grade on standard = concept_id
+  join @__static__.all_grade on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
@@ -1089,8 +1089,8 @@ coalesce(round(bad * 100.0 / whole_cat, 2), 0.00) as bad_from_all, -- percentage
 coalesce(round(whole_cat * 100.0 / total, 2), 0.00) as all_from_total, -- percentage of all_cnt from all db records
 coalesce(round(bad * 100.0 / total, 2), 0.00) as bad_from_total, -- percentage of bad records from all db records
 version
-from __schema__.patient
-join __schema__.cur_version using(partner)
+from @__results__.patient
+join @__results__.cur_version using(partner)
 left join bads using (partner)
 left join wholes using (partner)
 left join totals using (partner)
@@ -1100,19 +1100,19 @@ and version = cur_general
 
 -- Metastases
 
-delete from __schema__.mets m
-using __schema__.cur_version v
+delete from @__results__.mets m
+using @__results__.cur_version v
 where m.partner = v.partner
 and m.partner = '__partner_name__'
 and version = cur_general;
 
 -- This creates an overview of one record per partner.
 -- It contains the number of records and percentages. See below for details.
-insert into __schema__.mets
+insert into @__results__.mets
 with bads as ( -- bad records of the category
   select partner, sum(cnt) as bad
   from general_last_version
-  join static.invalid_met on standard = concept_id
+  join @__static__.invalid_met on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
@@ -1120,7 +1120,7 @@ wholes as ( -- all records of the category, regardless of correctness
   select partner, 
   case sum(cnt) when 0 then null else sum(cnt) end as whole_cat
   from general_last_version
-  join static.all_met on standard = concept_id
+  join @__static__.all_met on standard = concept_id
   where partner = '__partner_name__'
   group by partner
 ),
@@ -1137,8 +1137,8 @@ coalesce(round(bad * 100.0 / whole_cat, 2), 0.00) as bad_from_all, -- percentage
 coalesce(round(whole_cat * 100.0 / total, 2), 0.00) as all_from_total, -- percentage of all_cnt from all db records
 coalesce(round(bad * 100.0 / total, 2), 0.00) as bad_from_total, -- percentage of bad records from all db records
 version
-from __schema__.patient
-join __schema__.cur_version using(partner)
+from @__results__.patient
+join @__results__.cur_version using(partner)
 left join bads using (partner)
 left join wholes using (partner)
 left join totals using (partner)
@@ -1151,8 +1151,8 @@ and version = cur_general
 drop table if exists general_last_version;
 create temp table general_last_version as
 select g.*
-from __schema__.general g
-join __schema__.cur_version using(partner)
+from @__results__.general g
+join @__results__.cur_version using(partner)
 where partner = '__partner_name__'
 and version = cur_general;
 
@@ -1160,7 +1160,7 @@ and version = cur_general;
 drop table if exists general_counts;
 create temp table general_counts as
 select partner, category as cat, sum(cnt) as denom
-from static.lab_category
+from @__static__.lab_category
 join general_last_version on standard=concept_id
 where partner = '__partner_name__'
 group by partner, cat;
@@ -1168,8 +1168,8 @@ group by partner, cat;
 drop table if exists measurement_last_version;
 create temp table measurement_last_version as
 select m.*
-from __schema__.measurement m
-join __schema__.cur_version using(partner)
+from @__results__.measurement m
+join @__results__.cur_version using(partner)
 where partner = '__partner_name__'
 and version = cur_patient;
 
@@ -1181,9 +1181,9 @@ with concept_cat as (
   select partner, category as cat, prec, m.concept_id as m_id, m.concept_name as m_name, value_as_concept_id as v_id, v.concept_name as v_name, v.concept_class_id, v.domain_id,
     sum(coalesce(cnt, 1)) as records, version
   from measurement_last_version r
-  join static.lab_category c on c.concept_id=r.measurement_concept_id
-  join __cdm_schema__.concept m on m.concept_id=r.measurement_concept_id
-  join __cdm_schema__.concept v on v.concept_id=r.value_as_concept_id
+  join @__static__.lab_category c on c.concept_id=r.measurement_concept_id
+  join @__vocab__.concept m on m.concept_id=r.measurement_concept_id
+  join @__vocab__.concept v on v.concept_id=r.value_as_concept_id
   where value_as_concept_id is not null and value_as_concept_id!=0
   and partner = '__partner_name__'
   group by partner, category, prec, m.concept_id, m.concept_name, value_as_concept_id, v.concept_name, 
@@ -1306,9 +1306,9 @@ prep_val as (
       case when p_97<=0 then null else p_97 end as p_97,
       coalesce(cnt, 1) as cnt, version
     from measurement_last_version r
-    join static.lab_category c on c.concept_id=r.measurement_concept_id
-	join __cdm_schema__.concept m on m.concept_id=r.measurement_concept_id
-    left join __cdm_schema__.concept u on u.concept_id=unit_concept_id
+    join @__static__.lab_category c on c.concept_id=r.measurement_concept_id
+	join @__vocab__.concept m on m.concept_id=r.measurement_concept_id
+    left join @__vocab__.concept u on u.concept_id=unit_concept_id
   )
   where u_id!=0 or coalesce(u_id, range_low, range_high, p_03, p_25, median, p_75, p_97) is not null
   group by partner, cat, m_id, m_name, u_id, u_name, range_low, range_high, p_03, p_25, median, p_75, p_97, version
@@ -1388,13 +1388,13 @@ select * from (
 ;
 
 -- long lab report
-delete from __schema__.lab_long_report l
-using __schema__.cur_version v
+delete from @__results__.lab_long_report l
+using @__results__.cur_version v
 where l.partner = v.partner
 and l.partner = '__partner_name__'
 and version = cur_general;
 
-insert into __schema__.lab_long_report (partner, cat, measurement_id, measurement_name, records, percent,
+insert into @__results__.lab_long_report (partner, cat, measurement_id, measurement_name, records, percent,
   p_03, p_25, median, p_75, p_97, value_id, value_name, concept_critique, pct_of_concept_recs,
   unit_id, unit_name, range_low, range_high, range, distribution, values, spread, unit, outliers, pct_of_value_recs, version)
 with long_report as (
@@ -1422,22 +1422,22 @@ select * from long_report
 order by partner, cat, measurement_name, value_name, unit_name, range_low, range_high;
 
 -- summary lab report
-delete from __schema__.lab_summary s
-using __schema__.cur_version v
+delete from @__results__.lab_summary s
+using @__results__.cur_version v
 where s.partner = v.partner
 and s.partner = '__partner_name__'
 and version = cur_general;
 
-insert into __schema__.lab_summary (partner, cat, concept_records, number, flavor_null, precoordinated,
+insert into @__results__.lab_summary (partner, cat, concept_records, number, flavor_null, precoordinated,
 measurement, not_value, pct_usable_consets, value_records, bad_unit, bad_range, bad_dist, missing_values,
 no_spread, outliers, pct_usable_valsets, version)
 with cur_version as (
   select cur_general as g_version
-  from __schema__.cur_version
+  from @__results__.cur_version
 ),
 all_cat as (
   select distinct '__partner_name__' as partner, category as cat, g_version
-  from static.lab_category
+  from @__static__.lab_category
   join cur_version on 1 = 1
 ),
 concept_summary as (
@@ -1489,17 +1489,17 @@ left join value_summary using(partner, cat)
 order by partner, cat;
 
 
-delete from __schema__.special_conditions s
-using __schema__.cur_version v
+delete from @__results__.special_conditions s
+using @__results__.cur_version v
 where s.partner = v.partner
 and s.partner = '__partner_name__'
 and version = cur_general;
 
-insert into __schema__.special_conditions
+insert into @__results__.special_conditions
 with ecogs as (
   select partner, 'ECOG' as critique, sum(cnt) as records, version
   from measurement_last_version
-  join static.lab_category on concept_id = measurement_concept_id
+  join @__static__.lab_category on concept_id = measurement_concept_id
   where partner = '__partner_name__'
   and category = 'ECOG'
   group by partner, version
@@ -1507,7 +1507,7 @@ with ecogs as (
 karnofskys as (
   select partner, 'Karnofsky' as critique, sum(cnt) as records, version
   from measurement_last_version
-  join static.lab_category on concept_id = measurement_concept_id
+  join @__static__.lab_category on concept_id = measurement_concept_id
   where partner = '__partner_name__'
   and category = 'Karnofsky'
   group by partner, version
@@ -1515,7 +1515,7 @@ karnofskys as (
 pd_l1s as (
   select partner, 'PD-L1' as critique, sum(cnt) as records, version
   from measurement_last_version
-  join static.lab_category on concept_id = measurement_concept_id
+  join @__static__.lab_category on concept_id = measurement_concept_id
   where partner = '__partner_name__'
   and category = 'PD-L1'
   group by partner, version
