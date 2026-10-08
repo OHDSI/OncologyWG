@@ -725,6 +725,38 @@ correct_perc, version
 from vocab_perc
 order by partner, cat, 3;
 
+-- The ratio corrects the criticized percentages by overlap between critique categories.
+drop table if exists standard_ratio;
+create temp table standard_ratio as
+with wrong_concepts as (
+  select distinct concept_id, is_domain
+  from sta
+),
+good_r as (
+  select sum(cnt) as good_records
+  from general_last_version g
+  join d using(domain)
+  left join wrong_concepts w on g.standard = w.concept_id and  d.is_domain = w.is_domain
+  where w.concept_id is null
+),
+all_r as (
+  select sum(cnt) as all_records
+  from general_last_version
+),
+sum_crit as (
+  select sum(records) as sum_crit_records
+  from sta
+),
+bad_r as (
+  select all_records - good_records as bad_records
+  from good_r
+  join all_r on 1 = 1
+)
+select case when sum_crit_records = 0 then cast(0 as decimal)
+else cast(bad_records as decimal) / cast(sum_crit_records as decimal)
+end as ratio
+from sum_crit
+join bad_r on 1 = 1;
 
 -- Summary for standard concepts
 -- used to be "Standard summary report.txt"
@@ -743,8 +775,9 @@ cst_summed as ( -- sum up records per critique
   from sta
   group by partner, critique, version
 )
-select partner, critique, records, round(records*1.0/t_records, 4) as "record_%", version
+select partner, critique, records, round(records * ratio / t_records, 4) as "record_%", version
 from cst_summed join cnts using(partner)
+join standard_ratio on 1 = 1
 where partner = '__partner_name__'
 order by 1, 2;
 
