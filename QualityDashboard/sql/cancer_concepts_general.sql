@@ -68,4 +68,10 @@ q_a as ( -- add question and answers that don't seem cancer-related just by thei
 select concept_id from cancers
 union
 select concept_id from q_a
+union
+select concept_id static.bad_pdl1
+union
+select concept_id static.bad_perf_status
+union
+select concept_id static.all_car_t
 order by concept_id;
