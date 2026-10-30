@@ -69,9 +69,9 @@ select concept_id from cancers
 union
 select concept_id from q_a
 union
-select concept_id static.bad_pdl1
+select concept_id from static.bad_pdl1
 union
-select concept_id static.bad_perf_status
+select concept_id from static.bad_perf_status
 union
-select concept_id static.all_car_t
+select concept_id from static.all_car_t
 order by concept_id;
